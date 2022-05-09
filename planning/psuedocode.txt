@@ -1,0 +1,68 @@
+Annealer:
+
+Start Annealer
+Build Item and Recipes
+    Recipes will contain information regarding required prerequisites and requesters
+    Initialize RouteGroups
+Build Factory
+    Determine factory requirements
+    Store trains/min needed in RouteGroup
+    Build Item relationships
+        Populate RouteGroups with DeliveryVectors
+        Give FactoryCellIOs needed RouteGroup references
+Setup internal variables
+
+while temperature < end condition
+    while total_cost_change < threshold
+        Generate move candidate
+        Check if depot adjacency constraint is met
+        Evaluate cost difference of move
+            Iterate on IO cells
+                Iterate on inputs and calculate cost difference
+                Iterate on outputs and calculate cost difference
+                When calculating cost, train/min must divided by the number of ios of identical type
+                    For example, when looking at the relation between GC producers and GC requests for BC, the trains/min for moving the GC cell must be divided by the number of GC cell producers.  Likewise, when moving the BC cell, the trains/min must be divided by the number of BC requesters for GC
+
+            If delta_cost < 0
+                accept and update costs of vectors
+            else
+                if exp(-delta_cost/temperature) > rand(1,100)
+                    accept and update costs of vectors
+                else
+                    reject and revert
+
+    update temperature (5% less?) and threshold (scale with temperature?)
+
+How to iterate on IOs of a factory cell?
+    FactoryCell contains information regarding affected recipes (IOs of cell)
+How to iterate on IOs of an item?
+    Once an affected item is found from FactoryCell, go to recipe
+    Use recipe to iterate on inputs and requesters of the item
+
+FactoryCell item_cell = item.is_op[cell.id].parent
+for input in item.recipe.inputs:
+    for supplier in input.is_op # Find all cells that will supply the cell
+        for io in item_cell.inputs: # Find IO cell in FactoryCell
+            if io.item == input:
+
+Move cell check
+    Iterate on FactoryCells being moved
+        Iterate on FactoryCellIOs
+            Iterate on route dictionary
+                Iterate on individual routes
+                    recalculate distance
+                average distances within route group
+                get trains/min of route group (i.e. GC->BC)
+                Divide trains/min by number of identical IOs
+                Calculate new cost of route group
+
+                Sum cost changes
+
+    Check cost sum difference
+        Negative -> accept
+        Positive -> conditionally accept
+
+    If accept
+        Apply cost change to 
+
+FactoryCellIO contains routing information that is built in the annealer
