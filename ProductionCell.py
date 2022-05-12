@@ -1,5 +1,5 @@
 from globals import *
-import FactoryCellIO
+import factorycellio
 # prod_cell
 #   ios
 #       inputs
@@ -16,4 +16,4 @@ class ProductionCell:
         fcell_ios = []
         for i in in_data:
             io_data = in_data[i]
-            fcell_ios.append(FactoryCellIO(io_data))
+            fcell_ios.append(factorycellio(io_data))

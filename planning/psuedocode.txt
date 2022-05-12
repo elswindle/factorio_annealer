@@ -5,7 +5,9 @@ Build Item and Recipes
     Recipes will contain information regarding required prerequisites and requesters
     Initialize RouteGroups
 Build Factory
+    Load templates
     Determine factory requirements
+        Load 1ksps requirements
     Store trains/min needed in RouteGroup
     Build Item relationships
         Populate RouteGroups with DeliveryVectors
