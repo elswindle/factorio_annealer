@@ -1,236 +1,236 @@
-recipe-name item/min
-ip-locations relative x,y,t/b
-op-locations relative x,y,t/b
+recipe-name,item/min
+ip-locations,relative,x,y,t/b
+op-locations,relative,x,y,t/b,rate
 iron-plate
-ip iron-ore 0,0,TOP
-op iron-plate 0,0,BOT 1813.5
+ip,iron-ore,0,0,TOP
+op,iron-plate,0,0,BOT,1813.5
 end
 copper-plate
-ip copper-ore 0,0,TOP
-op copper-plate 0,0,BOT 1813.5
+ip,copper-ore,0,0,TOP
+op,copper-plate,0,0,BOT,1813.5
 end
 steel-plate
-ip iron-plate 0,0,TOP
-op steel-plate 0,0,BOT 363.7
+ip,iron-plate,0,0,TOP
+op,steel-plate,0,0,BOT,363.7
 end
 stone-brick
-ip stone 0,0,TOP
-op stone-brick 0 0 BOT 1600
+ip,stone,0,0,TOP
+op,stone-brick,0,0,BOT,1600
 end
 advanced-oil-processing
-ip crude-oil 0 0 TOP
-ip water 0 0 TOP
-op petroleum-gas 0 0 BOT 6560
-op light-oil 0 0 BOT 5370
-op heavy-oil 0 0 BOT 2980
+ip,crude-oil,0,0,TOP
+ip,water,0,0,TOP
+op,petroleum-gas,0,0,BOT,6560
+op,light-oil,0,0,BOT,5370
+op,heavy-oil,0,0,BOT,2980
 end
 lubricant
-ip heavy-oil 0 0 TOP
-op lubricant 0 0 BOT 11900
+ip,heavy-oil,0,0,TOP
+op,lubricant,0,0,BOT,11900
 end
 heavy-oil-cracking
-ip heavy-oil 0 0 TOP
-ip water 0 0 TOP
-op light-oil 0 0 BOT 19020
+ip,heavy-oil,0,0,TOP
+ip,water,0,0,TOP
+op,light-oil,0,0,BOT,19020
 end
 light-oil-cracking
-ip light-oil 0 0 TOP
-ip water 0 0 TOP
-op petroleum-gas 0 0 BOT 14265
+ip,light-oil,0,0,TOP
+ip,water,0,0,TOP
+op,petroleum-gas,0,0,BOT,14265
 end
 solid-fuel
-ip light-oil 0 0 TOP
-op solid-fuel 0 0 BOT 1064
+ip,light-oil,0,0,TOP
+op,solid-fuel,0,0,BOT,1064
 end
 rocket-fuel
-ip solid-fuel 0 0 TOP
-ip light-oil 0 0 BOT
-op rocket-fuel 0 0 BOT 110
+ip,solid-fuel,0,0,TOP
+ip,light-oil,0,0,BOT
+op,rocket-fuel,0,0,BOT,110
 end
 plastic-bar
-ip coal 0 0 TOP
-ip petroleum-gas 0 0 TOP
-op plastic-bar 0 0 BOT 4250
+ip,coal,0,0,TOP
+ip,petroleum-gas,0,0,TOP
+op,plastic-bar,0,0,BOT,4250
 end
 sulfur
-ip petroleum-gas 0 0 TOP
-ip water 0 0 TOP
-op sulfur 0 0 BOT 2530
+ip,petroleum-gas,0,0,TOP
+ip,water,0,0,TOP
+op,sulfur,0,0,BOT,2530
 end
 sulfuric-acid
-ip sulfur 0 0 TOP
-ip iron-plate 0 0 TOP
-ip water 0 0 TOP
-op sulfuric-acid 0 0 BOT 19890
+ip,sulfur,0,0,TOP
+ip,iron-plate,0,0,TOP
+ip,water,0,0,TOP
+op,sulfuric-acid,0,0,BOT,19890
 end
 battery
-ip iron-plate 0 0 TOP
-ip copper-plate 0 0 TOP
-ip sulfuric-acid 0 0 TOP
-op battery 0 0 BOT 495
+ip,iron-plate,0,0,TOP
+ip,copper-plate,0,0,TOP
+ip,sulfuric-acid,0,0,TOP
+op,battery,0,0,BOT,495
 end
 electronic-circuit
-ip iron-plate 0 0 TOP
-ip copper-plate 0 0 TOP
-op electronic-circuit 0 0 BOT 2560
+ip,iron-plate,0,0,TOP
+ip,copper-plate,0,0,TOP
+op,electronic-circuit,0,0,BOT,2560
 end
 advanced-circuit
-ip copper-plate -1 0 TOP
-ip plastic-bar 0 0 TOP
-ip electronic-circuit 0 0 TOP
-op advanced-circuit -1 0 BOT 658
+ip,copper-plate,-1,0,TOP
+ip,plastic-bar,0,0,TOP
+ip,electronic-circuit,0,0,TOP
+op,advanced-circuit,-1,0,BOT,658
 end
 processing-unit
-ip electronic-circuit 0 0 TOP
-ip advanced-circuit 0 0 TOP
-ip sulfuric-acid 0 0 TOP
-op processing-unit 0 0 BOT 256
+ip,electronic-circuit,0,0,TOP
+ip,advanced-circuit,0,0,TOP
+ip,sulfuric-acid,0,0,TOP
+op,processing-unit,0,0,BOT,256
 end
 rocket-control-unit
-ip processing-unit 0 0 TOP
-ip speed-module-1 0 0 TOP
-op rocket-control-unit 0 0 BOT 115
+ip,processing-unit,0,0,TOP
+ip,speed-module-1,0,0,TOP
+op,rocket-control-unit,0,0,BOT,115
 end
 low-density-structure
-ip copper-plate 0 0 TOP
-ip steel-plate 0 0 TOP
-ip plastic-bar 0 0 TOP
-op low-density-structure 0 0 BOT 195
+ip,copper-plate,0,0,TOP
+ip,steel-plate,0,0,TOP
+ip,plastic-bar,0,0,TOP
+op,low-density-structure,0,0,BOT,195
 end
 speed-module-1
-ip electronic-circuit 0 0 TOP
-ip advanced-circuit 0 0 TOP
-op speed-module-1 0 0 BOT 245
+ip,electronic-circuit,0,0,TOP
+ip,advanced-circuit,0,0,TOP
+op,speed-module-1,0,0,BOT,245
 end
 productivity-module-1
-ip electronic-circuit 0 0 TOP
-ip advanced-circuit 0 0 TOP
-op productivity-module-1 0 0 BOT 245
+ip,electronic-circuit,0,0,TOP
+ip,advanced-circuit,0,0,TOP
+op,productivity-module-1,0,0,BOT,245
 end
 solar-panel
-ip electronic-circuit 0 0 TOP
-ip steel-plate 0 0 TOP
-ip copper-plate 0 0 TOP
-op solar-panel 0 0 BOT 157
+ip,electronic-circuit,0,0,TOP
+ip,steel-plate,0,0,TOP
+ip,copper-plate,0,0,TOP
+op,solar-panel,0,0,BOT,157
 end
 accumulator
-ip iron-plate 0 0 TOP
-ip batter 0 0 TOP
-op accumulator 0 0 BOT 157
+ip,iron-plate,0,0,TOP
+ip,batter,0,0,TOP
+op,accumulator,0,0,BOT,157
 end
 utility-science-pack
-ip flying-robot-frame 0 0 TOP
-ip low-density-structure 0 0 TOP
-ip processing-unit 0 0 TOP
-op utility-science-pack 0 0 BOT 408
+ip,flying-robot-frame,0,0,TOP
+ip,low-density-structure,0,0,TOP
+ip,processing-unit,0,0,TOP
+op,utility-science-pack,0,0,BOT,408
 end
 flying-robot-frame
-ip electric-engine-unit 0 0 TOP
-ip battery 0 0 TOP
-ip steel-plate 0 0 TOP
-ip electronic-circuit 0 0 TOP
-op flying-robot-frame 0 0 BOT 142.8
+ip,electric-engine-unit,0,0,TOP
+ip,battery,0,0,TOP
+ip,steel-plate,0,0,TOP
+ip,electronic-circuit,0,0,TOP
+op,flying-robot-frame,0,0,BOT,142.8
 end
 space-science-pack
-ip rocket-fuel 0 0 TOP
-ip rocket-control-unit 0 0 TOP
-ip low-density-structure 0 0 TOP
-ip accumulator 1 0 TOP
-ip solar-panel 1 0 TOP
-ip processing-unit 1 0 TOP
-ip electronic-circuit 1 0 TOP
-ip iron-gear-wheel 1 0 TOP
-ip iron-plate 1 0 TOP
-op space-science-pack 0 0 BOT 1100
+ip,rocket-fuel,0,0,TOP
+ip,rocket-control-unit,0,0,TOP
+ip,low-density-structure,0,0,TOP
+ip,accumulator,1,0,TOP
+ip,solar-panel,1,0,TOP
+ip,processing-unit,1,0,TOP
+ip,electronic-circuit,1,0,TOP
+ip,iron-gear-wheel,1,0,TOP
+ip,iron-plate,1,0,TOP
+op,space-science-pack,0,0,BOT,1100
 end
 electric-engine-unit
-ip engine-unit 0 0 TOP
-ip electronic-circuit 0 0 TOP
-ip lubricant 0 0 TOP
-op electric-engine-unit 0 0 BOT 285.6
+ip,engine-unit,0,0,TOP
+ip,electronic-circuit,0,0,TOP
+ip,lubricant,0,0,TOP
+op,electric-engine-unit,0,0,BOT,285.6
 end
 production-science-pack
-ip rail 0 0 TOP
-ip electric-furnace 0 0 TOP
-ip productivity-module-1 0 0 TOP
-op production-science-pack 0 0 BOT 408
+ip,rail,0,0,TOP
+ip,electric-furnace,0,0,TOP
+ip,productivity-module-1,0,0,TOP
+op,production-science-pack,0,0,BOT,408
 end
 electric-furnace
-ip steel-plate 0 0 TOP
-ip stone-brick 0 0 TOP
-ip advanced-circuit 0 0 TOP
-op electric-furnace 0 0 BOT 180
+ip,steel-plate,0,0,TOP
+ip,stone-brick,0,0,TOP
+ip,advanced-circuit,0,0,TOP
+op,electric-furnace,0,0,BOT,180
 end
 rail
-ip iron-plate 0 0 TOP
-ip steel-plate 0 0 TOP
-ip stone 0 0 TOP
-op rail 0 0 BOT
+ip,iron-plate,0,0,TOP
+ip,steel-plate,0,0,TOP
+ip,stone,0,0,TOP
+op,rail,0,0,BOT
 end
 chemical-science-pack
-ip sulfur 0 0 TOP
-ip advanced-circuit 0 0 TOP
-ip engine-unit 0 0 TOP
-op chemical-science-pack 0 0 BOT 238
+ip,sulfur,0,0,TOP
+ip,advanced-circuit,0,0,TOP
+ip,engine-unit,0,0,TOP
+op,chemical-science-pack,0,0,BOT,238
 end
 military-science-pack
-ip piercing-rounds-magazine 0 0 TOP
-ip grenade 0 0 TOP
-ip stone-wall 0 0 TOP
-op military-science-pack 0 0 BOT 571.2
+ip,piercing-rounds-magazine,0,0,TOP
+ip,grenade,0,0,TOP
+ip,stone-wall,0,0,TOP
+op,military-science-pack,0,0,BOT,571.2
 end
 logistic-science-pack
-ip transport-belt 0 0 TOP
-ip inserter 0 0 TOP
-op logistic-science-pack 0 0 BOT 476
+ip,transport-belt,0,0,TOP
+ip,inserter,0,0,TOP
+op,logistic-science-pack,0,0,BOT,476
 end
 automation-science-pack
-ip copper-plate 0 0 TOP
-ip iron-gear-wheel 0 0 TOP
-op automation-science-pack 0 0 BOT 571.2
+ip,copper-plate,0,0,TOP
+ip,iron-gear-wheel,0,0,TOP
+op,automation-science-pack,0,0,BOT,571.2
 end
 engine-unit
-ip iron-plate 0 0 TOP
-ip steel-plate 0 0 TOP
-ip iron-gear-wheel 0 0 TOP
-op engine-unit 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,iron-plate,0,0,TOP
+ip,steel-plate,0,0,TOP
+ip,iron-gear-wheel,0,0,TOP
+op,engine-unit,0,0,BOT,199
 end
 piercing-rounds-magazine
-ip steel-plate 0 0 TOP
-ip copper-plate 0 0 TOP
-ip iron-plate 0 0 TOP
-op piercing-rounds-magazine 0 0 BOT XXXXXXXXXXXXXXXXXXXXXXX
+ip,steel-plate,0,0,TOP
+ip,copper-plate,0,0,TOP
+ip,iron-plate,0,0,TOP
+op,piercing-rounds-magazine,0,0,BOT,450
 end
 grenade
-ip coal 0 0 TOP
-ip iron-plate 0 0 TOP
-op grenade 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,coal,0,0,TOP
+ip,iron-plate,0,0,TOP
+op,grenade,0,0,BOT,1234123412341234
 end
 stone-wall
-ip stone-brick 0 0 TOP
-op stone-wall 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,stone-brick,0,0,TOP
+op,stone-wall,0,0,BOT,12341234123412341234
 end
 inserter
-ip iron-gear-wheel 0 0 TOP
-ip electronic-circuit 0 0 TOP
-ip iron-plate 0 0 TOP
-op inserter 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,iron-gear-wheel,0,0,TOP
+ip,electronic-circuit,0,0,TOP
+ip,iron-plate,0,0,TOP
+op,inserter,0,0,BOT,12341234123412341234
 end
 transport-belt
-ip iron-gear-wheel 0 0 TOP
-ip iron-plate 0 0 TOP
-op transport-belt 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,iron-gear-wheel,0,0,TOP
+ip,iron-plate,0,0,TOP
+op,transport-belt,0,0,BOT,1234123412341234
 end
 iron-gear-wheel
-ip iron-plate 0 0 TOP
-op iron-gear-wheel 0 0 BOT XXXXXXXXXXXXXXXXXXXX
+ip,iron-plate,0,0,TOP
+op,iron-gear-wheel,0,0,BOT,1234123412341234
 end
 research
-ip space-science-pack 0 0 TOP
-ip utility-science-pack 0 0 TOP
-ip production-science-pack 0 0 TOP
-ip logistic-science-pack 0 0 TOP
-ip automation-science-pack 0 0 TOP
-ip military-science-pack 0 0 TOP
-op research 0 0 BOT 1200
+ip,space-science-pack,0,0,TOP
+ip,utility-science-pack,0,0,TOP
+ip,production-science-pack,0,0,TOP
+ip,logistic-science-pack,0,0,TOP
+ip,automation-science-pack,0,0,TOP
+ip,military-science-pack,0,0,TOP
+op,research,0,0,BOT,1200
 end

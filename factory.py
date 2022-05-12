@@ -1,6 +1,7 @@
 import numpy as np
 from factorycellio import FactoryCellIO
 from factoryblocktemplate import FactoryBlockTemplate
+from numpy import block
 from recipe import Recipe
 from item import Item
 import csv as csv
@@ -8,7 +9,8 @@ import csv as csv
 class Factory:
     def __init__(self, rate):
         self.science_rate = rate
-        block_types = [] # FactoryBlockTemplate
+        self.factory_reqs = {}
+        self.block_types = {} # FactoryBlockTemplate
         self.recipe_list = {}
 
     def loadFactoryRecipeList(self, path):
@@ -42,6 +44,21 @@ class Factory:
 
             new_recipe = Recipe(craft_time, inputs, outputs)
             self.recipe_list[new_recipe.name] = new_recipe
+
+    def importBlockTemplates(self, path):
+        block_csv = csv.reader(open(path), delimiter=',')
+        # Skip headers
+        next(block_csv)
+        next(block_csv)
+        next(block_csv)
+
+        for row in block_csv:
+            block_name = row[0]
+            inputs = next(block_csv)
+            outputs = next(block_csv)
+
+            
+        
 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():
