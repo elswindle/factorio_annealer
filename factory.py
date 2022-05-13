@@ -101,19 +101,19 @@ class Factory:
                 row = next(csv_req)
 
         # Sanity check
-        for item in self.factory_reqs.keys():
-            total = self.factory_reqs[item]
-            sum = 0
-            for requester in self.reqs_breakdown[item].values():
-                sum += requester
+        # for item in self.factory_reqs.keys():
+        #     total = self.factory_reqs[item]
+        #     sum = 0
+        #     for requester in self.reqs_breakdown[item].values():
+        #         sum += requester
 
-            # Check if summations are within in 2% of total
-            if(total < sum*1.02 and total > sum*0.98):
-                print("requirement breakdown acceptable for " + item.name)
-            else:
-                print("revisit " + item.name + " and find error")
-                print("total: " + str(self.factory_reqs[item]))
-                print("sum = " + str(sum))
+        #     # Check if summations are within in 2% of total
+        #     if(total < sum*1.02 and total > sum*0.98):
+        #         print("requirement breakdown acceptable for " + item.name)
+        #     else:
+        #         print("revisit " + item.name + " and find error")
+        #         print("total: " + str(self.factory_reqs[item]))
+        #         print("sum = " + str(sum))
 
     def createPartitions(self, path):
         part_csv = csv.reader(open(path, newline=''), delimiter=',')
