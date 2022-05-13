@@ -1,11 +1,11 @@
-from item import Item
+import item
 
 class Recipe:
     def __init__(self, ct, ips, ops):
         self.craft_time = ct
         self.inputs = ips                   # array of Items
         self.outputs = ops                  # array of Items
-        self.item : Item = ops[0]
+        self.item : item.Item = ops[0]
 
         # Recipe name exceptions
         if(self.item.name == 'heavy-oil'):

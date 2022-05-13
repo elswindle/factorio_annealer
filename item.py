@@ -1,5 +1,3 @@
-
-
 class Item:
     def __init__(self, row):
         self.name = row[0]

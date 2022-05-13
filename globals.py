@@ -1,10 +1,11 @@
-from numpy import true_divide
-
+import numpy as np
 
 TOP = 0
 BOT = 1
 LEFT = 2
 RIGHT = 3
+INPUT = 0
+OUTPUT = 1
 
 class Location:
     def __init__(self, x, y):
@@ -16,6 +17,17 @@ class Location:
             return True
         else:
             return False
+
+    def __ne__(self, comp):
+        ret = False
+        if(isinstance(comp, Location)):
+            if(self.x != comp.x or self.y != comp.y):
+                ret = True
+
+        return ret
+    
+    def __str__(self):
+        return "(" + str(self.x) + "," + str(self.y) + ")"
 
     def setLocation(self, x, y):
         self.x = x

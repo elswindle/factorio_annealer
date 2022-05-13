@@ -115,7 +115,7 @@ op,solar-panel,0,0,BOT,157
 end
 accumulator
 ip,iron-plate,0,0,TOP
-ip,batter,0,0,TOP
+ip,battery,0,0,TOP
 op,accumulator,0,0,BOT,157
 end
 utility-science-pack
@@ -165,7 +165,7 @@ rail
 ip,iron-plate,0,0,TOP
 ip,steel-plate,0,0,TOP
 ip,stone,0,0,TOP
-op,rail,0,0,BOT
+op,rail,0,0,BOT,2700
 end
 chemical-science-pack
 ip,sulfur,0,0,TOP
@@ -234,3 +234,4 @@ ip,automation-science-pack,0,0,TOP
 ip,military-science-pack,0,0,TOP
 op,research,0,0,BOT,1200
 end
+EOF
