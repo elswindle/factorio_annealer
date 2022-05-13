@@ -56,141 +56,142 @@ sulfuric-acid,16805.2
 req,battery,12925.2
 req,processing-unit,3880
 end
-copper-ore 48736.6
-req copper-plate 48736.6
+copper-ore,48736.6
+req,copper-plate,48736.6
 end
-copper-plate 58483.9
-req automation-science-pack 714.3
-req battery 646.3
-req electronic-circuit 25290.4
-req advanced-circuit 7709.6
-req low-density-structure 21836.7
-req piercing-rounds-magazine 1785.7
-req solar-panel 500
+copper-plate,58483.9
+req,automation-science-pack,714.3
+req,battery,646.3
+req,electronic-circuit,25290.4
+req,advanced-circuit,7709.6
+req,low-density-structure,21836.7
+req,piercing-rounds-magazine,1785.7
+req,solar-panel,500
 end
-coal 9822.4
-req grenade 3571.4
-req plastic-bar 6251
+coal,9822.4
+req,grenade,3571.4
+req,plastic-bar,6251
 end
-plastic-bar 16252.6
-req advanced-circuit 10793.4
-req low-density-structure 5459.2
+plastic-bar,16252.6
+req,advanced-circuit,10793.4
+req,low-density-structure,5459.2
 end
-electronic-circuit 33047.3
-req advanced-circuit 10793.4
-req electric-engine-unit 243
-req flying-robot-frame 510.2
-req inserter 714.3
-req processing-unit 15519.9
-req productivity-module-1 1190.5
-req space-science-pack 25
-req solar-panel 1500
-req speed-module-1 2551
+electronic-circuit,33047.3
+req,advanced-circuit,10793.4
+req,electric-engine-unit,243
+req,flying-robot-frame,510.2
+req,inserter,714.3
+req,processing-unit,15519.9
+req,productivity-module-1,1190.5
+req,space-science-pack,25
+req,solar-panel,1500
+req,speed-module-1,2551
 end
-advanced-circuit 7555.4
-req chemical-science-pack 1071.4
-req electric-furnace 1190.5
-req processing-unit 1552
-req productivity-module-1 1190.5
-req speed-module-1 2551
+advanced-circuit,7555.4
+req,chemical-science-pack,1071.4
+req,electric-furnace,1190.5
+req,processing-unit,1552
+req,productivity-module-1,1190.5
+req,speed-module-1,2551
 end
-processing-unit 1086.4
-req rocket-control-unit 510.2
-req space-science-pack 100
-req utility-science-pack 476.2
+processing-unit,1086.4
+req,rocket-control-unit,510.2
+req,space-science-pack,100
+req,utility-science-pack,476.2
 end
-iron-gear-wheel 2407.7
-req automation-science-pack 714.3
-req engine-unit 597
-req inserter 714.3
-req space-science-pack 25
-req transport-belt 357.1
+iron-gear-wheel,2407.7
+req,automation-science-pack,714.3
+req,engine-unit,597
+req,inserter,714.3
+req,space-science-pack,25
+req,transport-belt,357.1
 end
-battery 840.1
-req accumulator 500
-req flying-robot-frame 340.1
+battery,840.1
+req,accumulator,500
+req,flying-robot-frame,340.1
 end
-accumulator 100
-req space-science-pack 100
+accumulator,100
+req,space-science-pack,100
 end
-steel-plate 9760.2
-req electric-furnace 2381
-req engine-unit 597
-req flying-robot-frame 170.1
-req low-density-structure 2183.7
-req piercing-rounds-magazine 357.1
-req rail 3571.4
-req solar-panel 500
+steel-plate,9760.2
+req,electric-furnace,2381
+req,engine-unit,597
+req,flying-robot-frame,170.1
+req,low-density-structure,2183.7
+req,piercing-rounds-magazine,357.1
+req,rail,3571.4
+req,solar-panel,500
 end
-solar-panel 100
-req space-science-pack 100
+solar-panel,100
+req,space-science-pack,100
 end
-low-density-structure 1528.6
-req space-science-pack 814.3
-req utility-science-pack 714.3
+low-density-structure,1528.6
+req,space-science-pack,814.3
+req,utility-science-pack,714.3
 end
-speed-module-1 510.2
-req rocket-control-unit 510.2
-space-science-pack 1000
-req research 1000
+speed-module-1,510.2
+req,rocket-control-unit,510.2
 end
-lubricant 1822.2
-req electric-engine-unit 1822.2
+space-science-pack,1000
+req,research,1000
 end
-engine-unit 835.8
-req chemical-science-pack 714.3
-req electric-engine-unit 121.5
+lubricant,1822.2
+req,electric-engine-unit,1822.2
 end
-electric-engine-unit 170.1
-req flying-robot-frame 170.1
+engine-unit,835.8
+req,chemical-science-pack,714.3
+req,electric-engine-unit,121.5
 end
-flying-robot-frame 238.1
-req utility-science-pack 238.1
+electric-engine-unit,170.1
+req,flying-robot-frame,170.1
 end
-stone 13492.1
-req rail 3571.4
-req stone-brick 9920.6
+flying-robot-frame,238.1
+req,utility-science-pack,238.1
 end
-rail 7142.9
-req production-science-pack 7142.9
+stone,13492.1
+req,rail,3571.4
+req,stone-brick,9920.6
 end
-productivity-module-1 238.1
-req production-science-pack 238.1
+rail,7142.9
+req,production-science-pack,7142.9
 end
-stone-brick 5952.4
-req electric-furnace 2381
-req stone-wall 3571.4
+productivity-module-1,238.1
+req,production-science-pack,238.1
 end
-electric-furnace 238.1
-req production-science-pack 238.1
+stone-brick,5952.4
+req,electric-furnace,2381
+req,stone-wall,3571.4
 end
-production-science-pack 1000
-req research 1000
+electric-furnace,238.1
+req,production-science-pack,238.1
 end
-chemical-science-pack 1000
-req research 1000
+production-science-pack,1000
+req,research,1000
 end
-stone-wall 714.3
-req military-science-pack 714.3
+chemical-science-pack,1000
+req,research,1000
 end
-grenade 357.1
-req military-science-pack 357.1
+stone-wall,714.3
+req,military-science-pack,714.3
 end
-piercing-rounds-magazine 357.1
-req military-science-pack 357.1
+grenade,357.1
+req,military-science-pack,357.1
 end
-military-science-pack 1000
-req research 1000
+piercing-rounds-magazine,357.1
+req,military-science-pack,357.1
 end
-transport-belt 714.3
-req logistic-science-pack 714.3
+military-science-pack,1000
+req,research,1000
 end
-inserter 714.3
-req logistic-science-pack 714.3
+transport-belt,714.3
+req,logistic-science-pack,714.3
 end
-logistic-science-pack 1000
-req research 1000
+inserter,714.3
+req,logistic-science-pack,714.3
 end
-automation-science-pack 1000
-req research 1000
+logistic-science-pack,1000
+req,research,1000
+end
+automation-science-pack,1000
+req,research,1000
 end

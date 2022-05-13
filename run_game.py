@@ -9,4 +9,5 @@ factory = factory.Factory(1000, base_game.item_list)
 
 factory.loadFactoryRecipeList('data/recipe_list.csv')
 factory.importBlockTemplates('data/factory_block_templates.csv')
-factory.printBlockTemplates()
+factory.load1kspsRequirements('data/factory_req_1ksps.csv')
+factory.print1kspsRequirements()
