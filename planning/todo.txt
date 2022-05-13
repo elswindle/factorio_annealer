@@ -7,10 +7,10 @@ ____ - Make factory drawer
 ____ - Initialize RouteGroups and assign to FactoryCellIOs
 ____ - Populate RouteGroups
 ____ - Create Annealer
+____ - Create cell swap functionality
+____ - Test temperature values
+____ - Make cost adjustments
+____ - Determine best conditional negative acceptance
+____ - Test single partition results on smaller factory (i.e. just red+green science)
 ____ - Setup Partitions
-____ - 
-____ - 
-____ - 
-____ - 
-____ - 
-____ - 
+____ - Test multiple partition results (i.e. red+green+blue science partitions)

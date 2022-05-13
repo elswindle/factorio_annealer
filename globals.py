@@ -6,6 +6,7 @@ LEFT = 2
 RIGHT = 3
 INPUT = 0
 OUTPUT = 1
+IS_RESOURCE = -1
 
 class Location:
     def __init__(self, x, y):

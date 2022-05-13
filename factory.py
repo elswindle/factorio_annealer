@@ -86,7 +86,7 @@ class Factory:
             producer = self.item_list[row[0]]
             self.factory_reqs[producer] = float(row[1])
             # Check if breakdown has dictionary for producer
-            if(~(producer in self.reqs_breakdown)):
+            if(self.reqs_breakdown.get(producer) is None):
                 self.reqs_breakdown[producer] = {}
 
             # Iterate on requesters

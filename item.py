@@ -1,3 +1,6 @@
+from globals import IS_RESOURCE
+
+
 class Item:
     def __init__(self, row):
         self.name = row[0]
@@ -17,6 +20,8 @@ class Item:
         self.routes_to = {}
         self.routes_from = {}
 
+        self.recipe = IS_RESOURCE
+
     def __str__(self):
         item_str = self.name + ", stack size=" + str(self.stack_size)
         fluid_str = "is "
@@ -26,6 +31,15 @@ class Item:
         fluid_str += "a fluid"
         item_str += ", " + fluid_str
         return item_str
+
+    # def __eq__(self, comp):
+    #     if(self.name == comp.name):
+    #         return True
+    #     else:
+    #         return False
+
+    # def __ne__(self, comp):
+    #     return not(self == comp)
 
     def printProducers(self):
         print("producers...")
@@ -58,3 +72,6 @@ class Item:
 
     def addRequester(self, cell_io):
         self.is_requester.append(cell_io)
+
+    def addRecipe(self, recipe):
+        self.recipe = recipe

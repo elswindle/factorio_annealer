@@ -17,6 +17,8 @@ class Recipe:
         else:
             self.name = self.item.name
 
+        self.item.recipe = self
+
     def __str__(self):
         recipe_str = self.name + ":\n"
         recipe_str += str(self.craft_time) + " "

@@ -132,6 +132,9 @@ end
 speed-module-1,510.2
 req,rocket-control-unit,510.2
 end
+rocket-control-unit,714.3
+req,space-science-pack,714.3
+end
 space-science-pack,1000
 req,research,1000
 end
@@ -193,5 +196,8 @@ logistic-science-pack,1000
 req,research,1000
 end
 automation-science-pack,1000
+req,research,1000
+end
+utility-science-pack,1000
 req,research,1000
 end
