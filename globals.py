@@ -1,5 +1,3 @@
-import numpy as np
-
 TOP = 0
 BOT = 1
 LEFT = 2

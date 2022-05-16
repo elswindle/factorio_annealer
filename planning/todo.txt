@@ -1,5 +1,5 @@
 To-do
-____ - Determine number of factory blocks needed to meet requirements
+Done - Determine number of factory blocks needed to meet requirements (part of partitions)
 ____ - Create FactoryCells and FactoryCellIOs needed for factory
 ____ - Calculate factory size required
 ____ - Populate base factory locations
@@ -12,5 +12,5 @@ ____ - Test temperature values
 ____ - Make cost adjustments
 ____ - Determine best conditional negative acceptance
 ____ - Test single partition results on smaller factory (i.e. just red+green science)
-____ - Setup Partitions
+Done - Setup Partitions
 ____ - Test multiple partition results (i.e. red+green+blue science partitions)

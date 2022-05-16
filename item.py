@@ -1,6 +1,5 @@
 from globals import IS_RESOURCE
 
-
 class Item:
     def __init__(self, row):
         self.name = row[0]
@@ -31,6 +30,9 @@ class Item:
         fluid_str += "a fluid"
         item_str += ", " + fluid_str
         return item_str
+
+    def __repr__(self):
+        return self.name + " item"
 
     # def __eq__(self, comp):
     #     if(self.name == comp.name):

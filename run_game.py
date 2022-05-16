@@ -14,5 +14,6 @@ base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 
 part = partition.Partition(base_game.item_list['research'])
 part.calculateFactoryBlockRequirements(base_factory)
+part.calculateFactoryBlockNumbers(base_factory)
 
 print('done')

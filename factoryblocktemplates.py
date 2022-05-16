@@ -64,14 +64,17 @@ class FactoryBlockTemplate:
                 self.pcells.append(location)
 
         self.outputs.append(IOTemplate(location, placement, OUTPUT, item, rate))
+
+    def getSize(self):
+        return len(self.pcells)
     
 class IOTemplate:
     def __init__(self, location, placement, direction, item, rate=0):
-        self.location = location
-        self.placement = placement
-        self.direction = direction
-        self.item = item
-        self.rate = rate
+        self.location = location            # (x,y) offset
+        self.placement = placement          # TOP/BOT
+        self.direction = direction          # INPUT/OUTPUT
+        self.item = item                    # Item
+        self.rate = rate                    # Output rate (0 for inputs)
 
     def __str__(self):
         ostr = self.item.name

@@ -30,3 +30,6 @@ class Recipe:
             recipe_str += output.name + " "
 
         return recipe_str
+
+    def __repr__(self):
+        return self.name + " recipe"

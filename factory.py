@@ -1,5 +1,3 @@
-import numpy as np
-from sklearn.metrics import top_k_accuracy_score
 import factorycellio
 import factoryblocktemplates
 import recipe
@@ -16,8 +14,9 @@ class Factory:
         self.reqs_breakdown = {}                # Item : Recipe : rate
         self.partitions = {}                    # Item : Partition
         self.block_types = {}                   # Recipe : FactoryBlockTemplate
-        self.recipe_list = {}                   # Item : Recipe
+        self.recipe_list = {}                   # String : Recipe
         self.item_list = item_list              # String : Item
+        self.block_num_buffer = 0.1
 
     def loadFactoryRecipeList(self, path):
         recipe_csv = csv.reader(open(path), delimiter=',')
@@ -64,7 +63,7 @@ class Factory:
             # Retrieve recipe from list
             recipe = self.recipe_list[row[0]]
             new_block = factoryblocktemplates.FactoryBlockTemplate(recipe, block_csv, self.item_list)
-            self.block_types[recipe.name] = new_block
+            self.block_types[recipe] = new_block
 
             # Get next name, if EOF, end loop
             row = next(block_csv)
@@ -123,10 +122,12 @@ class Factory:
             self.partitions[top_item] = partition.Partition(top_item)
 
     def calculateFactoryBlockRequirements(self):
-        # This will move to partitions
-        # for partition in self.partitions:
-        #   partition.calculateFactoryBlockRequirements(self)
-        self.x = 69
+        for partition in self.partitions:
+            partition.calculateFactoryBlockRequirements(self)
+
+    def calculateFactoryBlockNumbers(self):
+        for partition in self.partitions:
+            partition.calculateFactoryBlockNumbers(self)
 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():
