@@ -69,3 +69,10 @@ def calculateDistanceCost(a : Location, b : Location, bp):
         rights -= 4
 
     return rights*RIGHT_COST + straights*STRAIGHT_COST
+
+# Simple multiplcation is easiest algorithm
+# Alternatives could include an exponential for distance
+#   where lower distances are slightly more expensive
+#   due to acceleration
+def calculateTrafficCost(dist, tpm):
+    return dist * tpm
