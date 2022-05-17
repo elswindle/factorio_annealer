@@ -6,6 +6,9 @@ INPUT = 0
 OUTPUT = 1
 IS_RESOURCE = -1
 
+RIGHT_COST = 0.25
+STRAIGHT_COST = 1
+
 class Location:
     def __init__(self, x, y):
         self.x = x
@@ -46,3 +49,23 @@ class Dimension:
     def setDimensions(self, x, y):
         self.x = x
         self.y = y
+
+def calculateDistanceCost(a : Location, b : Location, bp):
+    ax = a.x
+    ay = a.y
+    bx = b.x
+    by = b.y
+
+    # Baseline number of rights is 4
+    rights = 4
+    straights = abs(bx-ax) + abs(by-ay)
+    if(ax > bx): # if destination is to the left
+        if(bp == BOT):
+            rights += 2
+    elif(ax < bx or (ax == bx and ay > by)): # if destination is to the right or directly below
+        if(bp == BOT):
+            rights -= 2
+    else: # if destination is directly above start
+        rights -= 4
+
+    return rights*RIGHT_COST + straights*STRAIGHT_COST

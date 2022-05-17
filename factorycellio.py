@@ -9,3 +9,7 @@ class FactoryCellIO:
         self.direction = template.direction
         self.placement = template.placement
         self.location = template.location
+        self.route_groups = []
+
+    def addRouteGroup(self, rg):
+        self.route_groups.append(rg)
