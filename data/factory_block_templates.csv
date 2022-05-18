@@ -225,13 +225,13 @@ iron-gear-wheel
 ip,iron-plate,0,0,TOP
 op,iron-gear-wheel,0,0,BOT,3024
 end
-research
+labs
 ip,space-science-pack,0,0,TOP
 ip,utility-science-pack,0,0,TOP
 ip,production-science-pack,0,0,TOP
 ip,logistic-science-pack,0,0,TOP
 ip,automation-science-pack,0,0,TOP
 ip,military-science-pack,0,0,TOP
-op,research,0,0,BOT,75
+op,labs,0,0,BOT,75
 end
 EOF

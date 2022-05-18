@@ -6,6 +6,8 @@ INPUT = 0
 OUTPUT = 1
 IS_RESOURCE = -1
 
+INITIAL_TEMP = 10000
+
 RIGHT_COST = 0.25
 STRAIGHT_COST = 1
 
@@ -45,6 +47,9 @@ class Dimension:
             return True
         else:
             return False
+
+    def __str__(self):
+        return str(self.x) + " x " + str(self.y)
 
     def setDimensions(self, x, y):
         self.x = x

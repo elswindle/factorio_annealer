@@ -12,15 +12,35 @@ class Partition:
         self.factory_scalar = 0
 
     def __repr__(self):
-        return self.top_item.name
+        return self.top_item.name + " is top"
 
     def calculateFactoryBlockRequirements(self, base_factory):
         import factory
         self.factory_scalar = base_factory.factory_scalar
-        self.recurseCalculateFBR(base_factory, self.top_item.recipe, 1)
+        top_recipe = -1
+        for recipe in base_factory.recipe_list.values():
+            for input in recipe.inputs:
+                if(self.top_item == input):
+                    top_recipe = recipe
+                    break
+
+        # Start recursion on recipe that requests top item
+        # This will result in the top item of a partition to be counted
+        # twice, once in the partition and the partition that contains
+        # the requesting recipe
+        # For example, logisitic-science-pack factory block requirements
+        # (for the item itself, not dependencies) will be both in its
+        # own partition but in the research partition as well
+        self.recurseCalculateFBR(base_factory, top_recipe, 1, True)
         
-    def recurseCalculateFBR(self, factory, recipe : recipe.Recipe, share):
+    def recurseCalculateFBR(self, factory, recipe : recipe.Recipe, share, is_top=False):
         for producer in recipe.inputs:
+            # Special treatment for top item's requester
+            # Don't process anything from top's requester if it isn't top
+            if(is_top):
+                if(producer != self.top_item):
+                    continue
+
             # Get the total amount of the producer and
             # the amount of the producer going to the recipe
             # i.e. producer=gear, only 10% gear go to inserters
@@ -50,10 +70,11 @@ class Partition:
 
             # Recurse for the producer's recipe
             found = False
-            # Check if producer is the top of another partition
+            # Check if producer is the top of another partition, not current
             for part in factory.partitions.values():
                 if(part.top_item == producer):
-                    found = True
+                    if(not self.top_item == part.top_item):
+                        found = True
             if(producer.recipe != IS_RESOURCE and found == False):
                 self.recurseCalculateFBR(factory, producer.recipe, rate/total_rate)
 
@@ -65,6 +86,24 @@ class Partition:
 
                 factory_block_rate = float(factory_block_rate)
                 num_blocks = math.ceil(req_rate/factory_block_rate + factory.block_num_buffer)
-                print(producer.name + " needs " + str(num_blocks) + " blocks")
-                print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
+                # print(producer.name + " needs " + str(num_blocks) + " blocks")
+                # print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
                 self.factory_blocks[producer.recipe] = num_blocks
+
+    def getFactoryBlockAmount(self, base_factory):
+        blocks = 0
+        for block in self.factory_blocks.keys():
+            # Search for other partitions top item and don't include it
+            found = False
+            for part in base_factory.partitions.values():
+                # Only include top item blocks of current partition
+                if(part != self):
+                    # Check if block item and partition top item are equal
+                    # if(itemEquality(part.top_item, block.item)):
+                    if(part.top_item == block.item):
+                        found = True
+
+            if(not found):
+                blocks += self.factory_blocks[block]
+
+        return blocks

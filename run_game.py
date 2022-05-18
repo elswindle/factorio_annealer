@@ -1,3 +1,4 @@
+import annealer
 import game
 import factory
 import partition
@@ -12,8 +13,25 @@ base_factory.loadFactoryRecipeList('data/recipe_list.csv')
 base_factory.importBlockTemplates('data/factory_block_templates.csv')
 base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 
-part = partition.Partition(base_game.item_list['research'])
-part.calculateFactoryBlockRequirements(base_factory)
-part.calculateFactoryBlockNumbers(base_factory)
+part = partition.Partition(base_game.item_list['labs'])
+base_factory.partitions[base_game.item_list['labs']] = part
+
+part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
+base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
+
+part2 = partition.Partition(base_game.item_list['space-science-pack'])
+base_factory.partitions[base_game.item_list['space-science-pack']] = part2
+
+
+base_factory.calculateFactoryBlockRequirements()
+base_factory.calculateFactoryBlockNumbers()
+
+factory_annealer = annealer.Annealer(base_factory)
+factory_annealer.initializeRouteGroups()
+
+print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
+
+base_factory.calculateFactoryDimensions(.1, 0)
+print(base_factory.dimensions)
 
 print('done')

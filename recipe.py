@@ -1,7 +1,7 @@
 import item
 
 class Recipe:
-    def __init__(self, ct, ips, ops):
+    def __init__(self, ct, ips, ops, init_item):
         self.craft_time = ct
         self.inputs = ips                   # array of Items
         self.outputs = ops                  # array of Items
@@ -17,7 +17,8 @@ class Recipe:
         else:
             self.name = self.item.name
 
-        self.item.recipe = self
+        if(init_item):
+            self.item.recipe = self
 
     def __str__(self):
         recipe_str = self.name + ":\n"

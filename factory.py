@@ -4,6 +4,8 @@ import recipe
 import item
 import partition
 from globals import *
+from math import sqrt
+from math import ceil
 import csv as csv
 
 class Factory:
@@ -17,6 +19,9 @@ class Factory:
         self.recipe_list = {}                   # String : Recipe
         self.item_list = item_list              # String : Item
         self.block_num_buffer = 0.1
+        self.depot_ratio = 1/3
+        self.dimensions = -1
+        self.factory = -1
 
     def loadFactoryRecipeList(self, path):
         recipe_csv = csv.reader(open(path), delimiter=',')
@@ -47,7 +52,7 @@ class Factory:
                 op_item = self.item_list[op]
                 outputs.append(op_item)
 
-            new_recipe = recipe.Recipe(craft_time, inputs, outputs)
+            new_recipe = recipe.Recipe(craft_time, inputs, outputs, True)
             self.recipe_list[new_recipe.name] = new_recipe
 
     def importBlockTemplates(self, path):
@@ -99,21 +104,6 @@ class Factory:
 
                 row = next(csv_req)
 
-        # Sanity check
-        # for item in self.factory_reqs.keys():
-        #     total = self.factory_reqs[item]
-        #     sum = 0
-        #     for requester in self.reqs_breakdown[item].values():
-        #         sum += requester
-
-        #     # Check if summations are within in 2% of total
-        #     if(total < sum*1.02 and total > sum*0.98):
-        #         print("requirement breakdown acceptable for " + item.name)
-        #     else:
-        #         print("revisit " + item.name + " and find error")
-        #         print("total: " + str(self.factory_reqs[item]))
-        #         print("sum = " + str(sum))
-
     def createPartitions(self, path):
         part_csv = csv.reader(open(path, newline=''), delimiter=',')
 
@@ -121,13 +111,36 @@ class Factory:
             top_item = self.item_list[top_item_str]
             self.partitions[top_item] = partition.Partition(top_item)
 
+        self.calculateFactoryBlockRequirements()
+        self.calculateFactoryBlockNumbers()
+
+    # Only call this function after all partitions have been created
     def calculateFactoryBlockRequirements(self):
-        for partition in self.partitions:
+        for partition in self.partitions.values():
             partition.calculateFactoryBlockRequirements(self)
 
     def calculateFactoryBlockNumbers(self):
-        for partition in self.partitions:
+        for partition in self.partitions.values():
             partition.calculateFactoryBlockNumbers(self)
+
+    def getFactoryBlockAmount(self):
+        blocks = 0
+        for partition in self.partitions.values():
+            blocks += partition.getFactoryBlockAmount(self)
+
+        return blocks
+
+    def calculateFactoryDimensions(self, aspect_ratio=1, ex_area=0):
+        num_blocks = self.getFactoryBlockAmount()
+        num_blocks *= 1+self.depot_ratio
+        num_blocks += ex_area           # manually give it more area
+
+        y = ceil(sqrt(num_blocks/aspect_ratio))
+        x = ceil(num_blocks/y)
+
+        self.dimensions = Dimension(x, y)
+        # initialize factory, additional row+col on edges added for pins
+        self.factory = [ [-1] * (x+2) for i in range(y+2)]
 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():
