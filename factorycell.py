@@ -6,14 +6,15 @@ from globals import *
 
 class FactoryCell:
     def __init__(self, template, part_top):
-        self.recipe = template.recipe
+        self.recipe = -1
         self.inputs = []
         self.outputs = []
         self.pcells = []
         self.route_groups = []
         self.is_depot = False
 
-        if(template != -1):
+        if(template != IS_RESOURCE):
+            self.recipe = template.recipe
             self.part_top = part_top
 
             for iotemp in template.inputs:
@@ -24,6 +25,9 @@ class FactoryCell:
 
             for loc in template.pcells:
                 self.pcells.append(loc)
+
+    def setToDepot(self):
+        if(len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1):
+            print("attempting to set non-empty cell to Depot")
         else:
-            self.pcells.append(Location(0,0))
             self.is_depot = True

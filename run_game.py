@@ -1,4 +1,5 @@
 import annealer
+from factorydrawer import FactoryDrawer
 import game
 import factory
 import partition
@@ -31,7 +32,10 @@ factory_annealer.initializeRouteGroups()
 
 print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
-base_factory.calculateFactoryDimensions(.1, 0)
+base_factory.calculateFactoryDimensions(1, 0)
 print(base_factory.dimensions)
+
+fd = FactoryDrawer(base_factory)
+fd.drawFactory()
 
 print('done')

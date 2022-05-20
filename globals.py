@@ -11,6 +11,10 @@ INITIAL_TEMP = 10000
 RIGHT_COST = 0.25
 STRAIGHT_COST = 1
 
+# Drawer related
+BLOCKX = 20
+BLOCKY = 20
+
 class Location:
     def __init__(self, x, y):
         self.x = x
