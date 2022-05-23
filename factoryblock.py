@@ -37,18 +37,18 @@ class FactoryBlock:
             self.dimension = Dimension(maxx-minx+1,maxy-miny+1)
 
             # Build arrays of i/ps and o/ps
-            ips = []*len(template.pcells)
-            ops = []*len(template.pcells)
+            ips = [ [] for _ in range(len(template.pcells)) ]
+            ops = [ [] for _ in range(len(template.pcells)) ]
 
             for iotemp in template.inputs:
                 ioloc = iotemp.location
                 # find template location
-                idx = 0
+                idx = -1
                 for pcell in range(len(template.pcells)):
                     if(template.pcells[pcell] == ioloc):
                         idx = pcell
                 
-                ips.append(iotemp)
+                ips[idx].append(iotemp)
 
             for iotemp in template.outputs:
                 ioloc = iotemp.location
@@ -58,10 +58,10 @@ class FactoryBlock:
                     if(template.pcells[pcell] == ioloc):
                         idx = pcell
                 
-                ops.append(iotemp)
+                ops[idx].append(iotemp)
 
-            for offset in template.pcells:
-                self.fcells.append(factorycell.FactoryCell(template, part_top, ips, ops, offset))
+            for idx in range(len(template.pcells)):
+                self.fcells.append(factorycell.FactoryCell(template, part_top, ips[idx], ops[idx], template.pcells[idx]))
 
     def __repr__(self):
         return self.recipe.name + " block"

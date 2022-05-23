@@ -137,13 +137,13 @@ class Factory:
         num_blocks += ex_area           # manually give it more area
         num_blocks *= 2                 # Depots will be initially place every other row
 
-        y = ceil(sqrt(num_blocks/aspect_ratio))
-        x = ceil(num_blocks/y)
+        y = ceil(sqrt(num_blocks/aspect_ratio))+1
+        x = ceil(num_blocks/y)+1
         
         # This is here to make sure there are an odd number of rows
         # so that top and bottom rows will be factory blocks, not
         # depots
-        if(y % 2 == 1):
+        if(y % 2 == 0):
             y += 1
 
         self.dimensions = Dimension(x, y)
@@ -163,7 +163,8 @@ class Factory:
                 anchor = Location(block.num_left, block.num_below)
                 if(block.dimension != Dimension(1,1)):                    
                     # Check if block will fit in current location
-                    if((self.dimensions.x - block.dimension.x - self.placement_ptr.x + 1) <= 0):
+                    space_left = self.dimensions.x - block.dimension.x - self.placement_ptr.x + 1
+                    if(space_left <= 0):
                         # place depots instead
                         while(self.placement_ptr.x <= self.dimensions.x):
                             x = self.placement_ptr.x
@@ -175,6 +176,18 @@ class Factory:
                         # Set pointer to next row
                         self.placement_ptr.y += 1
                         self.placement_ptr.x = 1
+
+                        if(self.placement_ptr.y % 2 == 0):
+                            # Place row of depots
+                            for i in range(self.dimensions.x):
+                                x = self.placement_ptr.x
+                                y = self.placement_ptr.y
+
+                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                                self.placement_ptr.x += 1
+
+                            self.placement_ptr.y += 1
+                            self.placement_ptr.x = 1
 
                 block.location = anchor + self.placement_ptr
                 for fcell in block.fcells:

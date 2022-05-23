@@ -63,9 +63,13 @@ class FactoryBlockTemplate:
         if(len(self.pcells) == 0):
             self.pcells.append(location)
         else:
+            found = False
             for cell in self.pcells:
-                if(cell != location):
-                    self.pcells.append(location)
+                if(cell == location):
+                    found = True
+
+            if(not found):
+                self.pcells.append(location)
 
         self.inputs.append(IOTemplate(location, placement, INPUT, item))
 
@@ -73,9 +77,13 @@ class FactoryBlockTemplate:
         if(len(self.pcells) == 0):
             self.pcells.append(location)
         else:
+            found = False
             for cell in self.pcells:
-                if(cell != location):
-                    self.pcells.append(location)
+                if(cell == location):
+                    found = True
+                
+            if(not found):
+                self.pcells.append(location)
 
         self.outputs.append(IOTemplate(location, placement, OUTPUT, item, rate))
 

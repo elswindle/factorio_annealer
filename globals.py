@@ -31,12 +31,14 @@ class Location:
        return not self == comp
 
     def __add__(self, add):
+        return Location(self.x+add.x, self.y+add.y)
         self.x += add.x
         self.y += add.y
 
         return self
 
     def __sub__(self, sub):
+        return Location(self.x-sub.x, self.y-sub.y)
         self.x -= sub.x
         self.y -= sub.y
 
