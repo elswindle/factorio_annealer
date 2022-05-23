@@ -5,6 +5,11 @@ import recipe
 
 class FactoryBlockTemplate:
     def __init__(self, recipe : recipe.Recipe, csv_reader : csv.reader, item_list):
+        # Special case for depots
+        if(recipe.name == 'depot'):
+            self.recipe = recipe
+            return
+
         self.recipe = recipe
         self.inputs = []                    # IOTemplates
         self.outputs = []                   # IOTemplates
@@ -20,7 +25,7 @@ class FactoryBlockTemplate:
         # Iterate until 'end' comes, this means the block template is over
         while(row[0] != 'end'):
             item = item_list[row[1]]       # Retrieve item object
-            loc = Location(row[2], row[3])      # Build location
+            loc = Location(int(row[2]), int(row[3]))      # Build location
             if(row[4] == 'TOP'):                # Get IO placement (TOP/BOT)
                 pm = TOP
             elif(row[4] == 'BOT'):
@@ -51,17 +56,26 @@ class FactoryBlockTemplate:
 
         return ostr
 
+    def __repr__(self):
+        return "template " + self.recipe.name
+
     def addInput(self, item, location, placement):
-        for cell in self.pcells:
-            if(cell != location):
-                self.pcells.append(location)
+        if(len(self.pcells) == 0):
+            self.pcells.append(location)
+        else:
+            for cell in self.pcells:
+                if(cell != location):
+                    self.pcells.append(location)
 
         self.inputs.append(IOTemplate(location, placement, INPUT, item))
 
     def addOutput(self, item, location, placement, rate):
-        for cell in self.pcells:
-            if(cell != location):
-                self.pcells.append(location)
+        if(len(self.pcells) == 0):
+            self.pcells.append(location)
+        else:
+            for cell in self.pcells:
+                if(cell != location):
+                    self.pcells.append(location)
 
         self.outputs.append(IOTemplate(location, placement, OUTPUT, item, rate))
 

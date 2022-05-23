@@ -1,15 +1,17 @@
 import item
 import recipe
 import math
+import factoryblock
 from globals import *
 
 class Partition:
     def __init__(self, item):
-        self.factory_blocks = {}        # Recipe : int
-        self.part_reqs = {}             # Item : rate
-        self.reqs_breakdown = {}        # Item : Recipe : rate
+        self.num_factory_blocks = {}        # Recipe : int
+        self.part_reqs = {}                 # Item : rate
+        self.reqs_breakdown = {}            # Item : Recipe : rate
         self.top_item = item
         self.factory_scalar = 0
+        self.factory_blocks = []            # FactoryBlock
 
     def __repr__(self):
         return self.top_item.name + " is top"
@@ -82,17 +84,17 @@ class Partition:
         for producer in self.part_reqs.keys():
             if(producer.recipe != IS_RESOURCE):
                 req_rate = self.part_reqs[producer]
-                factory_block_rate = factory.block_types[producer.recipe].outputs[0].rate
+                factory_block_rate = factory.block_templates[producer.recipe].outputs[0].rate
 
                 factory_block_rate = float(factory_block_rate)
                 num_blocks = math.ceil(req_rate/factory_block_rate + factory.block_num_buffer)
                 # print(producer.name + " needs " + str(num_blocks) + " blocks")
                 # print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
-                self.factory_blocks[producer.recipe] = num_blocks
+                self.num_factory_blocks[producer.recipe] = num_blocks
 
     def getFactoryBlockAmount(self, base_factory):
         blocks = 0
-        for block in self.factory_blocks.keys():
+        for block in self.num_factory_blocks.keys():
             # Search for other partitions top item and don't include it
             found = False
             for part in base_factory.partitions.values():
@@ -104,6 +106,22 @@ class Partition:
                         found = True
 
             if(not found):
-                blocks += self.factory_blocks[block]
+                blocks += self.num_factory_blocks[block]
 
         return blocks
+
+    def populateFactoryBlocks(self, factory):
+        for recipe in self.num_factory_blocks.keys():
+            template = factory.block_templates[recipe]
+            # Check if recipe is a top level item of partition
+            found = False
+            for part in factory.partitions.values():
+                if(part != self and part.top_item == recipe.item):
+                    found = True
+            
+            if(not found):
+                for i in range(self.num_factory_blocks[recipe]):
+                    new_block = factoryblock.FactoryBlock(template, self.top_item)
+                    self.factory_blocks.append(new_block)
+            else:
+                print(recipe.name + " is top item of a partition, skipping")

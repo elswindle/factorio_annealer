@@ -5,6 +5,7 @@ RIGHT = 3
 INPUT = 0
 OUTPUT = 1
 IS_RESOURCE = -1
+EMPTY = -1
 
 INITIAL_TEMP = 10000
 
@@ -27,15 +28,25 @@ class Location:
             return False
 
     def __ne__(self, comp):
-        ret = False
-        if(isinstance(comp, Location)):
-            if(self.x != comp.x or self.y != comp.y):
-                ret = True
+       return not self == comp
 
-        return ret
+    def __add__(self, add):
+        self.x += add.x
+        self.y += add.y
+
+        return self
+
+    def __sub__(self, sub):
+        self.x -= sub.x
+        self.y -= sub.y
+
+        return self
     
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
+
+    def __repr__(self):
+        return str(self)
 
     def setLocation(self, x, y):
         self.x = x
@@ -54,6 +65,9 @@ class Dimension:
 
     def __str__(self):
         return str(self.x) + " x " + str(self.y)
+
+    def __repr__(self):
+        return str(self)
 
     def setDimensions(self, x, y):
         self.x = x

@@ -31,17 +31,18 @@ class FactoryDrawer:
         # Add cell icons
         for row in range(rows):
             for col in range(cols):
-                cell = self.factory.factory[row][col]
-                if(cell.recipe != -1):
-                    self.plotIcon(row,col,cell.recipe,ax)
+                cell = self.factory.factory[col][row]
+                if(cell != EMPTY):
+                    if(cell.recipe != -1):
+                        self.plotIcon(row,col,cell.recipe,ax)
 
-                    ips = cell.inputs
-                    ops = cell.outputs
-                    for ip in range(len(ips)):
-                        self.plotIOIcon(row, col, ips[ip].item, ips[ip].placement, ip, len(ips), ax)
+                        # ips = cell.inputs
+                        # ops = cell.outputs
+                        # for ip in range(len(ips)):
+                        #     self.plotIOIcon(row, col, ips[ip].item, ips[ip].placement, ip, len(ips), ax)
 
-                    for op in range(len(ops)):
-                        self.plotIOIcon(row, col, ops[op].item, ops[op].placement, op, len(ops), ax)
+                        # for op in range(len(ops)):
+                        #     self.plotIOIcon(row, col, ops[op].item, ops[op].placement, op, len(ops), ax)
 
         # Add cell IO icons (optional)
 
@@ -71,7 +72,7 @@ class FactoryDrawer:
         elif(placement == BOT):
             yoffset -= 3*BLOCKY/8
 
-        imagebox = ob.OffsetImage(icon, zoom=0.33)
+        imagebox = ob.OffsetImage(icon, zoom=0.25)
         ab = ob.AnnotationBbox(imagebox, (xoffset, yoffset), frameon=False)
 
         ax.add_artist(ab)

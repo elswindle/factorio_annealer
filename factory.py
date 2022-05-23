@@ -1,5 +1,6 @@
 import factorycellio
 import factoryblocktemplates
+import factorycell
 import recipe
 import item
 import partition
@@ -15,13 +16,14 @@ class Factory:
         self.factory_reqs = {}                  # Item : rate
         self.reqs_breakdown = {}                # Item : Recipe : rate
         self.partitions = {}                    # Item : Partition
-        self.block_types = {}                   # Recipe : FactoryBlockTemplate
+        self.block_templates = {}                   # Recipe : FactoryBlockTemplate
         self.recipe_list = {}                   # String : Recipe
         self.item_list = item_list              # String : Item
         self.block_num_buffer = 0.1
-        self.depot_ratio = 1/3
+        self.depot_ratio = 1/4
         self.dimensions = -1
-        self.factory = -1
+        self.factory = -1                       # FactoryCells[x][y]
+        self.placement_ptr = Location(1,1)      # keeps track of location to place next block
 
     def loadFactoryRecipeList(self, path):
         recipe_csv = csv.reader(open(path), delimiter=',')
@@ -68,7 +70,7 @@ class Factory:
             # Retrieve recipe from list
             recipe = self.recipe_list[row[0]]
             new_block = factoryblocktemplates.FactoryBlockTemplate(recipe, block_csv, self.item_list)
-            self.block_types[recipe] = new_block
+            self.block_templates[recipe] = new_block
 
             # Get next name, if EOF, end loop
             row = next(block_csv)
@@ -132,22 +134,103 @@ class Factory:
 
     def calculateFactoryDimensions(self, aspect_ratio=1, ex_area=0):
         num_blocks = self.getFactoryBlockAmount()
-        num_blocks *= 1+self.depot_ratio
         num_blocks += ex_area           # manually give it more area
+        num_blocks *= 2                 # Depots will be initially place every other row
 
         y = ceil(sqrt(num_blocks/aspect_ratio))
         x = ceil(num_blocks/y)
+        
+        # This is here to make sure there are an odd number of rows
+        # so that top and bottom rows will be factory blocks, not
+        # depots
+        if(y % 2 == 1):
+            y += 1
 
         self.dimensions = Dimension(x, y)
         # initialize factory, additional row+col on edges added for pins
-        self.factory = [ [-1] * (x+2) for i in range(y+2)]
+        self.factory = [ [-1] * (y+2) for i in range(x+2)]
+
+    def populatePartitions(self):
+        for part in self.partitions.values():
+            part.populateFactoryBlocks(self)
+
+    def initializeBlockPlacement(self):
+        depot = factoryblocktemplates.FactoryBlockTemplate(recipe.Recipe('depot', -1, -1, -1), -1, -1)
+        for part in self.partitions.values():
+            for block in part.factory_blocks:
+                # Make sure block can fit in available location
+                # Check for different sized blocks
+                anchor = Location(block.num_left, block.num_below)
+                if(block.dimension != Dimension(1,1)):                    
+                    # Check if block will fit in current location
+                    if((self.dimensions.x - block.dimension.x - self.placement_ptr.x + 1) <= 0):
+                        # place depots instead
+                        while(self.placement_ptr.x <= self.dimensions.x):
+                            x = self.placement_ptr.x
+                            y = self.placement_ptr.y
+                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, self.placement_ptr, True)
+
+                            self.placement_ptr.x += 1
+
+                        # Set pointer to next row
+                        self.placement_ptr.y += 1
+                        self.placement_ptr.x = 1
+
+                block.location = anchor + self.placement_ptr
+                for fcell in block.fcells:
+                    fcell.location = block.location + fcell.offset
+                    self.factory[fcell.location.x][fcell.location.y] = fcell
+
+                # Update pointer
+                self.placement_ptr.x += block.dimension.x
+                # Check if pointer has reached end of row
+                if(self.placement_ptr.x > self.dimensions.x):
+                    self.placement_ptr.y += 1
+                    self.placement_ptr.x = 1
+
+                    # Initially place depots every other row
+                    # Depots will get pushed out by annealing
+                    if(self.placement_ptr.y % 2 == 0):
+                        # Place row of depots
+                        for i in range(self.dimensions.x):
+                            x = self.placement_ptr.x
+                            y = self.placement_ptr.y
+
+                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                            self.placement_ptr.x += 1
+
+                        self.placement_ptr.y += 1
+                        self.placement_ptr.x = 1
+
+                # Skip already filled spaces
+                while(self.factory[self.placement_ptr.x][self.placement_ptr.y] != EMPTY):
+                    self.placement_ptr.x += 1
+
+                    # Check if pointer has reached end of row
+                    if(self.placement_ptr.x > self.dimensions.x):
+                        self.placement_ptr.y += 1
+                        self.placement_ptr.x = 1
+
+                        # Initially place depots every other row
+                        # Depots will get pushed out by annealing
+                        if(self.placement_ptr.y % 2 == 0):
+                            # Place row of depots
+                            for i in range(self.dimensions.x):
+                                x = self.placement_ptr.x
+                                y = self.placement_ptr.y
+
+                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, self.placement_ptr, True)
+                                self.placement_ptr.x += 1
+
+                            self.placement_ptr.y += 1
+                            self.placement_ptr.x = 1
 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():
             print(recipe)
 
     def printBlockTemplates(self):
-        for block in self.block_types.values():
+        for block in self.block_templates.values():
             print(block)
 
     def print1kspsRequirements(self):

@@ -2,6 +2,11 @@ import item
 
 class Recipe:
     def __init__(self, ct, ips, ops, init_item):
+        # Special case for depot recipe
+        if(ct == 'depot'):
+            self.name = ct
+            return
+
         self.craft_time = ct
         self.inputs = ips                   # array of Items
         self.outputs = ops                  # array of Items
