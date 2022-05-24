@@ -31,6 +31,8 @@ part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
 base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
 part2 = partition.Partition(base_game.item_list['space-science-pack'])
 base_factory.partitions[base_game.item_list['space-science-pack']] = part2
+part2 = partition.Partition(base_game.item_list['rocket-control-unit'])
+base_factory.partitions[base_game.item_list['rocket-control-unit']] = part2
 
 
 base_factory.calculateFactoryBlockRequirements()
