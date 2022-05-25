@@ -16,7 +16,7 @@ class Factory:
         self.factory_scalar = rate / 1000       # Amount to scale requirements by
         self.factory_reqs = {}                  # Item : rate
         self.pin_reqs = {}                      # Item (Resource) : num pins
-        self.pin_cells = {}                     # Item (Resource) : FactoryBlock
+        self.pin_blocks = []                    # FactoryBlock
         self.reqs_breakdown = {}                # Item : Recipe : rate
         self.partitions = {}                    # Item : Partition
         self.block_templates = {}               # Recipe : FactoryBlockTemplate
@@ -235,11 +235,20 @@ class Factory:
                                 x = self.placement_ptr.x
                                 y = self.placement_ptr.y
 
-                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, self.placement_ptr, True)
+                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
                                 self.placement_ptr.x += 1
 
                             self.placement_ptr.y += 1
                             self.placement_ptr.x = 1
+
+        # Fill the rest of row with depots
+        if(self.placement_ptr.x != self.dimensions.x):
+            while(self.placement_ptr.x <= self.dimensions.x):
+                x = self.placement_ptr.x
+                y = self.placement_ptr.y
+
+                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                self.placement_ptr.x += 1
 
     def calculatePinRequirements(self):
         for item in self.factory_reqs.keys():
@@ -249,20 +258,21 @@ class Factory:
                 # Since handled at factory level
                 num_pins = 0
                 for part in self.partitions.values():
-                    # Get the resource requirement for the partition
-                    part_resource_rate = part.factory_reqs[item]
-                    # Determine the needed pins for that requirement
-                    if(item.is_fluid):
-                        num_pins += ceil(part_resource_rate/25000)
-                    else:
-                        num_belts = ceil(part_resource_rate/BLUE_BELT)
-                        belts_per_car = 2
+                    # Get the resource requirement for the partition, if exists
+                    if(not part.part_reqs.get(item) is None):
+                        part_resource_rate = part.part_reqs[item]
+                        # Determine the needed pins for that requirement
+                        if(item.is_fluid):
+                            num_pins += ceil(part_resource_rate/25000)
+                        else:
+                            num_belts = ceil(part_resource_rate/BLUE_BELT)
+                            belts_per_car = 2
 
-                        num_pins += ceil(num_belts/belts_per_car)
+                            num_pins += ceil(num_belts/belts_per_car)
 
-                        # Don't remember what this was for...
-                        # if(num_pins % 2 == 1):
-                        #     num_pins += 1
+                            # Don't remember what this was for...
+                            # if(num_pins % 2 == 1):
+                            #     num_pins += 1
 
                 num_8car_trains = ceil(num_pins/8)
 
@@ -274,10 +284,47 @@ class Factory:
 
     def placePins(self):
         # Start in top left
+        ptr_loc = TOP
         pin_ptr = Location(PIN_CORNER_PADDING,self.dimensions.y+1)
-        for item in self.pin_reqs.keys():
-            for num_pins in self.pin_reqs[item]:
-                print('hi')
+        for block in self.pin_blocks:
+            x = pin_ptr.x
+            y = pin_ptr.y
+            if(self.factory[x][y] == EMPTY):
+                block.location = Location(x, y)
+                for fcell in block.fcells:
+                    fcell.location = block.location + fcell.offset
+                    self.factory[fcell.location.x][fcell.location.y] = fcell
+
+                    if(ptr_loc == BOT or ptr_loc == RIGHT):
+                        fcell.outputs[0].placement = BOT
+
+                # Update pointer
+                if(ptr_loc == TOP):
+                    pin_ptr.x += 1
+                    if(pin_ptr.x > self.dimensions.x+1-PIN_CORNER_PADDING):
+                        pin_ptr.y = self.dimensions.y+1-PIN_CORNER_PADDING
+                        pin_ptr.x = self.dimensions.x+1
+                        ptr_loc = RIGHT
+                elif(ptr_loc == RIGHT):
+                    pin_ptr.y -= 1
+                    if(pin_ptr.y < PIN_CORNER_PADDING):
+                        pin_ptr.y = 0
+                        pin_ptr.x = self.dimensions.x+1-PIN_CORNER_PADDING
+                        ptr_loc = BOT
+                elif(ptr_loc == BOT):
+                    pin_ptr.x -= 1
+                    if(pin_ptr.x < PIN_CORNER_PADDING):
+                        pin_ptr.x = 0
+                        pin_ptr.y = PIN_CORNER_PADDING
+                        ptr_loc = LEFT
+                elif(ptr_loc == LEFT):
+                    pin_ptr.y += 1
+                    if(pin_ptr.y > self.dimensions.y+1-PIN_CORNER_PADDING):
+                        pin_ptr.x = PIN_CORNER_PADDING
+                        pin_ptr.y = self.dimensions.y+1
+                        ptr_loc = TOP
+            else:
+                print("Too many pins for the factory")
                 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():

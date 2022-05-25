@@ -43,11 +43,13 @@ factory_annealer.initializeRouteGroups()
 
 print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
-base_factory.calculateFactoryDimensions(2, 0)
+base_factory.calculateFactoryDimensions(1, 0)
 print(base_factory.dimensions)
 
 base_factory.populatePartitions()
 base_factory.initializeBlockPlacement()
+base_factory.calculatePinRequirements()
+base_factory.placePins()
 
 fd = FactoryDrawer(base_factory)
 fd.drawFactory()
