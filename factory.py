@@ -1,6 +1,7 @@
 import factorycellio
 import factoryblocktemplates
 import factorycell
+import factoryblock
 import recipe
 import item
 import partition
@@ -14,9 +15,11 @@ class Factory:
         self.science_rate = rate
         self.factory_scalar = rate / 1000       # Amount to scale requirements by
         self.factory_reqs = {}                  # Item : rate
+        self.pin_reqs = {}                      # Item (Resource) : num pins
+        self.pin_cells = {}                     # Item (Resource) : FactoryBlock
         self.reqs_breakdown = {}                # Item : Recipe : rate
         self.partitions = {}                    # Item : Partition
-        self.block_templates = {}                   # Recipe : FactoryBlockTemplate
+        self.block_templates = {}               # Recipe : FactoryBlockTemplate
         self.recipe_list = {}                   # String : Recipe
         self.item_list = item_list              # String : Item
         self.block_num_buffer = 0.1
@@ -238,9 +241,47 @@ class Factory:
                             self.placement_ptr.y += 1
                             self.placement_ptr.x = 1
 
+    def calculatePinRequirements(self):
+        for item in self.factory_reqs.keys():
+            if(item.is_resource):
+                # Calculate number of needed pins
+                # Pins are shared across partitions
+                # Since handled at factory level
+                num_pins = 0
+                for part in self.partitions.values():
+                    # Get the resource requirement for the partition
+                    part_resource_rate = part.factory_reqs[item]
+                    # Determine the needed pins for that requirement
+                    if(item.is_fluid):
+                        num_pins += ceil(part_resource_rate/25000)
+                    else:
+                        num_belts = ceil(part_resource_rate/BLUE_BELT)
+                        belts_per_car = 2
+
+                        num_pins += ceil(num_belts/belts_per_car)
+
+                        # Don't remember what this was for...
+                        # if(num_pins % 2 == 1):
+                        #     num_pins += 1
+
+                num_8car_trains = ceil(num_pins/8)
+
+                self.pin_reqs[item] = num_pins
+                template = self.block_templates[item.recipe]
+                for _ in range(num_pins):
+                    new_block = factoryblock.FactoryBlock(template, self.item_list['research'])
+                    self.pin_blocks.append(new_block)
+
+    def placePins(self):
+        # Start in top left
+        pin_ptr = Location(PIN_CORNER_PADDING,self.dimensions.y+1)
+        for item in self.pin_reqs.keys():
+            for num_pins in self.pin_reqs[item]:
+                print('hi')
+                
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():
-            print(recipe)
+            print(recipe) 
 
     def printBlockTemplates(self):
         for block in self.block_templates.values():

@@ -39,6 +39,8 @@ class FactoryCell:
 
             for iotemp in ops:
                 self.outputs.append(factorycellio.FactoryCellIO(iotemp))
+        else: # for resource
+            print("resource")
 
     def __repr__(self):
         return "FC: " + self.recipe.name

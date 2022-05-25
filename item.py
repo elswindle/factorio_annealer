@@ -12,6 +12,15 @@ class Item:
             self.is_fluid = -1
             print("Issue with reading item reader, is fluid not specified correctly for item")
             print(self.name)
+
+        if(row[3] == 'Yes'):
+            self.is_resource = True
+        elif(row[3] == 'No'):
+            self.is_resource = False
+        else:
+            self.is_resource = -1
+            print("Issue with reading item reader, resource not specified")
+            print(self.name)
             
         self.is_producer = []
         self.is_requester = []

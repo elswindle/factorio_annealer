@@ -77,12 +77,12 @@ class Partition:
                 if(part.top_item == producer):
                     if(not self.top_item == part.top_item):
                         found = True
-            if(producer.recipe != IS_RESOURCE and found == False):
+            if(not producer.is_resource and found == False):
                 self.recurseCalculateFBR(factory, producer.recipe, rate/total_rate)
 
     def calculateFactoryBlockNumbers(self, factory):
         for producer in self.part_reqs.keys():
-            if(producer.recipe != IS_RESOURCE):
+            if(not producer.is_resource):
                 req_rate = self.part_reqs[producer]
                 factory_block_rate = factory.block_templates[producer.recipe].outputs[0].rate
 

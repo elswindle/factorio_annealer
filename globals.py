@@ -6,6 +6,8 @@ INPUT = 0
 OUTPUT = 1
 IS_RESOURCE = -1
 EMPTY = -1
+BLUE_BELT = 2700
+PIN_CORNER_PADDING = 2
 
 INITIAL_TEMP = 10000
 
@@ -75,23 +77,37 @@ class Dimension:
         self.x = x
         self.y = y
 
-def calculateDistanceCost(a : Location, b : Location, bp):
+def calculateDistanceCost(a : Location, b : Location, op, dp):
     ax = a.x
     ay = a.y
     bx = b.x
     by = b.y
 
-    # Baseline number of rights is 4
-    rights = 4
+    rights  = 4
     straights = abs(bx-ax) + abs(by-ay)
-    if(ax > bx): # if destination is to the left
-        if(bp == BOT):
-            rights += 2
-    elif(ax < bx or (ax == bx and ay > by)): # if destination is to the right or directly below
-        if(bp == BOT):
-            rights -= 2
-    else: # if destination is directly above start
-        rights -= 4
+    # Baseline number of rights is 4
+    if(op == BOT):
+        if(ax > bx): # if destination is to the left
+            if(dp == BOT):
+                rights += 2
+        elif(ax < bx or (ax == bx and ay > by)): # if destination is to the right or directly below
+            if(dp == BOT):
+                rights -= 2
+        else: # if destination is directly above start
+            rights -= 4
+            if(dp == BOT):
+                rights += 2
+    elif(op == TOP):
+        if(ax > bx or (ax == bx and ay < by)):
+            if(dp == TOP):
+                rights -= 2
+        elif(ax < bx):
+            if(dp == TOP):
+                rights += 2
+        else: # if destination is directly below start
+            rights -= 4
+            if(dp == TOP):
+                rights += 2
 
     return rights*RIGHT_COST + straights*STRAIGHT_COST
 
