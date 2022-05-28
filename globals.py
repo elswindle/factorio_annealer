@@ -6,10 +6,12 @@ INPUT = 0
 OUTPUT = 1
 IS_RESOURCE = -1
 EMPTY = -1
+NOT_FOUND = -1
 BLUE_BELT = 2700
 PIN_CORNER_PADDING = 2
 
 INITIAL_TEMP = 10000
+DEPOT_REQ = 2
 
 RIGHT_COST = 0.25
 STRAIGHT_COST = 1
@@ -117,3 +119,21 @@ def calculateDistanceCost(a : Location, b : Location, op, dp):
 #   due to acceleration
 def calculateTrafficCost(dist, tpm):
     return dist * tpm
+
+def findFirstInstance(list, obj):
+    idx = NOT_FOUND
+    for i in range(len(list)):
+        if(list[i] == obj):
+            idx = i
+            break
+
+    return idx
+
+def validLocations(loc_list, factory):
+    for loc in loc_list:
+        if(loc.x < 1 or loc.x > factory.dimension.x):
+            return False
+        if(loc.y < 1 or loc.y > factory.dimension.y):
+            return False
+
+    return True

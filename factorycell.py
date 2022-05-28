@@ -5,12 +5,13 @@ import item
 from globals import *
 
 class FactoryCell:
-    def __init__(self, template, part_top, ips, ops, loc, is_depot=False):
+    def __init__(self, template, part, block, ips, ops, loc, is_depot=False):
         # Special case for depots
         if(is_depot == True):
             self.is_depot = True
             self.location = loc
             self.recipe = template.recipe
+            self.parent_block = -1
             return
 
         self.recipe = -1
@@ -24,7 +25,8 @@ class FactoryCell:
 
         if(template != IS_RESOURCE):
             self.recipe = template.recipe
-            self.part_top = part_top
+            self.partition = part
+            self.parent_block = block
 
             # Keep track if cell is a main or auxiliary cell
             # ATM blocks that have auxiliary cells: RC + space science
@@ -35,15 +37,22 @@ class FactoryCell:
             self.offset = loc
 
             for iotemp in ips:
-                self.inputs.append(factorycellio.FactoryCellIO(iotemp))
+                self.inputs.append(factorycellio.FactoryCellIO(iotemp, self))
 
             for iotemp in ops:
-                self.outputs.append(factorycellio.FactoryCellIO(iotemp))
+                self.outputs.append(factorycellio.FactoryCellIO(iotemp, self))
         else: # for resource
             print("resource")
 
     def __repr__(self):
         return "FC: " + self.recipe.name
+
+    def setLocation(self, block_loc):
+        self.location = block_loc + self.offset
+        for ip in self.inputs:
+            ip.location = self.location
+        for op in self.outputs:
+            op.location = self.location
 
     def setToDepot(self):
         if(len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1):

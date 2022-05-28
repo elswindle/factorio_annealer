@@ -3,7 +3,7 @@ from globals import *
 import factorycellio
 
 class FactoryBlock:
-    def __init__(self, template, part_top):
+    def __init__(self, template, part):
         self.recipe = -1
         self.inputs = []
         self.outputs = []
@@ -15,7 +15,7 @@ class FactoryBlock:
 
         # if(template != IS_RESOURCE):
         self.recipe = template.recipe
-        self.part_top = part_top
+        self.partition = part
 
         # Find size and orientation of FactoryCells
         minx = 0
@@ -61,7 +61,10 @@ class FactoryBlock:
             ops[idx].append(iotemp)
 
         for idx in range(len(template.pcells)):
-            self.fcells.append(factorycell.FactoryCell(template, part_top, ips[idx], ops[idx], template.pcells[idx]))
+            self.fcells.append(factorycell.FactoryCell(template, self.partition, self, ips[idx], ops[idx], template.pcells[idx]))
 
     def __repr__(self):
         return self.recipe.name + " block"
+
+    def __len__(self):
+        return len(self.fcells)

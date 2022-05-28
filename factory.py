@@ -151,7 +151,7 @@ class Factory:
 
         self.dimensions = Dimension(x, y)
         # initialize factory, additional row+col on edges added for pins
-        self.factory = [ [-1] * (y+2) for i in range(x+2)]
+        self.factory = [ [EMPTY] * (y+2) for i in range(x+2)]
 
     def populatePartitions(self):
         for part in self.partitions.values():
@@ -172,7 +172,7 @@ class Factory:
                         while(self.placement_ptr.x <= self.dimensions.x):
                             x = self.placement_ptr.x
                             y = self.placement_ptr.y
-                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, self.placement_ptr, True)
+                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, self.placement_ptr, True)
 
                             self.placement_ptr.x += 1
 
@@ -186,7 +186,7 @@ class Factory:
                                 x = self.placement_ptr.x
                                 y = self.placement_ptr.y
 
-                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
                                 self.placement_ptr.x += 1
 
                             self.placement_ptr.y += 1
@@ -194,7 +194,8 @@ class Factory:
 
                 block.location = anchor + self.placement_ptr
                 for fcell in block.fcells:
-                    fcell.location = block.location + fcell.offset
+                    fcell.setLocation(block.location)
+                    # fcell.location = block.location + fcell.offset
                     self.factory[fcell.location.x][fcell.location.y] = fcell
 
                 # Update pointer
@@ -212,7 +213,7 @@ class Factory:
                             x = self.placement_ptr.x
                             y = self.placement_ptr.y
 
-                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
                             self.placement_ptr.x += 1
 
                         self.placement_ptr.y += 1
@@ -235,7 +236,7 @@ class Factory:
                                 x = self.placement_ptr.x
                                 y = self.placement_ptr.y
 
-                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
                                 self.placement_ptr.x += 1
 
                             self.placement_ptr.y += 1
@@ -247,7 +248,7 @@ class Factory:
                 x = self.placement_ptr.x
                 y = self.placement_ptr.y
 
-                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, Location(x,y), True)
+                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
                 self.placement_ptr.x += 1
 
     def calculatePinRequirements(self):
@@ -325,6 +326,9 @@ class Factory:
                         ptr_loc = TOP
             else:
                 print("Too many pins for the factory")
+
+    def shufflePins(self):
+        print("to do I guess, I'm honestly fine with keeping it as is")
                 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():

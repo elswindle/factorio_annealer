@@ -14,25 +14,25 @@ base_factory.loadFactoryRecipeList('data/recipe_list.csv')
 base_factory.importBlockTemplates('data/factory_block_templates.csv')
 base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 
-part = partition.Partition(base_game.item_list['labs'])
-base_factory.partitions[base_game.item_list['labs']] = part
+# part = partition.Partition(base_game.item_list['labs'])
+# base_factory.partitions[base_game.item_list['labs']] = part
 
-part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
-base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['military-science-pack'])
-base_factory.partitions[base_game.item_list['military-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['automation-science-pack'])
-base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['utility-science-pack'])
-base_factory.partitions[base_game.item_list['utility-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['production-science-pack'])
-base_factory.partitions[base_game.item_list['production-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
-base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
+# base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['military-science-pack'])
+# base_factory.partitions[base_game.item_list['military-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['automation-science-pack'])
+# base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['utility-science-pack'])
+# base_factory.partitions[base_game.item_list['utility-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['production-science-pack'])
+# base_factory.partitions[base_game.item_list['production-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
+# base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
 part2 = partition.Partition(base_game.item_list['space-science-pack'])
 base_factory.partitions[base_game.item_list['space-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['rocket-control-unit'])
-base_factory.partitions[base_game.item_list['rocket-control-unit']] = part2
+# part2 = partition.Partition(base_game.item_list['sulfur'])
+# base_factory.partitions[base_game.item_list['sulfur']] = part2
 
 
 base_factory.calculateFactoryBlockRequirements()
@@ -50,6 +50,8 @@ base_factory.populatePartitions()
 base_factory.initializeBlockPlacement()
 base_factory.calculatePinRequirements()
 base_factory.placePins()
+
+factory_annealer.populateRouteGroups()
 
 fd = FactoryDrawer(base_factory)
 fd.drawFactory()

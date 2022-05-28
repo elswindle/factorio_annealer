@@ -6,7 +6,9 @@ class RouteGroup:
         self.producer = producer        # Item
         self.requester = requester      # Recipe
 
-        self.routes = []
+        self.routes = {}                # FactoryCellIO : FactoryCellIO
+        self.producers = []             # FactoryCellIO
+        self.requesters = []            # FactoryCellIO
         self.avg_dist = -1
         self.trains_per_min = tpm       # Calculated @ partition level
         self.cost = calculateTrafficCost(self.avg_dist, self.trains_per_min)
