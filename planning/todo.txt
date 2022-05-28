@@ -1,13 +1,13 @@
 To-do
 Done - Determine number of factory blocks needed to meet requirements (part of partitions)
-____ - Create FactoryCells and FactoryCellIOs needed for factory
+Done - Create FactoryCells and FactoryCellIOs needed for factory
 Done - Calculate factory size required
-____ - Populate base factory locations
-____ - Make factory drawer
+Done - Populate base factory locations
+Done - Make factory drawer
 Done - Initialize RouteGroups
-____ - Populate RouteGroups and assign to FactoryCellIOs
+Done - Populate RouteGroups and assign to FactoryCellIOs
 Done - Create Annealer
-____ - Create cell swap functionality
+Done - Create cell swap functionality
 ____ - Test temperature values
 ____ - Make cost adjustments
 ____ - Determine best conditional negative acceptance
