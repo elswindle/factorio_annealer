@@ -12,6 +12,7 @@ class FactoryCell:
             self.location = loc
             self.recipe = template.recipe
             self.parent_block = -1
+            self.offset = Location(0,0)
             return
 
         self.recipe = -1

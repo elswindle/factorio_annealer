@@ -46,7 +46,40 @@ class FactoryDrawer:
 
         # Add cell IO icons (optional)
 
-        plt.show()
+        # plt.show()
+
+    def circleGroup(self, cell_group):
+        if(cell_group[0].parent_block == -1):
+            base_loc = cell_group[0].location
+        else:
+            base_loc = cell_group[0].parent_block.location
+
+        # Find bounding box of group
+        left = right = base_loc.x
+        top = bot = base_loc.y
+        for cell in cell_group:
+            if(cell.location.x < left):
+                left = cell.location.x
+            if(cell.location.x > right):
+                right = cell.location.x
+            if(cell.location.y < bot):
+                bot = cell.location.y
+            if(cell.location.y > top):
+                top = cell.location.y
+
+        top += 1
+        right += 1
+        # Scale coordinates
+        left *= BLOCKX
+        right *= BLOCKX
+        top *= BLOCKY
+        bot *= BLOCKY
+        # Plot 4 lines
+        lw = 4
+        plt.plot([left,right],[bot,bot],color='r', linewidth=lw)
+        plt.plot([left,right],[top,top],color='r', linewidth=lw)
+        plt.plot([left,left],[bot,top],color='r', linewidth=lw)
+        plt.plot([right,right],[bot,top],color='r', linewidth=lw)
 
     def plotIcon(self, row, col, recipe, ax):
         im_path = 'imgs/' + recipe.name + '.png'

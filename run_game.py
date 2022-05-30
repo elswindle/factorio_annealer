@@ -4,6 +4,7 @@ import game
 import factory
 import partition
 from globals import *
+import matplotlib.pyplot as plt
 
 base_game = game.Game()
 
@@ -54,6 +55,18 @@ base_factory.placePins()
 factory_annealer.populateRouteGroups()
 
 fd = FactoryDrawer(base_factory)
-fd.drawFactory()
+
+for _ in range(100):
+    g1, g2 = factory_annealer.generateMove()
+    fd.drawFactory()
+    fd.circleGroup(g1)
+    fd.circleGroup(g2)
+
+    plt.show()
+    factory_annealer.performMove(g1, g2)
+    fd.drawFactory()
+    fd.circleGroup(g1)
+    fd.circleGroup(g2)
+    plt.show()
 
 print('done')

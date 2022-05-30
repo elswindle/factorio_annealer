@@ -131,9 +131,9 @@ def findFirstInstance(list, obj):
 
 def validLocations(loc_list, factory):
     for loc in loc_list:
-        if(loc.x < 1 or loc.x > factory.dimension.x):
+        if(loc.x < 1 or loc.x > factory.dimensions.x):
             return False
-        if(loc.y < 1 or loc.y > factory.dimension.y):
+        if(loc.y < 1 or loc.y > factory.dimensions.y):
             return False
 
     return True
