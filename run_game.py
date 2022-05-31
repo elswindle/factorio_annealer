@@ -66,10 +66,10 @@ for _ in range(2500):
     # plt.show()
 
     factory_annealer.performMove(g1, g2)
-    # fd.drawFactory()
-    # fd.circleGroup(g1)
-    # fd.circleGroup(g2)
-    # plt.show()
+    fd.drawFactory()
+    fd.circleGroup(g1)
+    fd.circleGroup(g2)
+    plt.show()
 
 fd.drawFactory()
 plt.show()
