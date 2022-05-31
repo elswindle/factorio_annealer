@@ -187,7 +187,7 @@ class Annealer:
                             for yofst in range(-1,2):
                                 base_loc = cell_group1[idx].location
                                 x = base_loc.x + xofst
-                                y = base_loc.y = yofst
+                                y = base_loc.y + yofst
                                 
                                 if(x < 1 or x > self.factory.dimensions.x or y < 1 or y > self.factory.dimensions.y):
                                     curr_cell = EMPTY
@@ -221,7 +221,10 @@ class Annealer:
                                 x = base_loc.x + xofst
                                 y = base_loc.y + yofst
 
-                                curr_cell = f[x][y]
+                                if(x < 1 or x > self.factory.dimensions.x or y < 1 or y > self.factory.dimensions.y):
+                                    curr_cell = EMPTY
+                                else:
+                                    curr_cell = f[x][y]
                                 if(curr_cell != EMPTY):
                                     if(not curr_cell.is_depot):
                                         depot_req = DEPOT_REQ

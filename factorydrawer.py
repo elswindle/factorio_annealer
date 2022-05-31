@@ -54,6 +54,8 @@ class FactoryDrawer:
         else:
             base_loc = cell_group[0].parent_block.location
 
+        lw = 10
+
         # Find bounding box of group
         left = right = base_loc.x
         top = bot = base_loc.y
@@ -75,7 +77,6 @@ class FactoryDrawer:
         top *= BLOCKY
         bot *= BLOCKY
         # Plot 4 lines
-        lw = 4
         plt.plot([left,right],[bot,bot],color='r', linewidth=lw)
         plt.plot([left,right],[top,top],color='r', linewidth=lw)
         plt.plot([left,left],[bot,top],color='r', linewidth=lw)
