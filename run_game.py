@@ -58,7 +58,7 @@ fd = FactoryDrawer(base_factory)
 fd.drawFactory()
 plt.show()
 
-for _ in range(2500):
+for _ in range(50000):
     g1, g2 = factory_annealer.generateMove()
     # fd.drawFactory()
     # fd.circleGroup(g1)
@@ -66,10 +66,11 @@ for _ in range(2500):
     # plt.show()
 
     factory_annealer.performMove(g1, g2)
-    fd.drawFactory()
-    fd.circleGroup(g1)
-    fd.circleGroup(g2)
-    plt.show()
+    # if(g1[0].recipe.name == 'advanced-circuit' or g2[0].recipe.name == 'advanced-circuit'):
+    #     fd.drawFactory()
+    #     fd.circleGroup(g1, 'b')
+    #     fd.circleGroup(g2)
+    #     plt.show()
 
 fd.drawFactory()
 plt.show()

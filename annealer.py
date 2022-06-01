@@ -290,18 +290,19 @@ class Annealer:
     def performMove(self, cg1, cg2):
         for idx in range(len(cg1)):
             # Update block location only once
-            if(idx == 0):
-                new_loc1 = cg2[idx].location - cg2[idx].offset
-                new_loc2 = cg1[idx].location - cg1[idx].offset
+            new_loc1 = cg2[idx].location - cg1[idx].offset
+            new_loc2 = cg1[idx].location - cg2[idx].offset
 
-                if(not cg1[idx].is_depot):
-                    cg1[idx].parent_block.location = new_loc1
-                if(not cg2[idx].is_depot):
-                    cg2[idx].parent_block.location = new_loc2
+            if(not cg1[idx].is_depot):
+                cg1[idx].parent_block.location = new_loc1
+            if(not cg2[idx].is_depot):
+                cg2[idx].parent_block.location = new_loc2
 
-            temp_loc = cg1[idx].location
-            cg1[idx].location = cg2[idx].location
-            cg2[idx].location = temp_loc
+            cg1[idx].setLocation(new_loc1)
+            cg2[idx].setLocation(new_loc2)
+            # temp_loc = cg1[idx].location
+            # cg1[idx].location = cg2[idx].location
+            # cg2[idx].location = temp_loc
             
             x = cg1[idx].location.x
             y = cg1[idx].location.y

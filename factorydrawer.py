@@ -48,7 +48,7 @@ class FactoryDrawer:
 
         # plt.show()
 
-    def circleGroup(self, cell_group):
+    def circleGroup(self, cell_group, c='r'):
         if(cell_group[0].parent_block == -1):
             base_loc = cell_group[0].location
         else:
@@ -77,10 +77,10 @@ class FactoryDrawer:
         top *= BLOCKY
         bot *= BLOCKY
         # Plot 4 lines
-        plt.plot([left,right],[bot,bot],color='r', linewidth=lw)
-        plt.plot([left,right],[top,top],color='r', linewidth=lw)
-        plt.plot([left,left],[bot,top],color='r', linewidth=lw)
-        plt.plot([right,right],[bot,top],color='r', linewidth=lw)
+        plt.plot([left,right],[bot,bot],color=c, linewidth=lw)
+        plt.plot([left,right],[top,top],color=c, linewidth=lw)
+        plt.plot([left,left],[bot,top],color=c, linewidth=lw)
+        plt.plot([right,right],[bot,top],color=c, linewidth=lw)
 
     def plotIcon(self, row, col, recipe, ax):
         im_path = 'imgs/' + recipe.name + '.png'

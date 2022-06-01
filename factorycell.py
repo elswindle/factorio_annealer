@@ -50,10 +50,11 @@ class FactoryCell:
 
     def setLocation(self, block_loc):
         self.location = block_loc + self.offset
-        for ip in self.inputs:
-            ip.location = self.location
-        for op in self.outputs:
-            op.location = self.location
+        if(not self.is_depot):
+            for ip in self.inputs:
+                ip.location = self.location
+            for op in self.outputs:
+                op.location = self.location
 
     def setToDepot(self):
         if(len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1):

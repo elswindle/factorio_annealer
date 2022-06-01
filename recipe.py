@@ -5,6 +5,7 @@ class Recipe:
         # Special case for depot recipe
         if(ct == 'depot'):
             self.name = ct
+            self.item = 'dummy'
             return
 
         self.craft_time = ct
