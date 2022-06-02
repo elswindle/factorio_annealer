@@ -79,36 +79,36 @@ class Dimension:
         self.x = x
         self.y = y
 
-def calculateDistanceCost(a : Location, b : Location, op, dp):
-    ax = a.x
-    ay = a.y
-    bx = b.x
-    by = b.y
+def calculateDistanceCost(prod_loc : Location, req_loc : Location, prod_pm, req_pm):
+    ax = prod_loc.x
+    ay = prod_loc.y
+    bx = req_loc.x
+    by = req_loc.y
 
     rights  = 4
     straights = abs(bx-ax) + abs(by-ay)
     # Baseline number of rights is 4
-    if(op == BOT):
+    if(prod_pm == BOT):
         if(ax > bx): # if destination is to the left
-            if(dp == BOT):
+            if(req_pm == BOT):
                 rights += 2
         elif(ax < bx or (ax == bx and ay > by)): # if destination is to the right or directly below
-            if(dp == BOT):
+            if(req_pm == BOT):
                 rights -= 2
         else: # if destination is directly above start
             rights -= 4
-            if(dp == BOT):
+            if(req_pm == BOT):
                 rights += 2
-    elif(op == TOP):
+    elif(prod_pm == TOP):
         if(ax > bx or (ax == bx and ay < by)):
-            if(dp == TOP):
+            if(req_pm == TOP):
                 rights -= 2
         elif(ax < bx):
-            if(dp == TOP):
+            if(req_pm == TOP):
                 rights += 2
         else: # if destination is directly below start
             rights -= 4
-            if(dp == TOP):
+            if(req_pm == TOP):
                 rights += 2
 
     return rights*RIGHT_COST + straights*STRAIGHT_COST

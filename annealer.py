@@ -1,6 +1,6 @@
-from shutil import move
 import factoryblock
 import factory
+import factorydrawer
 import partition
 from globals import *
 import routegroup
@@ -245,10 +245,14 @@ class Annealer:
                                         if(num_depots < depot_req):
                                             mov_generated = False
 
+                # Throw out a move if the groups overlap
                 for c1 in cell_group1:
                     for c2 in cell_group2:
                         if(c1 == c2):
                             move_generated = False
+
+                # Throw out a move if the groups swap identical items from same partition
+                # TODO
 
             if(inloc1 != -1 and inloc2 != -1):
                 move_generated = True
@@ -287,6 +291,97 @@ class Annealer:
 
         return loc1, loc2
 
+    def evaluateMove(self, cg1, cg2, fd : factorydrawer.FactoryDrawer=-1):
+        cost_change = []
+        
+        for cell in cg1 + cg2:
+            cost_change.append(0)
+            if(not cell.is_depot):
+                ip_change = 0
+                # Iterate on requesters within the cell
+                for requester in cell.inputs:
+                    req_loc = requester.location
+                    req_tl = requester.tl
+                    req_pm = requester.placement
+
+                    rg_change = 0
+                    # Iterate on route groups of requester
+                    for rg in requester.route_groups:
+                        if(fd != -1):
+                            fd.drawRoutes(rg.producers, [requester])
+                        # Iterate on producers of the requested item
+                        for producer in rg.producers:
+                            prod_loc = producer.location
+                            prod_pm = producer.placement
+                            # Check to see if the producer is also being swapped
+                            if(producer.tl == -1):
+                                prod_tl = prod_loc
+                            else:
+                                prod_tl = producer.tl
+                            # Get the current cost of the route
+                            curr_cost = calculateDistanceCost(prod_loc, req_loc, prod_pm, req_pm)
+                            test_cost = calculateDistanceCost(prod_tl, req_tl, prod_pm, req_pm)
+
+                            rg_change += test_cost - curr_cost
+
+                    ip_change += (rg_change * rg.trains_per_min / len(rg.requesters))
+
+                op_change = 0
+                for producer in cell.outputs:
+                    prod_loc = producer.location
+                    prod_tl = producer.tl
+                    prod_pm = producer.placement
+
+                    rg_change = 0
+                    for rg in producer.route_groups:
+                        if(fd != -1):
+                            fd.drawRoutes([producer], rg.requesters)
+                        for requester in rg.requesters:
+                            req_loc = requester.location
+                            req_pm = requester.placement
+                            # Check to see if the requester is also being swapped
+                            if(requester.tl == -1):
+                                req_tl = req_loc
+                            else:
+                                req_tl = requester.tl
+                            # Get the current cost of the route
+                            curr_cost = calculateDistanceCost(prod_loc, req_loc, prod_pm, req_pm)
+                            test_cost = calculateDistanceCost(prod_tl, req_tl, prod_pm, req_pm)
+                    
+                        rg_change += test_cost - curr_cost
+
+                    op_change += (rg_change * rg.trains_per_min / len(rg.producers))
+
+                cost_change[len(cost_change)-1] += ip_change + op_change
+
+        total_change = 0
+        for cc in cost_change:
+            total_change += cc
+        # print(cost_change)
+        # If the cost is negative, accept move
+        # Negative values means curr_cost > test_cost
+        if(total_change <= 0):
+            return True
+        else:
+            return False
+            # Randomly choose to accept move if cost_change is > 0
+            # This chance will be higher with higher temperature
+            # print("temperature")
+
+    def setTestLocations(self, cg1, cg2):
+        for idx in range(len(cg1)):
+            # Update block location only once
+            new_loc1 = cg2[idx].location - cg1[idx].offset
+            new_loc2 = cg1[idx].location - cg2[idx].offset
+
+            if(not cg1[idx].is_depot):
+                cg1[idx].parent_block.tl = new_loc1
+            if(not cg2[idx].is_depot):
+                cg2[idx].parent_block.tl = new_loc2
+
+            cg1[idx].setTestLocation(new_loc1)
+            cg2[idx].setTestLocation(new_loc2)
+
     def performMove(self, cg1, cg2):
         for idx in range(len(cg1)):
             # Update block location only once
@@ -310,3 +405,6 @@ class Annealer:
             x = cg2[idx].location.x
             y = cg2[idx].location.y
             self.factory.factory[x][y] = cg2[idx]
+
+            cg1[idx].resetTestLocation()
+            cg2[idx].resetTestLocation()

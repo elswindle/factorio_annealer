@@ -13,6 +13,7 @@ class FactoryCell:
             self.recipe = template.recipe
             self.parent_block = -1
             self.offset = Location(0,0)
+            self.tl = -1
             return
 
         self.recipe = -1
@@ -21,6 +22,7 @@ class FactoryCell:
         self.route_groups = []
         self.is_depot = False
         self.location = -1
+        self.tl = -1
         self.is_main = False
         self.offset = -1
 
@@ -55,6 +57,22 @@ class FactoryCell:
                 ip.location = self.location
             for op in self.outputs:
                 op.location = self.location
+
+    def setTestLocation(self, block_loc):
+        self.tl = block_loc + self.offset
+        if(not self.is_depot):
+            for ip in self.inputs:
+                ip.tl = self.tl
+            for op in self.outputs:
+                op.tl = self.tl
+
+    def resetTestLocation(self):
+        self.tl = -1
+        if(not self.is_depot):
+            for ip in self.inputs:
+                ip.tl = self.tl
+            for op in self.outputs:
+                op.tl = self.tl
 
     def setToDepot(self):
         if(len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1):

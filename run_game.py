@@ -58,21 +58,34 @@ fd = FactoryDrawer(base_factory)
 fd.drawFactory()
 plt.show()
 
-for _ in range(50000):
+for _ in range(250000):
+    if(_ % 5000 == 0):
+        print(_)
     g1, g2 = factory_annealer.generateMove()
+    factory_annealer.setTestLocations(g1, g2)
     # fd.drawFactory()
-    # fd.circleGroup(g1)
+    # fd.circleGroup(g1,'b')
     # fd.circleGroup(g2)
+    # factory_annealer.evaluateMove(g1, g2)
     # plt.show()
 
-    factory_annealer.performMove(g1, g2)
-    # if(g1[0].recipe.name == 'advanced-circuit' or g2[0].recipe.name == 'advanced-circuit'):
-    #     fd.drawFactory()
-    #     fd.circleGroup(g1, 'b')
-    #     fd.circleGroup(g2)
-    #     plt.show()
+    if(factory_annealer.evaluateMove(g1,g2)):
+        factory_annealer.performMove(g1, g2)
 
+# g1, g2 = factory_annealer.generateMove()
+# factory_annealer.setTestLocations(g1, g2)
+# fd.drawFactory()
+# fd.circleGroup(g1,'b')
+# fd.circleGroup(g2)
+# factory_annealer.evaluateMove(g1, g2, fd)
+# plt.show()
+
+# g1, g2 = factory_annealer.generateMove()
+# factory_annealer.setTestLocations(g1, g2)
 fd.drawFactory()
+# fd.circleGroup(g1,'b')
+# fd.circleGroup(g2)
+# factory_annealer.evaluateMove(g1, g2, fd)
 plt.show()
 
 print('done')

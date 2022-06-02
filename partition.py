@@ -132,11 +132,15 @@ class Partition:
         # rg is sub dictionary of annealer's rg
         # rg[item (pro)][recipe (req)] = RouteGroup
         for item in rgs.keys():
+            # Iterate on FactoryCellIOs that request the item
             requester_recipe = -1
             for requester in item.is_requester:
+                # Make sure IO is in current partition
                 if(requester.parent_part == self):
+                    # Get the recipe that requests the item
                     requester_recipe = requester.parent_cell.recipe
 
+                    # Add requester IO to route group and add route group to IO
                     rgs[item][requester_recipe].requesters.append(requester)
                     requester.addRouteGroup(rgs[item][requester_recipe])
             
@@ -146,7 +150,7 @@ class Partition:
                     for part in factory.partitions.values():
                         if(part.top_item == item):
                             found = True
-                    if(producer.parent_part == self or found):
+                    if(producer.parent_part == self or found or item.is_resource):
                         rg.producers.append(producer)
                         producer.addRouteGroup(rg)
 
@@ -157,10 +161,11 @@ class Partition:
                     if(part.top_item == item):
                         found = True
                 # Only look at producers in the current partition or if a top level partition item
+                # Resources are shared among all partitions
                 if(producer.parent_part == self or found):
                     # Iterate on FactoryCellIOs that request item
                     for requester in item.is_requester:
-                        # Only look at requesters in the current partition
+                        # Only look at requesters in the current partition or is resource
                         if(requester.parent_part == self):
                             # Get the recipe of the requester
                             requester_recipe = requester.parent_cell.recipe
@@ -173,7 +178,3 @@ class Partition:
 
                             # Add destination FactoryCellIO
                             rg.routes[producer].append(requester)
-
-                            # Add route groups to FactoryCellIOs as necessary
-                            # producer.addRouteGroup(rg)
-                            # requester.addRouteGroup(rg)

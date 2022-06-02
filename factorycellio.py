@@ -10,6 +10,7 @@ class FactoryCellIO:
         self.placement = template.placement # TOP/BOT
         self.offset = template.location     # Offset from main cell
         self.location = -1                  # -1 means unplaced
+        self.tl = -1
         self.route_groups = []
         self.parent_cell = cell
         self.parent_part = cell.partition

@@ -293,7 +293,7 @@ class Factory:
             if(self.factory[x][y] == EMPTY):
                 block.location = Location(x, y)
                 for fcell in block.fcells:
-                    fcell.location = block.location + fcell.offset
+                    fcell.setLocation(block.location)
                     self.factory[fcell.location.x][fcell.location.y] = fcell
 
                     if(ptr_loc == BOT or ptr_loc == RIGHT):

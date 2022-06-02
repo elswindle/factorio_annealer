@@ -82,6 +82,17 @@ class FactoryDrawer:
         plt.plot([left,left],[bot,top],color=c, linewidth=lw)
         plt.plot([right,right],[bot,top],color=c, linewidth=lw)
 
+    def drawRoutes(self, producers, requesters, c='g', lw=4, test=False):
+        for producer in producers:
+            px = producer.location.x*BLOCKX+BLOCKX/2
+            py = producer.location.y*BLOCKY+BLOCKY/2
+            for requester in requesters:
+                rx = requester.location.x*BLOCKX+BLOCKX/2
+                ry = requester.location.y*BLOCKY+BLOCKY/2
+
+                # plt.plot([px,rx],[py,ry],color=c,linewidth=lw)
+                plt.arrow(px, py, rx-px, ry-py, color=c, linewidth=lw, length_includes_head=True, head_width=lw)
+
     def plotIcon(self, row, col, recipe, ax):
         im_path = 'imgs/' + recipe.name + '.png'
 
