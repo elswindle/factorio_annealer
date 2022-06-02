@@ -8,6 +8,7 @@ Done - Initialize RouteGroups
 Done - Populate RouteGroups and assign to FactoryCellIOs
 Done - Create Annealer
 Done - Create cell swap functionality
+____ - Evaluate generated move
 ____ - Test temperature values
 ____ - Make cost adjustments
 ____ - Determine best conditional negative acceptance
