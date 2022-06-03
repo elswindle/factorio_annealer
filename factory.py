@@ -26,6 +26,7 @@ class Factory:
         self.depot_ratio = 1/4
         self.dimensions = -1
         self.factory = -1                       # FactoryCells[x][y]
+        self.tf = -1                            # same as factory, but the test one
         self.placement_ptr = Location(1,1)      # keeps track of location to place next block
 
     def loadFactoryRecipeList(self, path):
@@ -152,6 +153,7 @@ class Factory:
         self.dimensions = Dimension(x, y)
         # initialize factory, additional row+col on edges added for pins
         self.factory = [ [EMPTY] * (y+2) for i in range(x+2)]
+        self.tf = [ [EMPTY] * (y+2) for i in range(x+2)]
 
     def populatePartitions(self):
         for part in self.partitions.values():
@@ -327,6 +329,21 @@ class Factory:
             else:
                 print("Too many pins for the factory")
 
+    def populateTestFactory(self):
+        for x in range(self.dimensions.x+2):
+            for y in range(self.dimensions.y+2):
+                self.tf[x][y] = self.factory[x][y]
+
+    def checkTestFactory(self):
+        for x in range(self.dimensions.x):
+            for y in range(self.dimensions.y):
+                tc = self.tf[x][y]
+                ac = self.factory[x][y]
+                if(tc != ac):
+                    return False
+
+        return True
+    
     def shufflePins(self):
         print("to do I guess, I'm honestly fine with keeping it as is")
                 

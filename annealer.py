@@ -1,10 +1,13 @@
 import factoryblock
+import factorycell
+import factorycellio
 import factory
 import factorydrawer
 import partition
 from globals import *
 import routegroup
 import random
+from math import ceil
 
 def blockLength(block):
     if(block == -1):
@@ -179,71 +182,39 @@ class Annealer:
 
                         move_generated = True
 
+            self.setTestLocations(cell_group1, cell_group2)
             # Check depot and duplication requirements
             if(move_generated):
-                for idx in range(len(cell_group1)):
-                    if(cell_group1[idx].is_depot):
+                cell : factorycell.FactoryCell
+                for cell in (cell_group1 + cell_group2):
+                    # Don't need to check depots in their new location
+                    if(not cell.is_depot):
+                        center = cell.tl
+                        xmax = self.factory.dimensions.x
+                        ymax = self.factory.dimensions.y
                         for xofst in range(-1,2):
                             for yofst in range(-1,2):
-                                base_loc = cell_group1[idx].location
-                                x = base_loc.x + xofst
-                                y = base_loc.y + yofst
-                                
-                                if(x < 1 or x > self.factory.dimensions.x or y < 1 or y > self.factory.dimensions.y):
+                                x = center.x + xofst
+                                y = center.y + yofst
+
+                                if(x < 1 or x > xmax or y < 1 or y > ymax):
                                     curr_cell = EMPTY
                                 else:
-                                    curr_cell = f[x][y]
-
-                                if(curr_cell != EMPTY):
+                                    curr_cell = self.factory.tf[x][y]
                                     if(not curr_cell.is_depot):
                                         depot_req = DEPOT_REQ
-                                        # If corner, ignore requirement
-                                        if(x == 1 and (y == 1 or y == self.factory.dimensions.y)):
-                                            depot_req = 0
-                                        elif(x == self.factory.dimensions.x and (y == 1 or y == self.factory.dimensions.y)):
-                                            depot_req = 0
-                                        # If edge, reduce by 1
-                                        elif(x == 1 or x == self.factory.dimensions.x):
-                                            depot_req -= 1
-                                        elif(y == 1 or y == self.factory.dimensions.y):
-                                            depot_req -= 1
 
-                                        num_depots = self.numAdjacentDepots(f[x][y])
-                                        if(x != 0 or y != 0):
-                                            num_depots -= 1
+                                        # Ignore depot requirement for corners
+                                        if((x == 1 or x == xmax) and (y == 1 or y == ymax)):
+                                            depot_req = 0
+                                        # If edge, reduce by half, rounded up
+                                        if(x == 1 or x == xmax or y == 1 or y == ymax):
+                                            depot_req /= 2
+                                            depot_req = ceil(depot_req)
+
+                                        num_depots = self.numAdjacentDepots(self.factory.tf[x][y])
                                         if(num_depots < depot_req):
-                                            mov_generated = False
-
-                    if(cell_group2[idx].is_depot):
-                        for xofst in range(-1,2):
-                            for yofst in range(-1,2):
-                                base_loc = cell_group2[idx].location
-                                x = base_loc.x + xofst
-                                y = base_loc.y + yofst
-
-                                if(x < 1 or x > self.factory.dimensions.x or y < 1 or y > self.factory.dimensions.y):
-                                    curr_cell = EMPTY
-                                else:
-                                    curr_cell = f[x][y]
-                                if(curr_cell != EMPTY):
-                                    if(not curr_cell.is_depot):
-                                        depot_req = DEPOT_REQ
-                                        # If corner, ignore requirement
-                                        if(x == 1 and (y == 1 or y == self.factory.dimensions.y)):
-                                            depot_req = 0
-                                        elif(x == self.factory.dimensions.x and (y == 1 or y == self.factory.dimensions.y)):
-                                            depot_req = 0
-                                        # If edge, reduce by 1
-                                        elif(x == 1 or x == self.factory.dimensions.x):
-                                            depot_req -= 1
-                                        elif(y == 1 or y == self.factory.dimensions.y):
-                                            depot_req -= 1
-
-                                        num_depots = self.numAdjacentDepots(f[x][y])
-                                        if(x != 0 or y != 0):
-                                            num_depots -= 1
-                                        if(num_depots < depot_req):
-                                            mov_generated = False
+                                            move_generated = False
 
                 # Throw out a move if the groups overlap
                 for c1 in cell_group1:
@@ -257,6 +228,9 @@ class Annealer:
             if(inloc1 != -1 and inloc2 != -1):
                 move_generated = True
 
+            if(not move_generated):
+                self.resetTestLocations(cell_group1, cell_group2, False)
+
         return cell_group1, cell_group2
 
     def numAdjacentDepots(self, cell):
@@ -264,7 +238,7 @@ class Annealer:
             return 9
         if(cell.recipe.item.is_resource):
             return 9
-        f = self.factory.factory
+        tf = self.factory.tf
         num = 0
         base_loc = cell.location
         for xofst in range(-1,2):
@@ -273,9 +247,10 @@ class Annealer:
                     continue
                 x = base_loc.x + xofst
                 y = base_loc.y + yofst
+                cell = tf[x][y]
 
-                if(f[x][y] != EMPTY):
-                    if(f[x][y].is_depot):
+                if(cell != EMPTY):
+                    if(cell.is_depot):
                         num += 1
 
         return num
@@ -363,6 +338,7 @@ class Annealer:
         if(total_change <= 0):
             return True
         else:
+            self.resetTestLocations(cg1, cg2, False)
             return False
             # Randomly choose to accept move if cost_change is > 0
             # This chance will be higher with higher temperature
@@ -382,7 +358,31 @@ class Annealer:
             cg1[idx].setTestLocation(new_loc1)
             cg2[idx].setTestLocation(new_loc2)
 
+            x = cg1[idx].tl.x
+            y = cg1[idx].tl.y
+            self.factory.tf[x][y] = cg1[idx]
+            x = cg2[idx].tl.x
+            y = cg2[idx].tl.y
+            self.factory.tf[x][y] = cg2[idx]
+
+    def resetTestLocations(self, cg1, cg2, accepted):
+        for idx in range(len(cg1)):
+            # Only swap back the test factory if the move was not accepted
+            if(not accepted):
+                x = cg1[idx].location.x
+                y = cg1[idx].location.y
+                self.factory.tf[x][y] = cg1[idx]
+                x = cg2[idx].location.x
+                y = cg2[idx].location.y
+                self.factory.tf[x][y] = cg2[idx]
+
+            cg1[idx].resetTestLocation()
+            cg2[idx].resetTestLocation()
+
     def performMove(self, cg1, cg2):
+        # Reset the test locations of the blocks but not the test factory
+        self.resetTestLocations(cg1, cg2, True)
+        
         for idx in range(len(cg1)):
             # Update block location only once
             new_loc1 = cg2[idx].location - cg1[idx].offset
@@ -405,6 +405,3 @@ class Annealer:
             x = cg2[idx].location.x
             y = cg2[idx].location.y
             self.factory.factory[x][y] = cg2[idx]
-
-            cg1[idx].resetTestLocation()
-            cg2[idx].resetTestLocation()
