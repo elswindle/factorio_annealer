@@ -5,6 +5,10 @@ import factory
 import partition
 from globals import *
 import matplotlib.pyplot as plt
+import blueprinter
+
+bptr = blueprinter.Blueprinter()
+bptr.readBlueprint('data/test2.txt')
 
 base_game = game.Game()
 
