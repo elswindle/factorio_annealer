@@ -269,7 +269,7 @@ class Factory:
                             num_pins += ceil(part_resource_rate/25000)
                         else:
                             num_belts = ceil(part_resource_rate/BLUE_BELT)
-                            belts_per_car = 2
+                            belts_per_car = 2.0
 
                             num_pins += ceil(num_belts/belts_per_car)
 
