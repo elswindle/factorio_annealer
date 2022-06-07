@@ -7,8 +7,8 @@ from globals import *
 import matplotlib.pyplot as plt
 import blueprinter
 
-# bptr = blueprinter.Blueprinter()
-# bptr.readBlueprint('data/test_blueprint.txt')
+bptr = blueprinter.Blueprinter()
+bptr.readBlueprint('data/test_blueprint.txt')
 
 base_game = game.Game()
 

@@ -158,11 +158,6 @@ class Factory:
             y -= 1
             num_cells -= x
 
-        # Shave off y until
-        # while(x * y > num_blocks):
-        #     y -= 1
-        # y = 2*y - 1
-
         self.spare_slots = x*y - num_cells
         self.dimensions = Dimension(x, y)
         # initialize factory, additional row+col on edges added for pins
