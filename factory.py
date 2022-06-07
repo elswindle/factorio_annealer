@@ -6,8 +6,7 @@ import recipe
 import item
 import partition
 from globals import *
-from math import sqrt
-from math import ceil
+from math import ceil, floor, sqrt
 import csv as csv
 
 class Factory:
@@ -134,22 +133,37 @@ class Factory:
         for partition in self.partitions.values():
             blocks += partition.getFactoryBlockAmount(self)
 
+        self.num_blocks = blocks
         return blocks
 
-    def calculateFactoryDimensions(self, aspect_ratio=1, ex_area=0):
-        num_blocks = self.getFactoryBlockAmount()
-        num_blocks += ex_area           # manually give it more area
-        num_blocks *= 2                 # Depots will be initially place every other row
+    def getFactoryCellAmount(self):
+        cells = 0
+        for partition in self.partitions.values():
+            cells += partition.getFactoryCellAmount(self)
 
-        y = ceil(sqrt(num_blocks/aspect_ratio))+1
-        x = ceil(num_blocks/y)+1
+        return cells
+
+    def calculateFactoryDimensions(self, aspect_ratio=1, ex_area=0):
+        num_cells = self.getFactoryCellAmount()
+        num_cells += ex_area           # manually give it more area
+        num_cells *= 2                 # Depots will be initially place every other row
+
+        x = ceil(sqrt(num_cells*aspect_ratio))
+        y = ceil(num_cells/x)
         
         # This is here to make sure there are an odd number of rows
         # so that top and bottom rows will be factory blocks, not
         # depots
         if(y % 2 == 0):
-            y += 1
+            y -= 1
+            num_cells -= x
 
+        # Shave off y until
+        # while(x * y > num_blocks):
+        #     y -= 1
+        # y = 2*y - 1
+
+        self.spare_slots = x*y - num_cells
         self.dimensions = Dimension(x, y)
         # initialize factory, additional row+col on edges added for pins
         self.factory = [ [EMPTY] * (y+2) for i in range(x+2)]
@@ -161,6 +175,7 @@ class Factory:
 
     def initializeBlockPlacement(self):
         depot = factoryblocktemplates.FactoryBlockTemplate(recipe.Recipe('depot', -1, -1, -1), -1, -1)
+        placed_blocks = 0
         for part in self.partitions.values():
             for block in part.factory_blocks:
                 # Make sure block can fit in available location
@@ -174,9 +189,23 @@ class Factory:
                         while(self.placement_ptr.x <= self.dimensions.x):
                             x = self.placement_ptr.x
                             y = self.placement_ptr.y
-                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, self.placement_ptr, True)
+                            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
 
                             self.placement_ptr.x += 1
+                            # Placing a depot in a designated cell location
+                            # reduces the number of available locations given the current dimensions
+                            self.spare_slots -= 1
+
+                        # If spare slots ever is negative, add 2 more rows
+                        if(self.spare_slots < 0):
+                            self.dimensions.y += 2
+                            self.spare_slots += x
+                            for col in self.tf:
+                                col.append(EMPTY)
+                                col.append(EMPTY)
+                            for col in self.factory:
+                                col.append(EMPTY)
+                                col.append(EMPTY)
 
                         # Set pointer to next row
                         self.placement_ptr.y += 1
@@ -199,11 +228,13 @@ class Factory:
                     fcell.setLocation(block.location)
                     # fcell.location = block.location + fcell.offset
                     self.factory[fcell.location.x][fcell.location.y] = fcell
+                    
+                placed_blocks += 1
 
                 # Update pointer
                 self.placement_ptr.x += block.dimension.x
                 # Check if pointer has reached end of row
-                if(self.placement_ptr.x > self.dimensions.x):
+                if(self.placement_ptr.x > self.dimensions.x and placed_blocks < self.num_blocks):
                     self.placement_ptr.y += 1
                     self.placement_ptr.x = 1
 
@@ -245,13 +276,13 @@ class Factory:
                             self.placement_ptr.x = 1
 
         # Fill the rest of row with depots
-        if(self.placement_ptr.x != self.dimensions.x):
-            while(self.placement_ptr.x <= self.dimensions.x):
-                x = self.placement_ptr.x
-                y = self.placement_ptr.y
+        # if(self.placement_ptr.x <= self.dimensions.x):
+        while(self.placement_ptr.x <= self.dimensions.x):
+            x = self.placement_ptr.x
+            y = self.placement_ptr.y
 
-                self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
-                self.placement_ptr.x += 1
+            self.factory[x][y] = factorycell.FactoryCell(depot, -1, -1, -1, -1, Location(x,y), True)
+            self.placement_ptr.x += 1
 
     def calculatePinRequirements(self):
         for item in self.factory_reqs.keys():
@@ -271,7 +302,7 @@ class Factory:
                             num_belts = ceil(part_resource_rate/BLUE_BELT)
                             belts_per_car = 2.0
 
-                            num_pins += ceil(num_belts/belts_per_car)
+                            num_pins += ceil(num_belts/belts_per_car + self.block_num_buffer)
 
                             # Don't remember what this was for...
                             # if(num_pins % 2 == 1):
@@ -340,6 +371,16 @@ class Factory:
                 tc = self.tf[x][y]
                 ac = self.factory[x][y]
                 if(tc != ac):
+                    return False
+
+        return True
+
+    def validateFactoryCellLocations(self):
+        for x in range(1, self.dimensions.x+1):
+            for y in range(1, self.dimensions.y+1):
+                cell = self.factory[x][y]
+                if(cell.location.x != x or cell.location.y != y):
+                    print("factory bad")
                     return False
 
         return True

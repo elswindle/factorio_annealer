@@ -7,8 +7,8 @@ from globals import *
 import matplotlib.pyplot as plt
 import blueprinter
 
-bptr = blueprinter.Blueprinter()
-bptr.readBlueprint('data/test_blueprint.txt')
+# bptr = blueprinter.Blueprinter()
+# bptr.readBlueprint('data/test_blueprint.txt')
 
 base_game = game.Game()
 
@@ -22,10 +22,10 @@ base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 # part = partition.Partition(base_game.item_list['labs'])
 # base_factory.partitions[base_game.item_list['labs']] = part
 
-part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
-base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['military-science-pack'])
-# base_factory.partitions[base_game.item_list['military-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
+# base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
+part2 = partition.Partition(base_game.item_list['military-science-pack'])
+base_factory.partitions[base_game.item_list['military-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['automation-science-pack'])
 # base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['utility-science-pack'])
@@ -48,24 +48,23 @@ factory_annealer.initializeRouteGroups()
 
 print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
-base_factory.calculateFactoryDimensions(2.5, 0)
-print(base_factory.dimensions)
-
 base_factory.populatePartitions()
+base_factory.calculateFactoryDimensions(1.6, 0)
+print(base_factory.dimensions)
 base_factory.initializeBlockPlacement()
 base_factory.calculatePinRequirements()
 base_factory.placePins()
 base_factory.populateTestFactory()
-
 factory_annealer.populateRouteGroups()
 
 fd = FactoryDrawer(base_factory)
 # fd.drawFactory()
 # plt.show()
 
-for _ in range(100000):
-    if(_ % 5000 == 0):
+for _ in range(25000):
+    if(_ % 1000 == 0):
         print(_)
+        base_factory.validateFactoryCellLocations()
     g1, g2 = factory_annealer.generateMove()
     # fd.drawFactory()
     # fd.circleGroup(g1,'b')

@@ -101,16 +101,21 @@ class Partition:
             found = False
             for part in base_factory.partitions.values():
                 # Only include top item blocks of current partition
-                if(part != self):
+                if(part != self and part.top_item == block.item):
                     # Check if block item and partition top item are equal
-                    # if(itemEquality(part.top_item, block.item)):
-                    if(part.top_item == block.item):
-                        found = True
+                    found = True
 
             if(not found):
                 blocks += self.num_factory_blocks[block]
 
         return blocks
+
+    def getFactoryCellAmount(self, base_factory):
+        cells = 0
+        for block in self.factory_blocks:
+            cells += len(block.fcells)
+
+        return cells
 
     def populateFactoryBlocks(self, factory):
         for recipe in self.num_factory_blocks.keys():
