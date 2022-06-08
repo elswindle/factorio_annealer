@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import blueprinter
 
 bptr = blueprinter.Blueprinter()
-bptr.readBlueprint('data/test_blueprint.txt')
+bptr.readBlueprint('data/test2.txt')
 
 base_game = game.Game()
 
