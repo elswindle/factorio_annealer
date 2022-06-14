@@ -21,13 +21,13 @@ base_factory.loadFactoryRecipeList('data/recipe_list.csv')
 base_factory.importBlockTemplates('data/factory_block_templates.csv')
 base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 
-part = partition.Partition(base_game.item_list['labs'])
-base_factory.partitions[base_game.item_list['labs']] = part
+# part = partition.Partition(base_game.item_list['labs'])
+# base_factory.partitions[base_game.item_list['labs']] = part
 
 # part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
 # base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['military-science-pack'])
-# base_factory.partitions[base_game.item_list['military-science-pack']] = part2
+part2 = partition.Partition(base_game.item_list['military-science-pack'])
+base_factory.partitions[base_game.item_list['military-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['automation-science-pack'])
 # base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['utility-science-pack'])
@@ -67,6 +67,8 @@ for _ in range(25000):
     if(_ % 1000 == 0):
         print(_)
         base_factory.validateFactoryCellLocations()
+        # fd.drawFactory()
+        # plt.show()
     g1, g2 = factory_annealer.generateMove()
     # fd.drawFactory()
     # fd.circleGroup(g1,'b')
