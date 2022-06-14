@@ -53,6 +53,8 @@ class Blueprinter:
                 print(str(x) + " " + str(y))
                 g1.position = (x*42,y*38)
                 bp2.entities.append(g1)
+                # bp2.translate(0,38)
+            # bp2.translate(42,y*-38)
         bp2.generate_power_connections()
         bp2.icons = bp.icons
         f = open("data/op_str.txt", "w")
