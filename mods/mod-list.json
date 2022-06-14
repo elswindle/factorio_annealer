@@ -1,0 +1,276 @@
+
+{
+  "mods": 
+  [
+    
+    {
+      "name": "base",
+      "enabled": true
+    },
+    
+    {
+      "name": "air-filtering",
+      "enabled": false
+    },
+    
+    {
+      "name": "alien-biomes",
+      "enabled": false
+    },
+    
+    {
+      "name": "angelsbioprocessing",
+      "enabled": false
+    },
+    
+    {
+      "name": "angelsinfiniteores",
+      "enabled": false
+    },
+    
+    {
+      "name": "angelspetrochem",
+      "enabled": false
+    },
+    
+    {
+      "name": "angelsrefining",
+      "enabled": false
+    },
+    
+    {
+      "name": "angelssmelting",
+      "enabled": false
+    },
+    
+    {
+      "name": "aswil",
+      "enabled": false
+    },
+    
+    {
+      "name": "AutoDeconstruct",
+      "enabled": false
+    },
+    
+    {
+      "name": "autofill",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobassembly",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobelectronics",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobenemies",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobgreenhouse",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobinserters",
+      "enabled": false
+    },
+    
+    {
+      "name": "boblibrary",
+      "enabled": false
+    },
+    
+    {
+      "name": "boblogistics",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobmining",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobmodules",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobores",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobplates",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobpower",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobrevamp",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobtech",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobvehicleequipment",
+      "enabled": false
+    },
+    
+    {
+      "name": "bobwarfare",
+      "enabled": false
+    },
+    
+    {
+      "name": "Bottleneck",
+      "enabled": false
+    },
+    
+    {
+      "name": "clock",
+      "enabled": false
+    },
+    
+    {
+      "name": "creative-mode-fix",
+      "enabled": false
+    },
+    
+    {
+      "name": "CredoTimeLapseModByMaessigcremig",
+      "enabled": false
+    },
+    
+    {
+      "name": "DeadlockLargerLamp",
+      "enabled": false
+    },
+    
+    {
+      "name": "EvoGUI",
+      "enabled": false
+    },
+    
+    {
+      "name": "FARL",
+      "enabled": false
+    },
+    
+    {
+      "name": "flib",
+      "enabled": true
+    },
+    
+    {
+      "name": "IndustrialRevolution",
+      "enabled": false
+    },
+    
+    {
+      "name": "IndustrialRevolution-LanguagePack",
+      "enabled": false
+    },
+    
+    {
+      "name": "Inventory Sensor",
+      "enabled": true
+    },
+    
+    {
+      "name": "Krastorio",
+      "enabled": false
+    },
+    
+    {
+      "name": "Krastorio-graphics",
+      "enabled": false
+    },
+    
+    {
+      "name": "L0laapk3_FactorioMaps",
+      "enabled": false
+    },
+    
+    {
+      "name": "LogisticTrainNetwork",
+      "enabled": true
+    },
+    
+    {
+      "name": "long-reach",
+      "enabled": false
+    },
+    
+    {
+      "name": "LtnManager",
+      "enabled": true
+    },
+    
+    {
+      "name": "Rampant",
+      "enabled": false
+    },
+    
+    {
+      "name": "robot_attrition",
+      "enabled": false
+    },
+    
+    {
+      "name": "rso-mod",
+      "enabled": false
+    },
+    
+    {
+      "name": "space-exploration",
+      "enabled": false
+    },
+    
+    {
+      "name": "space-exploration-graphics",
+      "enabled": false
+    },
+    
+    {
+      "name": "space-exploration-postprocess",
+      "enabled": false
+    },
+    
+    {
+      "name": "Squeak Through",
+      "enabled": false
+    },
+    
+    {
+      "name": "TheFatController",
+      "enabled": false
+    },
+    
+    {
+      "name": "upgrade-planner",
+      "enabled": false
+    },
+    
+    {
+      "name": "YARM",
+      "enabled": false
+    }
+  ]
+}
