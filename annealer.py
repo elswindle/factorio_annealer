@@ -1,25 +1,26 @@
-import factoryblock
-import factorycell
-import factorycellio
-import factory
-import factorydrawer
-import partition
+from factoryblock import FactoryBlock
+from factorycell import FactoryCell
+from factorycellio import FactoryCellIO
+from factory import Factory
+from factorydrawer import FactoryDrawer
+from partition import Partition
+from routegroup import RouteGroup
 from globals import *
-import routegroup
 import random
 from math import ceil
 
 def blockLength(block):
     if(block == -1):
         return 1
-    elif(isinstance(block, factoryblock.FactoryBlock)):
+    elif(isinstance(block, FactoryBlock)):
         return len(block.fcells)
     else:
         print("not a factory block")
         return -1
 
 class Annealer:
-    def __init__(self, factory : factory.Factory):
+    def __init__(self, factory):
+        # type: (Factory) -> None
         random.seed()
         self.factory = factory
         self.route_groups = {}              # Partition : Item : Recipe : RouteGroup
@@ -44,7 +45,7 @@ class Annealer:
                     else:
                         train_size = stack_size * 40
                     tpm = rate / train_size                 # Trains have 40 inventory slots
-                    new_rg = routegroup.RouteGroup(producer, requester, tpm)
+                    new_rg = RouteGroup(producer, requester, tpm)
                     
                     self.route_groups[part][producer][requester] = new_rg
 
@@ -63,13 +64,15 @@ class Annealer:
             cost += self.getPartitionCost(part)
         return cost
 
-    def getPartitionCost(self, partition : partition.Partition):
+    def getPartitionCost(self, partition):
+        # type: (Partition) -> None
         cost = 0
         for rg in self.route_groups[partition]:
             cost += len(rg)
         return cost
 
     def generateMove(self, inloc1=-1, inloc2=-1):
+        # type: (Location, Location) -> None
         f = self.factory.factory
 
         move_generated = False
@@ -234,6 +237,7 @@ class Annealer:
         return cell_group1, cell_group2
 
     def numAdjacentDepots(self, cell):
+        # type: (FactoryCell) -> None
         if(cell == EMPTY):
             return 9
         if(cell.recipe.item.is_resource):
@@ -266,7 +270,8 @@ class Annealer:
 
         return loc1, loc2
 
-    def evaluateMove(self, cg1, cg2, fd : factorydrawer.FactoryDrawer=-1):
+    def evaluateMove(self, cg1, cg2, fd=-1):
+        # type: (list[FactoryCell], list[FactoryCell], FactoryDrawer) -> None
         cost_change = []
         
         for cell in cg1 + cg2:
@@ -345,6 +350,7 @@ class Annealer:
             # print("temperature")
 
     def setTestLocations(self, cg1, cg2):
+        # type: (list[FactoryCell], list[FactoryCell]) -> None
         for idx in range(len(cg1)):
             # Update block location only once
             new_loc1 = cg2[idx].location - cg1[idx].offset
@@ -366,6 +372,7 @@ class Annealer:
             self.factory.tf[x][y] = cg2[idx]
 
     def resetTestLocations(self, cg1, cg2, accepted):
+        # type: (list[FactoryCell], list[FactoryCell], bool) -> None
         for idx in range(len(cg1)):
             # Only swap back the test factory if the move was not accepted
             if(not accepted):
@@ -380,6 +387,7 @@ class Annealer:
             cg2[idx].resetTestLocation()
 
     def performMove(self, cg1, cg2):
+        # type: (list[FactoryCell], list[FactoryCell]) -> None
         # Reset the test locations of the blocks but not the test factory
         self.resetTestLocations(cg1, cg2, True)
         

@@ -36,7 +36,8 @@ class Partition:
         for top_recipe in top_recipes:
             self.recurseCalculateFBR(base_factory, top_recipe, 1, True)
         
-    def recurseCalculateFBR(self, factory, recipe : recipe.Recipe, share, is_top=False):
+    def recurseCalculateFBR(self, factory, recipe, share, is_top=False):
+        # type: (factory.Factory, recipe.Recipe, float, bool) -> None
         for producer in recipe.inputs:
             # Special treatment for top item's requester
             # Don't process anything from top's requester if it isn't top

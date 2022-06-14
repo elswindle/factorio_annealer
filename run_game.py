@@ -7,7 +7,9 @@ from globals import *
 import matplotlib.pyplot as plt
 import blueprinter
 
-bptr = blueprinter.Blueprinter('data/micro_blocks_v0.9.txt')
+bptr = blueprinter.Blueprinter()
+bptr.testEntityTransfer()
+# bptr = blueprinter.Blueprinter('data/micro_blocks_v0.9.txt')
 # bptr.test123('data/labs_with_circuits.txt')
 
 base_game = game.Game()
@@ -19,13 +21,13 @@ base_factory.loadFactoryRecipeList('data/recipe_list.csv')
 base_factory.importBlockTemplates('data/factory_block_templates.csv')
 base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
 
-# part = partition.Partition(base_game.item_list['labs'])
-# base_factory.partitions[base_game.item_list['labs']] = part
+part = partition.Partition(base_game.item_list['labs'])
+base_factory.partitions[base_game.item_list['labs']] = part
 
 # part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
 # base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['military-science-pack'])
-base_factory.partitions[base_game.item_list['military-science-pack']] = part2
+# part2 = partition.Partition(base_game.item_list['military-science-pack'])
+# base_factory.partitions[base_game.item_list['military-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['automation-science-pack'])
 # base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['utility-science-pack'])

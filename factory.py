@@ -3,7 +3,7 @@ import factoryblocktemplates
 import factorycell
 import factoryblock
 import recipe
-import item
+from item import Item
 import partition
 from globals import *
 from math import ceil, floor, sqrt
@@ -11,6 +11,7 @@ import csv as csv
 
 class Factory:
     def __init__(self, rate, item_list):
+        # type: (float, list[Item]) -> None
         self.science_rate = rate
         self.factory_scalar = rate / 1000       # Amount to scale requirements by
         self.factory_reqs = {}                  # Item : rate
@@ -29,6 +30,7 @@ class Factory:
         self.placement_ptr = Location(1,1)      # keeps track of location to place next block
 
     def loadFactoryRecipeList(self, path):
+        # type: (str) -> None
         recipe_csv = csv.reader(open(path), delimiter=',')
         # Skip headers
         next(recipe_csv)
@@ -61,6 +63,7 @@ class Factory:
             self.recipe_list[new_recipe.name] = new_recipe
 
     def importBlockTemplates(self, path):
+        # type: (str) -> None
         block_csv = csv.reader(open(path, newline=''), delimiter=',')
         # Skip headers
         next(block_csv)
@@ -79,6 +82,7 @@ class Factory:
             row = next(block_csv)
 
     def load1kspsRequirements(self, path):
+        # type: (str) -> None
         # Expected format:
         # producer,rate
         # req,requester,x,y,placement(,rate (if o/p))
@@ -110,6 +114,7 @@ class Factory:
                 row = next(csv_req)
 
     def createPartitions(self, path):
+        # type: (str) -> None
         part_csv = csv.reader(open(path, newline=''), delimiter=',')
 
         for top_item_str in part_csv:

@@ -74,6 +74,7 @@ class FactoryBlockTemplate:
         self.inputs.append(IOTemplate(location, placement, INPUT, item))
 
     def addOutput(self, item, location, placement, rate):
+        # type: (item.Item, Location, int, float) -> None
         if(len(self.pcells) == 0):
             self.pcells.append(location)
         else:
