@@ -119,71 +119,97 @@ class Blueprinter:
         gcp = Group(entities=self.ub_book.blueprints[8].entities)
         # inserter 12
         gi = Group(entities=self.ub_book.blueprints[12].entities)
+        # rail edge 58
+        gre = Group(entities=self.ub_book.blueprints[58].entities)
 
         factory_blueprint = Blueprint()
 
-        for x in range(7):
-            for y in range(4):
-                gg.position = (x * self.x_interval, y * self.y_interval)
-                factory_blueprint.entities.append(gg)
+        # for x in range(7):
+        #     for y in range(4):
+        #         gg.position = (x * self.x_interval, y * self.y_interval)
+        #         factory_blueprint.entities.append(gg)
 
-        position = {"x": 20, "y": 18+self.y_interval}
-        gd.position = position
-        factory_blueprint.entities.append(gd)
-        position["x"] += self.x_interval
-        gec.position = position
-        factory_blueprint.entities.append(gec)
-        position["x"] += self.x_interval
-        gcp.position = position
-        factory_blueprint.entities.append(gcp)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
+        ymax = 18 + 5*self.y_interval
+        xmax = 20 + 7*self.x_interval
+        position1 = {'x': 20-self.x_interval, 'y': 18}
+        position2 = {'x': 20-self.x_interval, 'y': ymax}
+        for x in range(8):
+            gre.position = position1
+            factory_blueprint.entities.append(gre)
+            gre.position = position2
+            factory_blueprint.entities.append(gre)
+            position1['x'] += self.x_interval
+            position2['x'] += self.x_interval
 
-        position = {"x": 20, "y": self.y_interval*2 + 18}
-        gd.position = position
-        factory_blueprint.entities.append(gd)
-        position["x"] += self.x_interval
-        gip.position = position
-        factory_blueprint.entities.append(gip)
-        position["x"] += self.x_interval
-        gi.position = position
-        factory_blueprint.entities.append(gi)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
-        position["x"] += self.x_interval
-        glsp.position = position
-        factory_blueprint.entities.append(glsp)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
+        # Corners handled by x for loop
+        position1 = {'x': 20-self.x_interval, 'y': 18+self.y_interval}
+        position2 = {'x': xmax, 'y': 18+self.y_interval}
+        for y in range(3):
+            gre.position = position1
+            factory_blueprint.entities.append(gre)
+            gre.position = position2
+            factory_blueprint.entities.append(gre)
+            position1['y'] += self.y_interval
+            position2['y'] += self.y_interval
 
-        position = {"x": 20, "y": self.y_interval * 3 + 18}
-        gip.position = position
-        factory_blueprint.entities.append(gip)
-        position["x"] += self.x_interval
-        gig.position = position
-        factory_blueprint.entities.append(gig)
-        position["x"] += self.x_interval
-        glsp.position = position
-        factory_blueprint.entities.append(glsp)
-        position["x"] += self.x_interval
-        glsp.position = position
-        factory_blueprint.entities.append(glsp)
-        position["x"] += self.x_interval
-        gtb.position = position
-        factory_blueprint.entities.append(gtb)
-        position["x"] += self.x_interval
-        gd.position = position
-        factory_blueprint.entities.append(gd)
+        # position = {"x": 20, "y": 18+self.y_interval}
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+        # position["x"] += self.x_interval
+        # gec.position = position
+        # factory_blueprint.entities.append(gec)
+        # position["x"] += self.x_interval
+        # gcp.position = position
+        # factory_blueprint.entities.append(gcp)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
 
+        # position = {"x": 20, "y": self.y_interval*2 + 18}
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+        # position["x"] += self.x_interval
+        # gip.position = position
+        # factory_blueprint.entities.append(gip)
+        # position["x"] += self.x_interval
+        # gi.position = position
+        # factory_blueprint.entities.append(gi)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+        # position["x"] += self.x_interval
+        # glsp.position = position
+        # factory_blueprint.entities.append(glsp)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+
+        # position = {"x": 20, "y": self.y_interval * 3 + 18}
+        # gip.position = position
+        # factory_blueprint.entities.append(gip)
+        # position["x"] += self.x_interval
+        # gig.position = position
+        # factory_blueprint.entities.append(gig)
+        # position["x"] += self.x_interval
+        # glsp.position = position
+        # factory_blueprint.entities.append(glsp)
+        # position["x"] += self.x_interval
+        # glsp.position = position
+        # factory_blueprint.entities.append(glsp)
+        # position["x"] += self.x_interval
+        # gtb.position = position
+        # factory_blueprint.entities.append(gtb)
+        # position["x"] += self.x_interval
+        # gd.position = position
+        # factory_blueprint.entities.append(gd)
+
+        factory_blueprint.icons = self.ub_book.blueprints[0].icons
         f.write(factory_blueprint.to_string())
         print("done!")
 
