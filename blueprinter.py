@@ -23,15 +23,6 @@ class Blueprinter:
             grid_bp = self.ub_book.blueprints[0]
             self.x_interval = grid_bp.snapping_grid_size["x"]
             self.y_interval = -grid_bp.snapping_grid_size["y"]  # Negative is up
-
-            for bp in self.ub_book.blueprints:
-                for entity in bp.entities:
-                    if entity.name == "logistic-train-stop":
-                        entity._name = "train-stop"
-                    if entity.name == "logistic-train-stop-output":
-                        entity._name = "constant-combinator"
-                    if entity.name == "logistic-train-stop-input":
-                        entity._name = "small-lamp"
         else:
             self.ub_book = BlueprintBook()
 
@@ -52,7 +43,7 @@ class Blueprinter:
         for x in range(factory.dimensions.x + 2):
             for y in range(factory.dimensions.y + 2):
                 cell = factory.factory[x][y]
-                position = (x * self.x_interval, y * self.y_interval)
+                position = (x * self.x_interval, (y+1) * self.y_interval)
                 if cell is not EMPTY:
                     cell: FactoryCell
                     if cell.recipe.item.is_resource:
@@ -108,6 +99,8 @@ class Blueprinter:
         pass
 
     def testFactoryBlueprint(self, factory=EMPTY):
+        f = open("data/op_str.txt", "w")
+
         # Grid 00
         gg = Group(entities=self.ub_book.blueprints[0].entities)
         # iron-plate 06
@@ -134,7 +127,7 @@ class Blueprinter:
                 gg.position = (x * self.x_interval, y * self.y_interval)
                 factory_blueprint.entities.append(gg)
 
-        position = {"x": 20, "y": 18}
+        position = {"x": 20, "y": 18+self.y_interval}
         gd.position = position
         factory_blueprint.entities.append(gd)
         position["x"] += self.x_interval
@@ -153,7 +146,7 @@ class Blueprinter:
         gd.position = position
         factory_blueprint.entities.append(gd)
 
-        position = {"x": 20, "y": self.y_interval + 18}
+        position = {"x": 20, "y": self.y_interval*2 + 18}
         gd.position = position
         factory_blueprint.entities.append(gd)
         position["x"] += self.x_interval
@@ -172,7 +165,7 @@ class Blueprinter:
         gd.position = position
         factory_blueprint.entities.append(gd)
 
-        position = {"x": 20, "y": self.y_interval * 2 + 18}
+        position = {"x": 20, "y": self.y_interval * 3 + 18}
         gip.position = position
         factory_blueprint.entities.append(gip)
         position["x"] += self.x_interval
@@ -191,7 +184,6 @@ class Blueprinter:
         gd.position = position
         factory_blueprint.entities.append(gd)
 
-        f = open("data/op_str.txt", "w")
         f.write(factory_blueprint.to_string())
         print("done!")
 
