@@ -3,6 +3,7 @@ import factory
 import item
 import recipe
 
+
 class Game:
     def __init__(self):
         self.factory = 0
@@ -10,7 +11,7 @@ class Game:
         self.recipe_list = {}
 
     def loadItemList(self, path):
-        item_csv = csv.reader(open(path), delimiter=',')
+        item_csv = csv.reader(open(path), delimiter=",")
         next(item_csv)
         for row in item_csv:
             self.item_list[row[0]] = item.Item(row)

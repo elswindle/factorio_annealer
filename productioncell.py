@@ -1,11 +1,13 @@
 from globals import *
 import factorycellio
+
 # prod_cell
 #   ios
 #       inputs
 #           item, rate, loc, Location, FactoryCell
 #       outputs
 #           item, rate, loc, Location, FactoryCell
+
 
 class ProductionCell:
     def __init__(self, offset: Location, ios):

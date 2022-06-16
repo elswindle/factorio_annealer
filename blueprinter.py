@@ -1,24 +1,41 @@
-import factory
+from html import entities
+
+from matplotlib.pyplot import grid
+from factory import Factory
 from factory_blueprint import FactoryCellGroup
+from factorycell import FactoryCell
 from globals import *
 from draftsman.classes.blueprint import Blueprint
 from draftsman.classes.blueprintbook import BlueprintBook
 from draftsman.classes.group import Group
+
 # from draftsman import utils
 import sys
 
+
 class Blueprinter:
-    def __init__(self, bpb_path=EMPTY, factory=EMPTY):
-        if(bpb_path is not EMPTY):
+    def __init__(self, bpb_path=EMPTY):
+        if bpb_path is not EMPTY:
             bpb_file = open(bpb_path)
             self.bpb_str = bpb_file.readline()
 
             self.ub_book = BlueprintBook(self.bpb_str)
+            grid_bp = self.ub_book.blueprints[0]
+            self.x_interval = grid_bp.snapping_grid_size["x"]
+            self.y_interval = -grid_bp.snapping_grid_size["y"]  # Negative is up
+
+            for bp in self.ub_book.blueprints:
+                for entity in bp.entities:
+                    if entity.name == "logistic-train-stop":
+                        entity._name = "train-stop"
+                    if entity.name == "logistic-train-stop-output":
+                        entity._name = "constant-combinator"
+                    if entity.name == "logistic-train-stop-input":
+                        entity._name = "small-lamp"
         else:
             self.ub_book = BlueprintBook()
 
-        self.factory = factory
-        self.fcgroups = {}          # recipe : FactoryCellGroup
+        self.fcgroups = {}  # recipe : FactoryCellGroup
 
     def loadBlueprintBookString(self, path):
         file = open(path)
@@ -26,14 +43,157 @@ class Blueprinter:
 
         self.ub_book.load_from_string(self.bpb_str)
 
-    def generateFactoryCellGroups(self):
-        pass
-        
-    def readBlueprint(self, path):
-        pass
+    def generateFactoryBlueprint(self, factory):
+        # type: (Factory) -> None
+        self.factory_blueprint = Blueprint()
+
+        # Add factory cells to blueprint
+        # Need a way to handle cells not 1x1, ie advanced circuits
+        for x in range(factory.dimensions.x + 2):
+            for y in range(factory.dimensions.y + 2):
+                cell = factory.factory[x][y]
+                position = (x * self.x_interval, y * self.y_interval)
+                if cell is not EMPTY:
+                    cell: FactoryCell
+                    if cell.recipe.item.is_resource:
+                        print("hello")
+                    else:
+                        bp = self.ub_book.blueprints[cell.recipe.name]
+                        rel_pos = bp.position_relative_to_grid
+                        cell_pos = (
+                            position["x"] + rel_pos["x"],
+                            position["y"] + rel_pos["y"],
+                        )
+                        group = Group(entities=bp.entities, position=cell_pos)
+
+                        self.factory_blueprint.entities.append(group)
+
+        grid_bp = self.ub_book.blueprints["grid"]
+        grid_group = Group(entities=grid_bp.entities)
+        # Add additional rail grid row/column
+        for x in range(factory.dimensions.x + 3):
+            for y in range(factory.dimensions.y + 3):
+                grid_group = position = (x * self.x_interval, y * self.y_interval)
+                self.factory_blueprint.entities.append(grid_group)
+
+        # Add edges to blueprint
+        xmax = (factory.dimensions.x + 3) * self.x_interval
+        ymax = (factory.dimensions.y + 3) * self.y_interval
+        edge_bp = self.ub_book.blueprints["edge"]
+        edge_group = Group(entities=edge_bp.entities)
+        for x in range(factory.dimensions.x + 4):
+            position1 = ((x - 1) * self.x_interval, ymax)
+            position2 = ((x - 1) * self.x_interval, -self.y_interval)
+            rel_pos = edge_bp.position_relative_to_grid
+            cell_pos1 = (position1["x"] + rel_pos["x"], position1["y"] + rel_pos["y"])
+            cell_pos2 = (position2["x"] + rel_pos["x"], position2["y"] + rel_pos["y"])
+            edge_group.position = cell_pos1
+            self.factory_blueprint.entities.append(edge_group)
+            edge_group.position = cell_pos2
+            self.factory_blueprint.entities.append(edge_group)
+
+        # No need to add corners, these should be added by above
+        for y in range(factory.dimensions.y + 2):
+            position1 = (xmax, y * self.y_interval)
+            position2 = (-self.x_interval, y * self.y_interval)
+            rel_pos = edge_bp.position_relative_to_grid
+            cell_pos1 = (position1["x"] + rel_pos["x"], position1["y"] + rel_pos["y"])
+            cell_pos2 = (position2["x"] + rel_pos["x"], position2["y"] + rel_pos["y"])
+            edge_group.position = cell_pos1
+            self.factory_blueprint.entities.append(edge_group)
+            edge_group.position = cell_pos2
+            self.factory_blueprint.entities.append(edge_group)
 
     def testFactoryCellGroup(self):
         pass
+
+    def testFactoryBlueprint(self, factory=EMPTY):
+        # Grid 00
+        gg = Group(entities=self.ub_book.blueprints[0].entities)
+        # iron-plate 06
+        gip = Group(entities=self.ub_book.blueprints[6].entities)
+        # iron-gear 10
+        gig = Group(entities=self.ub_book.blueprints[10].entities)
+        # logistic-science-pack 41
+        glsp = Group(entities=self.ub_book.blueprints[41].entities)
+        # transport-belt 11
+        gtb = Group(entities=self.ub_book.blueprints[11].entities)
+        # depot 03
+        gd = Group(entities=self.ub_book.blueprints[3].entities)
+        # electronic-circuit 33
+        gec = Group(entities=self.ub_book.blueprints[33].entities)
+        # copper-plate 08
+        gcp = Group(entities=self.ub_book.blueprints[8].entities)
+        # inserter 12
+        gi = Group(entities=self.ub_book.blueprints[12].entities)
+
+        factory_blueprint = Blueprint()
+
+        for x in range(7):
+            for y in range(4):
+                gg.position = (x * self.x_interval, y * self.y_interval)
+                factory_blueprint.entities.append(gg)
+
+        position = {"x": 20, "y": 18}
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+        position["x"] += self.x_interval
+        gec.position = position
+        factory_blueprint.entities.append(gec)
+        position["x"] += self.x_interval
+        gcp.position = position
+        factory_blueprint.entities.append(gcp)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+
+        position = {"x": 20, "y": self.y_interval + 18}
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+        position["x"] += self.x_interval
+        gip.position = position
+        factory_blueprint.entities.append(gip)
+        position["x"] += self.x_interval
+        gi.position = position
+        factory_blueprint.entities.append(gi)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+        position["x"] += self.x_interval
+        glsp.position = position
+        factory_blueprint.entities.append(glsp)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+
+        position = {"x": 20, "y": self.y_interval * 2 + 18}
+        gip.position = position
+        factory_blueprint.entities.append(gip)
+        position["x"] += self.x_interval
+        gig.position = position
+        factory_blueprint.entities.append(gig)
+        position["x"] += self.x_interval
+        glsp.position = position
+        factory_blueprint.entities.append(glsp)
+        position["x"] += self.x_interval
+        glsp.position = position
+        factory_blueprint.entities.append(glsp)
+        position["x"] += self.x_interval
+        gtb.position = position
+        factory_blueprint.entities.append(gtb)
+        position["x"] += self.x_interval
+        gd.position = position
+        factory_blueprint.entities.append(gd)
+
+        f = open("data/op_str.txt", "w")
+        f.write(factory_blueprint.to_string())
+        print("done!")
 
     def testEntityTransfer(self, path=""):
         # f = open(path)
@@ -51,7 +211,7 @@ class Blueprinter:
         for x in range(4):
             for y in range(4):
                 print(str(x) + " " + str(y))
-                g1.position = (x*42,y*38)
+                g1.position = (x * 42, y * 38)
                 bp2.entities.append(g1)
                 # bp2.translate(0,38)
             # bp2.translate(42,y*-38)
@@ -62,145 +222,6 @@ class Blueprinter:
         print(bp2.to_string())
 
         print("123")
-
-        # id = 0
-        # for entity in bp.entities:
-        #     entity.id = str(id)
-        #     id += 1
-
-        # g1 = FactoryCellGroup('g1')
-        # g2 = FactoryCellGroup('g2', name='test2', position=(0,25))
-        # # g1.entities = bp.entities
-        
-        # bp2 = Blueprint()
-        # bp2.entities.append(g1)
-        # bp2.entities.append(g2)
-        # # g1.entities = bp.entities
-        # bp2.entities['g1'].entities = bp.entities
-        # bp2.entities['g2'].entities = bp.entities
-        # bp2.icons = bp.icons
-        # print(bp2.to_string())
-        # for entity in g1.entities:
-        #     print(entity)
-
-    def test123(self,path):
-        file = open(path)
-        bp_str = file.readline()
-        # bp_str.rstrip('\n')
-        # GRID bp
-        bp_str = "0eNqdmt1u4jAQhd8l16Gyx7Ed8yqragU06kaiCQqh2qri3TcpPyplspyTS1ryceKZsY/H/szW20O16+qmz5afWb1pm322/PWZ7evXZrUd/9Z/7KpsmdV99ZblWbN6Gz91q3qbHfOsbl6qv9nSHp/zrGr6uq+r0/NfHz5+N4e3ddUNX7g+ue+HZ1//9IsvRJ7t2v3wVNuMPzWSUp59jMBjfgeRK2Rdvy6qbbXpu3qz2LXb6h4kcgYND1XDD67bQzdK8zEP7lmhO1Si+GmJBfmeToN4UokKCaQSr0EiqUSFlFfI5tC9Vy9TOsrTsJohYi91NwT3639eISby3aImyxpMlwRVV6EhLTleujAhXy+pFDafdQqb0FYtC8um9AQmgKl0rv1wGzLRkHCK27Mydwt1GrS8mSgXmz+rulmcp9R7cPF0RsuTv4VbDc5mv1XnBzFsSHQMnvJJHT+tvkWwODs9zlFDOiYkkiZDosVbilv4FLa8UP1Pqpaa4qksChw8UPB4gQ+5qqZBZJNSx1CFI8K9cmIzXtXoDKUxUhqdpeDhe1geLk9OGLjznHJ4vbEnagSY8OrjcCa8FHmcCZutiDPhiko4s4RjRAQJX4/wKBWGXZYRKL4LweNUsG7NqqavcDzmsTa4fgSPd4F7OSLegZ2bEWjkoRoGrhoh0iaxvgmAerhqHB5vD1eNw+Pt4apxeLw9XEMOD5TH1yAiUHANFUSg4BoqiEBFpulyEivmZ9NFcitWa7r4b4avXbe7tusVuReqBkjzfGzSfWww7DSsbpsD2wiYwAgyOuY/wxMcE75zXhDxC2x/QNSNfWD7AxOYMMs9i0Hcc4icwRX3uLpCyRlciJk4g4swo+EMLsS0VDNHisf78CicZ4ZkOtIzQ9CC9MwQ1JOeGYIG0jNDULZbIGrvKZY85rG2RHpmBFoa0jNDUHaRgaDCQzWMIz0zpK2g2oI/Z4ygIT1pwyGdgbThEDSSNhyClqQNh6CJtOEINBnShkNQS9pwCCqkDYegVPv60meWu7agVgOpYNeN+PiUIvlZvly87stTmNULBweAXo50jVzz2nIa2ea1rtEaw0548fHhijV2Vk8ce3VrZJ6t94itt8ZhhzfXfjiquqDOvZ3R4+VnHSWOQ4zEjb0lIBNH6ZE6S3cGOOY0JZvxE9rSrJO/+xH06ok/2zAQ/ZydvjowxWHb0U4/aaevD0xx6BsxTufQl2ImOGzGO30etWxveYrD7mGcnuWWXR8mOMLms9Pz8Nu9APyy1sBCb2tZYTcqo9Dn/HSPbfnt2luevVfd/uS8SlvEJNGHYUWzcjz+Az5/z8Y="
-        bp_str2 = "0eJyVk0lqxDAQRe9SazXE8uxlrhFMkLqLToEtG0kOMUZ3jzzQNNpYXmms//hV/AVkN+GoSVloFqD7oAw0XwsYeirRrXd2HhEaIIs9MFCiX09aUAeOAakH/kGTuJYBKkuWcK8//plJGissDcrXjoOhbetVfdEtZzD7Jam90IM03vfHj0Nq/lZTL1F7ec9Fev7IYdKrfNE6FofgycYozgg8IJSxhN3DuYU0AFSxgMPBLT8jZAEhv0g4BeQBILvWo4g5FwEhuTrn8y6VAYJHI2InXQWEtF3DscWneUsbg1/UZtPgVZKVNS8zXtdp7Z10QqLPHny+fjv3D2crNyA="
-
-        # poles bp
-        # bp_str = "0eJyVkt1qxCAQhd9lrs2ymixbvexrLMsSkyEd8CcYUxqC776aLaUU2nSvRD3nfKMzK2gz4xjIRVArUOfdBOqywkSDa005i8uIoIAiWmDgWlt2moYKDXYxUFeN3iAkBuR6/ADF05UBukiR8BH2q4nB6Kes866QsrfiRwZLXk85r6eQxdvl8TNxubnZagyZkmtBGt60n0OhCFZfE3uGxf9JEj9I/ElOddpAfI9T/8Wx2NNs91Dy8GA1h91XNaVLW1PVtxlg8I5h2izihTdnKc6NkLKW+bNMqzFPBLx+qVO6A8Mnvng="
-        
-        # Labs bp
-        # bp_str = "0eJy1ldtugzAMht/F10kFAUrhcq8xTRMHq4sGgZFQDVW8+5K2q+ja0ZCtVxzsfL/j2PEe8qrHtuNCQboHXjRCQvq8B8m3IqvMPzW0CClwhTUQEFltvnLMtCuMBLgo8RNSfyR3F1VZPlnBxhcCKBRXHI+aEzcCbSO1RWtomvam/ioiMOhlq8gwNFgaU9s1ZV8ovuNqoLV+r5AGBn5iD6+ir3PsThFehn+tEpxUoksV2SKW83hmg/ec8YEFnjnTwwldqqx4p1xI7JS2/b4J7yDzgxQtIM2C1hNQ1Wy5VLygxRtKRTv86PVzNjh6Exo7QeeZG5fcmXLWqJJ3WBzt4RU4cUilDdf3plm41WzfvWbawbHZrLrtHPV6ccX6Nv3G/sC3aTjKLitjkUBoewruN160JEcOW1jf2wL9h0qKl9zbLie9eejV6iePLVTmmTl6GLTpZJgT2GEnDwps44dxwuKQJUmQ+MQcFeopDU9n73H8AlTBmZE="
-        bp = Blueprint(bp_str)
-        bp2 = Blueprint(bp_str)
-        bp3 = Blueprint(bp_str)
-        bp4 = Blueprint(bp_str)
-        bp5 = Blueprint(bp_str2)
-
-        # new_id = 0
-        # inserters = bp.find_entities_filtered(type='inserter')
-        # for ins in inserters:
-        #     ins.id = str(new_id)
-        #     new_id += 1
-        #     base_pos = ins.position
-        #     pos1 = (base_pos['x'], base_pos['y']+1)
-        #     nb = bp.find_entities_filtered(position=pos1)
-        #     if(nb[0].type == 'logistic-container'): 
-        #         nb[0].id = str(new_id)
-        #         new_id += 1
-        #         bp.add_circuit_connection('red', ins.id, nb[0].id)
-        #     pos1 = (base_pos['x'], base_pos['y']-1)
-        #     nb = bp.find_entities_filtered(position=pos1)
-        #     if(nb[0].type == 'logistic-container'):
-        #         nb[0].id = str(new_id)
-        #         new_id += 1
-        #         bp.add_circuit_connection('green', ins.id, nb[0].id)
-
-        g1 = Group('g1')
-        g2 = Group('g2')
-        g3 = Group('g3')
-        g4 = Group('g4')
-        g5 = Group('g5')
-        
-        g1.position = (0,0)
-        g2.position = (42,0)
-        g3.position = (0,38)
-        g4.position = (42,38)
-        g5.position = (22,20)
-        for entity in bp2.entities:
-            g1.entities.append(entity)
-        for entity in bp.entities:
-            g2.entities.append(entity)
-        for entity in bp3.entities:
-            g3.entities.append(entity)
-        for entity in bp4.entities:
-            g4.entities.append(entity)
-        for entity in bp5.entities:
-            g5.entities.append(entity)
-        # g1.entities = bp2.entities
-        # g2.entities = bp.entities
-        # g3.entities = bp3.entities
-        # g4.entities = bp4.entities
-        # g5.entities = bp5.entities
-
-        bp8 = Blueprint()
-        # for entity in bp.entities:
-        #     bp8.entities.append(entity)
-
-        bp8.icons = bp.icons
-        bp8.entities = bp.entities.data
-        print(bp8.to_string())
-
-        for entity in g1.entities:
-            entity.neighbours = None
-        for entity in g2.entities:
-            # entity.position['x'] += 42
-            entity.neighbours = None
-        for entity in g3.entities:
-            # entity.position['x'] += 42
-            # entity.position['y'] += 38
-            entity.neighbours = None
-        for entity in g4.entities:
-            # entity.position['y'] += 38
-            entity.neighbours = None
-        for entity in g5.entities:
-            # entity.position['x'] += 22
-            # entity.position['y'] += 20
-            entity.neighbours = None
-        
-        # bp.generate_power_connections()
-
-        bp6 = Blueprint()
-        bp6.entities.append(g1)
-        bp6.entities.append(g2)
-        bp6.entities.append(g3)
-        bp6.entities.append(g4)
-        bp6.entities.append(g5)
-        g6 = Group('g6')
-        g6.entities.append('inserter', tile_position=(0,0))
-        g6.entities.append('inserter', tile_position=(1,0))
-        g6.entities.append('inserter', tile_position=(2,0))
-        # g6.entities.append('medium-electric-pole', position=(0,5))
-        g7 = Group('g7')
-        g7.position = (5,5)
-        g7.entities.append('fast-inserter', tile_position=(0,1))
-        g7.entities.append('fast-inserter', tile_position=(0,2))
-        g7.entities.append('fast-inserter', tile_position=(0,3))
-
-        bp6.entities.append(g6)
-        bp6.entities.append(g7)
-        bp6.icons = bp.icons
-        
-        print(bp6.to_string())
-
-        bp6.generate_power_connections()
-
-        print(123)
 
     def generateFactoryBlueprint(self, factory):
         print("hello")

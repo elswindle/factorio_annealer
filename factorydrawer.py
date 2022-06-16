@@ -7,34 +7,35 @@ import matplotlib.offsetbox as ob
 from PIL import Image
 from globals import *
 
+
 class FactoryDrawer:
-    def __init__(self, factory : factory.Factory):
+    def __init__(self, factory: factory.Factory):
         self.factory = factory
 
     def drawFactory(self):
         # Draw grid
-        rows = self.factory.dimensions.y+2
-        cols = self.factory.dimensions.x+2
+        rows = self.factory.dimensions.y + 2
+        cols = self.factory.dimensions.x + 2
         # Draw bottom and left line
-        ymax = rows*BLOCKY
-        xmax = cols*BLOCKX
-        fig, ax = plt.subplots(1,1,figsize=(xmax/10,ymax/10))
+        ymax = rows * BLOCKY
+        xmax = cols * BLOCKX
+        fig, ax = plt.subplots(1, 1, figsize=(xmax / 10, ymax / 10))
         fig.dpi = 20
-        plt.plot([0,xmax],[ymax]*2,color='k')
-        plt.plot([xmax]*2,[0,ymax],color='k')
+        plt.plot([0, xmax], [ymax] * 2, color="k")
+        plt.plot([xmax] * 2, [0, ymax], color="k")
 
         for row in range(rows):
-            plt.plot([0,xmax],[row*BLOCKY]*2,color='k')
+            plt.plot([0, xmax], [row * BLOCKY] * 2, color="k")
         for col in range(cols):
-            plt.plot([col*BLOCKX]*2, [0,ymax],color='k')
-        
+            plt.plot([col * BLOCKX] * 2, [0, ymax], color="k")
+
         # Add cell icons
         for row in range(rows):
             for col in range(cols):
                 cell = self.factory.factory[col][row]
-                if(cell != EMPTY):
-                    if(cell.recipe != -1):
-                        self.plotIcon(row,col,cell.recipe,ax)
+                if cell != EMPTY:
+                    if cell.recipe != -1:
+                        self.plotIcon(row, col, cell.recipe, ax)
 
                         # ips = cell.inputs
                         # ops = cell.outputs
@@ -48,8 +49,8 @@ class FactoryDrawer:
 
         # plt.show()
 
-    def circleGroup(self, cell_group, c='r'):
-        if(cell_group[0].parent_block == -1):
+    def circleGroup(self, cell_group, c="r"):
+        if cell_group[0].parent_block == -1:
             base_loc = cell_group[0].location
         else:
             base_loc = cell_group[0].parent_block.location
@@ -60,13 +61,13 @@ class FactoryDrawer:
         left = right = base_loc.x
         top = bot = base_loc.y
         for cell in cell_group:
-            if(cell.location.x < left):
+            if cell.location.x < left:
                 left = cell.location.x
-            if(cell.location.x > right):
+            if cell.location.x > right:
                 right = cell.location.x
-            if(cell.location.y < bot):
+            if cell.location.y < bot:
                 bot = cell.location.y
-            if(cell.location.y > top):
+            if cell.location.y > top:
                 top = cell.location.y
 
         top += 1
@@ -77,45 +78,54 @@ class FactoryDrawer:
         top *= BLOCKY
         bot *= BLOCKY
         # Plot 4 lines
-        plt.plot([left,right],[bot,bot],color=c, linewidth=lw)
-        plt.plot([left,right],[top,top],color=c, linewidth=lw)
-        plt.plot([left,left],[bot,top],color=c, linewidth=lw)
-        plt.plot([right,right],[bot,top],color=c, linewidth=lw)
+        plt.plot([left, right], [bot, bot], color=c, linewidth=lw)
+        plt.plot([left, right], [top, top], color=c, linewidth=lw)
+        plt.plot([left, left], [bot, top], color=c, linewidth=lw)
+        plt.plot([right, right], [bot, top], color=c, linewidth=lw)
 
-    def drawRoutes(self, producers, requesters, c='g', lw=4, test=False):
+    def drawRoutes(self, producers, requesters, c="g", lw=4, test=False):
         for producer in producers:
-            px = producer.location.x*BLOCKX+BLOCKX/2
-            py = producer.location.y*BLOCKY+BLOCKY/2
+            px = producer.location.x * BLOCKX + BLOCKX / 2
+            py = producer.location.y * BLOCKY + BLOCKY / 2
             for requester in requesters:
-                rx = requester.location.x*BLOCKX+BLOCKX/2
-                ry = requester.location.y*BLOCKY+BLOCKY/2
+                rx = requester.location.x * BLOCKX + BLOCKX / 2
+                ry = requester.location.y * BLOCKY + BLOCKY / 2
 
                 # plt.plot([px,rx],[py,ry],color=c,linewidth=lw)
-                plt.arrow(px, py, rx-px, ry-py, color=c, linewidth=lw, length_includes_head=True, head_width=lw)
+                plt.arrow(
+                    px,
+                    py,
+                    rx - px,
+                    ry - py,
+                    color=c,
+                    linewidth=lw,
+                    length_includes_head=True,
+                    head_width=lw,
+                )
 
     def plotIcon(self, row, col, recipe, ax):
-        im_path = 'imgs/' + recipe.name + '.png'
+        im_path = "imgs/" + recipe.name + ".png"
 
         icon = Image.open(im_path)
-        
-        xoffset = col*BLOCKX+BLOCKX/2
-        yoffset = row*BLOCKY+BLOCKY/2
+
+        xoffset = col * BLOCKX + BLOCKX / 2
+        yoffset = row * BLOCKY + BLOCKY / 2
 
         imagebox = ob.OffsetImage(icon, zoom=1)
-        ab = ob.AnnotationBbox(imagebox, (xoffset,yoffset), frameon=False)
+        ab = ob.AnnotationBbox(imagebox, (xoffset, yoffset), frameon=False)
 
         ax.add_artist(ab)
 
     def plotIOIcon(self, row, col, item, placement, idx, total, ax):
         # WIP do x offset
-        im_path = 'imgs/' + item.name + '.png'
+        im_path = "imgs/" + item.name + ".png"
         icon = Image.open(im_path)
-        xoffset = col*BLOCKX+BLOCKX/2
-        yoffset = row*BLOCKY+BLOCKY/2
-        if(placement == TOP):
-            yoffset += 3*BLOCKY/8
-        elif(placement == BOT):
-            yoffset -= 3*BLOCKY/8
+        xoffset = col * BLOCKX + BLOCKX / 2
+        yoffset = row * BLOCKY + BLOCKY / 2
+        if placement == TOP:
+            yoffset += 3 * BLOCKY / 8
+        elif placement == BOT:
+            yoffset -= 3 * BLOCKY / 8
 
         imagebox = ob.OffsetImage(icon, zoom=0.25)
         ab = ob.AnnotationBbox(imagebox, (xoffset, yoffset), frameon=False)

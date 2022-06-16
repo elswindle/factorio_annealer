@@ -7,27 +7,28 @@ from globals import *
 import matplotlib.pyplot as plt
 import blueprinter
 
-bptr = blueprinter.Blueprinter()
-bptr.testEntityTransfer()
-# bptr = blueprinter.Blueprinter('data/micro_blocks_v0.9.txt')
+# bptr = blueprinter.Blueprinter()
+# bptr.testEntityTransfer()
+bptr = blueprinter.Blueprinter("data/micro_blocks_v0.9.txt")
 # bptr.test123('data/labs_with_circuits.txt')
+bptr.testFactoryBlueprint()
 
 base_game = game.Game()
 
-base_game.loadItemList('data/item_list.csv')
-base_factory = factory.Factory(2000, base_game.item_list)
+base_game.loadItemList("data/item_list.csv")
+base_factory = factory.Factory(1000, base_game.item_list)
 
-base_factory.loadFactoryRecipeList('data/recipe_list.csv')
-base_factory.importBlockTemplates('data/factory_block_templates.csv')
-base_factory.load1kspsRequirements('data/factory_req_1ksps.csv')
+base_factory.loadFactoryRecipeList("data/recipe_list.csv")
+base_factory.importBlockTemplates("data/factory_block_templates.csv")
+base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
 
 # part = partition.Partition(base_game.item_list['labs'])
 # base_factory.partitions[base_game.item_list['labs']] = part
 
-# part2 = partition.Partition(base_game.item_list['logistic-science-pack'])
-# base_factory.partitions[base_game.item_list['logistic-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['military-science-pack'])
-base_factory.partitions[base_game.item_list['military-science-pack']] = part2
+part2 = partition.Partition(base_game.item_list["logistic-science-pack"])
+base_factory.partitions[base_game.item_list["logistic-science-pack"]] = part2
+# part2 = partition.Partition(base_game.item_list['military-science-pack'])
+# base_factory.partitions[base_game.item_list['military-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['automation-science-pack'])
 # base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['utility-science-pack'])
@@ -64,7 +65,7 @@ fd = FactoryDrawer(base_factory)
 # plt.show()
 
 for _ in range(25000):
-    if(_ % 1000 == 0):
+    if _ % 1000 == 0:
         print(_)
         base_factory.validateFactoryCellLocations()
         # fd.drawFactory()
@@ -76,7 +77,7 @@ for _ in range(25000):
     # factory_annealer.evaluateMove(g1, g2)
     # plt.show()
 
-    if(factory_annealer.evaluateMove(g1,g2)):
+    if factory_annealer.evaluateMove(g1, g2):
         factory_annealer.performMove(g1, g2)
 
 # g1, g2 = factory_annealer.generateMove()
@@ -95,4 +96,4 @@ fd.drawFactory()
 # factory_annealer.evaluateMove(g1, g2, fd)
 plt.show()
 
-print('done')
+print("done")

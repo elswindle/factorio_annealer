@@ -4,15 +4,16 @@ import recipe
 import item
 from globals import *
 
+
 class FactoryCell:
     def __init__(self, template, part, block, ips, ops, loc, is_depot=False):
         # Special case for depots
-        if(is_depot == True):
+        if is_depot == True:
             self.is_depot = True
             self.location = loc
             self.recipe = template.recipe
             self.parent_block = -1
-            self.offset = Location(0,0)
+            self.offset = Location(0, 0)
             self.tl = -1
             return
 
@@ -26,14 +27,14 @@ class FactoryCell:
         self.is_main = False
         self.offset = -1
 
-        if(template != IS_RESOURCE):
+        if template != IS_RESOURCE:
             self.recipe = template.recipe
             self.partition = part
             self.parent_block = block
 
             # Keep track if cell is a main or auxiliary cell
             # ATM blocks that have auxiliary cells: RC + space science
-            if(loc == Location(0,0)):
+            if loc == Location(0, 0):
                 self.is_main = True
             else:
                 self.is_main = False
@@ -44,7 +45,7 @@ class FactoryCell:
 
             for iotemp in ops:
                 self.outputs.append(factorycellio.FactoryCellIO(iotemp, self))
-        else: # for resource
+        else:  # for resource
             print("resource")
 
     def __repr__(self):
@@ -52,9 +53,9 @@ class FactoryCell:
 
     def setLocation(self, block_loc):
         self.location = block_loc + self.offset
-        if(self.location.x > 35 and self.recipe == EMPTY):
+        if self.location.x > 35 and self.recipe == EMPTY:
             print("help the cell")
-        if(not self.is_depot):
+        if not self.is_depot:
             for ip in self.inputs:
                 ip.location = self.location
             for op in self.outputs:
@@ -62,7 +63,7 @@ class FactoryCell:
 
     def setTestLocation(self, block_loc):
         self.tl = block_loc + self.offset
-        if(not self.is_depot):
+        if not self.is_depot:
             for ip in self.inputs:
                 ip.tl = self.tl
             for op in self.outputs:
@@ -70,14 +71,14 @@ class FactoryCell:
 
     def resetTestLocation(self):
         self.tl = -1
-        if(not self.is_depot):
+        if not self.is_depot:
             for ip in self.inputs:
                 ip.tl = self.tl
             for op in self.outputs:
                 op.tl = self.tl
 
     def setToDepot(self):
-        if(len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1):
+        if len(self.inputs) > 0 or len(self.outputs) > 0 or self.recipe == -1:
             print("attempting to set non-empty cell to Depot")
         else:
             self.is_depot = True
