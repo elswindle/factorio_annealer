@@ -20,9 +20,9 @@ end
 advanced-oil-processing
 ip,crude-oil,0,0,TOP
 ip,water,0,0,TOP
-op,petroleum-gas,0,0,BOT,6560
-op,light-oil,0,0,BOT,5370
 op,heavy-oil,0,0,BOT,2980
+op,light-oil,0,0,BOT,5370
+op,petroleum-gas,0,0,BOT,6560
 end
 lubricant
 ip,heavy-oil,0,0,TOP

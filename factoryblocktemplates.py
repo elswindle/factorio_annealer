@@ -1,11 +1,12 @@
 import csv as csv
 from globals import *
-import item
-import recipe
+from item import Item
+from recipe import Recipe
 
 
 class FactoryBlockTemplate:
-    def __init__(self, recipe: recipe.Recipe, csv_reader: csv.reader, item_list):
+    def __init__(self, recipe, csv_reader, item_list):
+        # type: (Recipe, csv.reader, list[Item]) -> None
         # Special case for depots
         if recipe.name == "depot":
             self.recipe = recipe
@@ -75,7 +76,7 @@ class FactoryBlockTemplate:
         self.inputs.append(IOTemplate(location, placement, INPUT, item))
 
     def addOutput(self, item, location, placement, rate):
-        # type: (item.Item, Location, int, float) -> None
+        # type: (Item, Location, int, float) -> None
         if len(self.pcells) == 0:
             self.pcells.append(location)
         else:

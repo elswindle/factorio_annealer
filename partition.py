@@ -47,6 +47,8 @@ class Partition:
                 if producer != self.top_item:
                     continue
 
+            if recipe.name == "advanced-oil-processing":
+                print('hi')
             # Get the total amount of the producer and
             # the amount of the producer going to the recipe
             # i.e. producer=gear, only 10% gear go to inserters
@@ -97,8 +99,8 @@ class Partition:
                 num_blocks = math.ceil(
                     req_rate / factory_block_rate + factory.block_num_buffer
                 )
-                # print(producer.name + " needs " + str(num_blocks) + " blocks")
-                # print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
+                print(producer.name + " needs " + str(num_blocks) + " blocks")
+                print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
                 self.num_factory_blocks[producer.recipe] = num_blocks
 
     def getFactoryBlockAmount(self, base_factory):

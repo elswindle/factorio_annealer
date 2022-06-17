@@ -9,14 +9,14 @@ import blueprinter
 
 # bptr = blueprinter.Blueprinter()
 # bptr.testEntityTransfer()
-bptr = blueprinter.Blueprinter("data/micro_blocks_v0.9.txt")
+# bptr = blueprinter.Blueprinter("data/micro_blocks_v0.9.txt")
 # bptr.test123('data/labs_with_circuits.txt')
-bptr.testFactoryBlueprint()
+# bptr.testFactoryBlueprint()
 
 base_game = game.Game()
 
 base_game.loadItemList("data/item_list.csv")
-base_factory = factory.Factory(1000, base_game.item_list)
+base_factory = factory.Factory(2000, base_game.item_list)
 
 base_factory.loadFactoryRecipeList("data/recipe_list.csv")
 base_factory.importBlockTemplates("data/factory_block_templates.csv")
@@ -25,8 +25,8 @@ base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
 # part = partition.Partition(base_game.item_list['labs'])
 # base_factory.partitions[base_game.item_list['labs']] = part
 
-part2 = partition.Partition(base_game.item_list["logistic-science-pack"])
-base_factory.partitions[base_game.item_list["logistic-science-pack"]] = part2
+# part2 = partition.Partition(base_game.item_list["logistic-science-pack"])
+# base_factory.partitions[base_game.item_list["logistic-science-pack"]] = part2
 # part2 = partition.Partition(base_game.item_list['military-science-pack'])
 # base_factory.partitions[base_game.item_list['military-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['automation-science-pack'])
@@ -35,8 +35,8 @@ base_factory.partitions[base_game.item_list["logistic-science-pack"]] = part2
 # base_factory.partitions[base_game.item_list['utility-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['production-science-pack'])
 # base_factory.partitions[base_game.item_list['production-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
-# base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
+part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
+base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['space-science-pack'])
 # base_factory.partitions[base_game.item_list['space-science-pack']] = part2
 # part2 = partition.Partition(base_game.item_list['sulfur'])
