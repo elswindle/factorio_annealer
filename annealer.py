@@ -5,12 +5,12 @@ from factory import Factory
 from factorydrawer import FactoryDrawer
 from partition import Partition
 from routegroup import RouteGroup
-from globals import *
+from utils import *
 import random
 from math import ceil
 
 
-def blockLength(block):
+def factoryBlockLength(block):
     if block == -1:
         return 1
     elif isinstance(block, FactoryBlock):
@@ -73,7 +73,7 @@ class Annealer:
             cost += len(rg)
         return cost
 
-    def generateMove(self, inloc1=-1, inloc2=-1):
+    def generateMove(self, inloc1=None, inloc2=None):
         # type: (Location, Location) -> None
         f = self.factory.factory
 
@@ -81,7 +81,7 @@ class Annealer:
         while not move_generated:
             cell_group1 = []
             cell_group2 = []
-            if inloc1 == -1 or inloc2 == -1:
+            if inloc1 is None or inloc2 is None:
                 loc1, loc2 = self.generateMoveCoordinates()
             else:
                 loc1 = inloc1
@@ -95,7 +95,7 @@ class Annealer:
             block2 = cell2.parent_block
 
             # Both size 1
-            if blockLength(block1) == 1 and blockLength(block2) == 1:
+            if factoryBlockLength(block1) == 1 and factoryBlockLength(block2) == 1:
                 cell_group1.append(cell1)
                 cell_group2.append(cell2)
 
@@ -105,7 +105,7 @@ class Annealer:
                 else:
                     move_generated = True
             # Cell1 > 1, cell2 = 1
-            elif blockLength(block1) > 1 and blockLength(block2) == 1:
+            elif factoryBlockLength(block1) > 1 and factoryBlockLength(block2) == 1:
                 ofst = cell1.offset
                 all_valid = True
                 for cell in block1.fcells:
@@ -117,7 +117,7 @@ class Annealer:
                         cell1 = f[abs_loc1.x][abs_loc1.y]
                         cell2 = f[abs_loc2.x][abs_loc2.y]
                         # Throw away move if the next cell is more than 1 cell
-                        if blockLength(cell2.parent_block) > 1:
+                        if factoryBlockLength(cell2.parent_block) > 1:
                             all_valid = False
                             break
                         cell_group1.append(cell1)
@@ -129,7 +129,7 @@ class Annealer:
                 if all_valid:
                     move_generated = True
             # Cell2 > 1, cell1 = 1
-            elif blockLength(block1) == 1 and blockLength(block2) > 1:
+            elif factoryBlockLength(block1) == 1 and factoryBlockLength(block2) > 1:
                 ofst = cell2.offset
                 all_valid = True
                 for cell in block2.fcells:
@@ -141,7 +141,7 @@ class Annealer:
                         cell1 = f[abs_loc1.x][abs_loc1.y]
                         cell2 = f[abs_loc2.x][abs_loc2.y]
                         # Throw away move if the next cell is more than 1 cell
-                        if blockLength(cell1.parent_block) > 1:
+                        if factoryBlockLength(cell1.parent_block) > 1:
                             all_valid = False
                             break
                         cell_group1.append(cell1)
@@ -153,7 +153,7 @@ class Annealer:
                 if all_valid:
                     move_generated = True
             # Both > 1
-            elif blockLength(block1) > 1 and blockLength(block2) > 1:
+            elif factoryBlockLength(block1) > 1 and factoryBlockLength(block2) > 1:
                 # Dimensions match
                 if block1.dimension == block2.dimension:
                     rel_loc1 = Location(0, 0)
@@ -190,7 +190,6 @@ class Annealer:
             self.setTestLocations(cell_group1, cell_group2)
             # Check depot and duplication requirements
             if move_generated:
-                cell: factorycell.FactoryCell
                 for cell in cell_group1 + cell_group2:
                     # Don't need to check depots in their new location
                     if not cell.is_depot:
@@ -234,7 +233,7 @@ class Annealer:
                 # Throw out a move if the groups swap identical items from same partition
                 # TODO
 
-            if inloc1 != -1 and inloc2 != -1:
+            if inloc1 is not None and inloc2 is not None:
                 move_generated = True
 
             if not move_generated:

@@ -1,9 +1,11 @@
-import deliveryvector
-from globals import *
+from utils import *
+from item import Item
+from recipe import Recipe
 
 
 class RouteGroup:
     def __init__(self, producer, requester, tpm):
+        # type: (Item, Recipe, float) -> None
         self.producer = producer  # Item
         self.requester = requester  # Recipe
 

@@ -6,7 +6,7 @@ from draftsman.classes.entitylist import EntityList
 from draftsman.classes.entity import Entity
 from draftsman.classes.association import Association
 from copy import deepcopy
-from globals import *
+from utils import *
 
 
 class FactoryCellGroup(Group):

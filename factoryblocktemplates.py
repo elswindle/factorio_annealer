@@ -1,5 +1,5 @@
 import csv as csv
-from globals import *
+from utils import *
 from item import Item
 from recipe import Recipe
 

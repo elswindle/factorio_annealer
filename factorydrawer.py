@@ -1,15 +1,19 @@
-import factory
-import factorycell
-import factorycellio
+from factory import Factory
+from factorycell import FactoryCell
+from factorycellio import FactoryCellIO
+from recipe import Recipe
+from item import Item
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.offsetbox as ob
 from PIL import Image
-from globals import *
+from utils import *
 
 
 class FactoryDrawer:
-    def __init__(self, factory: factory.Factory):
+    def __init__(self, factory):
+        # type: (Factory) -> None
         self.factory = factory
 
     def drawFactory(self):
@@ -50,6 +54,7 @@ class FactoryDrawer:
         # plt.show()
 
     def circleGroup(self, cell_group, c="r"):
+        # type: (list[FactoryCell], str) -> None
         if cell_group[0].parent_block == -1:
             base_loc = cell_group[0].location
         else:
@@ -84,6 +89,7 @@ class FactoryDrawer:
         plt.plot([right, right], [bot, top], color=c, linewidth=lw)
 
     def drawRoutes(self, producers, requesters, c="g", lw=4, test=False):
+        # type: (list[Recipe], list[Recipe], str, int, bool) -> None
         for producer in producers:
             px = producer.location.x * BLOCKX + BLOCKX / 2
             py = producer.location.y * BLOCKY + BLOCKY / 2
@@ -104,6 +110,7 @@ class FactoryDrawer:
                 )
 
     def plotIcon(self, row, col, recipe, ax):
+        # type: (int, int, Recipe, Axes) -> None
         im_path = "imgs/" + recipe.name + ".png"
 
         icon = Image.open(im_path)
@@ -117,6 +124,7 @@ class FactoryDrawer:
         ax.add_artist(ab)
 
     def plotIOIcon(self, row, col, item, placement, idx, total, ax):
+        # type: (int, int, Item, int, float, float, Axes) -> None
         # WIP do x offset
         im_path = "imgs/" + item.name + ".png"
         icon = Image.open(im_path)

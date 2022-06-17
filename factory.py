@@ -1,11 +1,11 @@
-import factorycellio
-import factoryblocktemplates
-import factorycell
-import factoryblock
-import recipe
+from factorycellio import FactoryCellIO
+from factoryblocktemplates import FactoryBlockTemplate
+from factorycell import FactoryCell
+from factoryblock import FactoryBlock
+from recipe import Recipe
 from item import Item
-import partition
-from globals import *
+from partition import Partition
+from utils import *
 from math import ceil, floor, sqrt
 import csv as csv
 
@@ -62,7 +62,7 @@ class Factory:
                 op_item = self.item_list[op]
                 outputs.append(op_item)
 
-            new_recipe = recipe.Recipe(craft_time, inputs, outputs, True)
+            new_recipe = Recipe(craft_time, inputs, outputs, True)
             self.recipe_list[new_recipe.name] = new_recipe
 
     def importBlockTemplates(self, path):
@@ -78,9 +78,7 @@ class Factory:
         while row[0] != "EOF":
             # Retrieve recipe from list
             recipe = self.recipe_list[row[0]]
-            new_block = factoryblocktemplates.FactoryBlockTemplate(
-                recipe, block_csv, self.item_list
-            )
+            new_block = FactoryBlockTemplate(recipe, block_csv, self.item_list)
             self.block_templates[recipe] = new_block
 
             # Get next name, if EOF, end loop
@@ -124,7 +122,7 @@ class Factory:
 
         for top_item_str in part_csv:
             top_item = self.item_list[top_item_str]
-            self.partitions[top_item] = partition.Partition(top_item)
+            self.partitions[top_item] = Partition(top_item)
 
         self.calculateFactoryBlockRequirements()
         self.calculateFactoryBlockNumbers()
@@ -149,11 +147,12 @@ class Factory:
     def getFactoryCellAmount(self):
         cells = 0
         for partition in self.partitions.values():
-            cells += partition.getFactoryCellAmount(self)
+            cells += partition.getFactoryCellAmount()
 
         return cells
 
     def calculateFactoryDimensions(self, aspect_ratio=1, ex_area=0):
+        # type: (float, int) -> None
         num_cells = self.getFactoryCellAmount()
         num_cells += ex_area  # manually give it more area
         num_cells *= 2  # Depots will be initially place every other row
@@ -179,9 +178,7 @@ class Factory:
             part.populateFactoryBlocks(self)
 
     def initializeBlockPlacement(self):
-        depot = factoryblocktemplates.FactoryBlockTemplate(
-            recipe.Recipe("depot", -1, -1, -1), -1, -1
-        )
+        depot = FactoryBlockTemplate(Recipe("depot", -1, -1, -1), -1, -1)
         placed_blocks = 0
         for part in self.partitions.values():
             for block in part.factory_blocks:
@@ -198,7 +195,7 @@ class Factory:
                         while self.placement_ptr.x <= self.dimensions.x:
                             x = self.placement_ptr.x
                             y = self.placement_ptr.y
-                            self.factory[x][y] = factorycell.FactoryCell(
+                            self.factory[x][y] = FactoryCell(
                                 depot, -1, -1, -1, -1, Location(x, y), True
                             )
 
@@ -228,7 +225,7 @@ class Factory:
                                 x = self.placement_ptr.x
                                 y = self.placement_ptr.y
 
-                                self.factory[x][y] = factorycell.FactoryCell(
+                                self.factory[x][y] = FactoryCell(
                                     depot, -1, -1, -1, -1, Location(x, y), True
                                 )
                                 self.placement_ptr.x += 1
@@ -262,7 +259,7 @@ class Factory:
                             x = self.placement_ptr.x
                             y = self.placement_ptr.y
 
-                            self.factory[x][y] = factorycell.FactoryCell(
+                            self.factory[x][y] = FactoryCell(
                                 depot, -1, -1, -1, -1, Location(x, y), True
                             )
                             self.placement_ptr.x += 1
@@ -287,7 +284,7 @@ class Factory:
                                 x = self.placement_ptr.x
                                 y = self.placement_ptr.y
 
-                                self.factory[x][y] = factorycell.FactoryCell(
+                                self.factory[x][y] = FactoryCell(
                                     depot, -1, -1, -1, -1, Location(x, y), True
                                 )
                                 self.placement_ptr.x += 1
@@ -301,7 +298,7 @@ class Factory:
             x = self.placement_ptr.x
             y = self.placement_ptr.y
 
-            self.factory[x][y] = factorycell.FactoryCell(
+            self.factory[x][y] = FactoryCell(
                 depot, -1, -1, -1, -1, Location(x, y), True
             )
             self.placement_ptr.x += 1
@@ -337,9 +334,7 @@ class Factory:
                 self.pin_reqs[item] = num_pins
                 template = self.block_templates[item.recipe]
                 for _ in range(num_pins):
-                    new_block = factoryblock.FactoryBlock(
-                        template, self.item_list["research"]
-                    )
+                    new_block = FactoryBlock(template, self.item_list["research"])
                     self.pin_blocks.append(new_block)
 
     def placePins(self):

@@ -1,10 +1,15 @@
-import factorycell
-from globals import *
-import factorycellio
+from factorycell import FactoryCell
+from utils import *
+from factorycellio import FactoryCellIO
+from factoryblocktemplates import FactoryBlockTemplate
+
+if TYPE_CHECKING:
+    from partition import Partition
 
 
 class FactoryBlock:
     def __init__(self, template, part):
+        # type: (FactoryBlockTemplate, Partition) -> None
         self.recipe = -1
         self.inputs = []
         self.outputs = []
@@ -63,7 +68,7 @@ class FactoryBlock:
 
         for idx in range(len(template.pcells)):
             self.fcells.append(
-                factorycell.FactoryCell(
+                FactoryCell(
                     template,
                     self.partition,
                     self,
@@ -74,7 +79,9 @@ class FactoryBlock:
             )
 
     def __repr__(self):
+        # type: () -> str
         return self.recipe.name + " block"
 
     def __len__(self):
+        # type: () -> int
         return len(self.fcells)

@@ -1,10 +1,15 @@
-import item
-import factoryblocktemplates
-from globals import *
+from item import Item
+from factoryblocktemplates import FactoryBlockTemplate
+from utils import *
+
+if TYPE_CHECKING:
+    from factorycell import FactoryCell
+from routegroup import RouteGroup
 
 
 class FactoryCellIO:
     def __init__(self, template, cell):
+        # type: (FactoryBlockTemplate, FactoryCell) -> None
         self.item = template.item
         self.rate = template.rate
         self.direction = template.direction  # IN/OUT
@@ -28,14 +33,18 @@ class FactoryCellIO:
             return "FCIO: " + self.item.name + " op"
 
     def addRouteGroup(self, rg):
-        found = False
-        for in_rg in self.route_groups:
-            if in_rg == rg:
-                found = True
-                break
-
-        if not found:
+        # type: (RouteGroup) -> None
+        # found = False
+        if rg not in self.route_groups:
             self.route_groups.append(rg)
+        # for in_rg in self.route_groups:
+        #     if in_rg == rg:
+        #         found = True
+        #         break
+
+        # if not found:
+        #     self.route_groups.append(rg)
 
     def setLocation(self, loc):
+        # type: (Location) -> None
         self.location = loc

@@ -1,12 +1,18 @@
-import factorycellio
-import factoryblocktemplates
-import recipe
-import item
-from globals import *
+from factorycellio import FactoryCellIO
+from factoryblocktemplates import FactoryBlockTemplate, IOTemplate
+from utils import *
+
+if TYPE_CHECKING:
+    from factoryblock import FactoryBlock
+    from partition import Partition
+
+from recipe import Recipe
+from item import Item
 
 
 class FactoryCell:
     def __init__(self, template, part, block, ips, ops, loc, is_depot=False):
+        # type: (FactoryBlockTemplate, Partition, FactoryBlock, list[IOTemplate], list[IOTemplate], Location, bool) -> None
         # Special case for depots
         if is_depot == True:
             self.is_depot = True
@@ -41,10 +47,10 @@ class FactoryCell:
             self.offset = loc
 
             for iotemp in ips:
-                self.inputs.append(factorycellio.FactoryCellIO(iotemp, self))
+                self.inputs.append(FactoryCellIO(iotemp, self))
 
             for iotemp in ops:
-                self.outputs.append(factorycellio.FactoryCellIO(iotemp, self))
+                self.outputs.append(FactoryCellIO(iotemp, self))
         else:  # for resource
             print("resource")
 
@@ -52,6 +58,7 @@ class FactoryCell:
         return "FC: " + self.recipe.name
 
     def setLocation(self, block_loc):
+        # type: (Location) -> None
         self.location = block_loc + self.offset
         if self.location.x > 35 and self.recipe == EMPTY:
             print("help the cell")
@@ -62,6 +69,7 @@ class FactoryCell:
                 op.location = self.location
 
     def setTestLocation(self, block_loc):
+        # type: (Location) -> None
         self.tl = block_loc + self.offset
         if not self.is_depot:
             for ip in self.inputs:
@@ -84,4 +92,5 @@ class FactoryCell:
             self.is_depot = True
 
     def assignLocation(self, loc):
+        # type: (Location) -> None
         self.location = loc

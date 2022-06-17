@@ -1,52 +1,52 @@
-import annealer
+from annealer import Annealer
 from factorydrawer import FactoryDrawer
-import game
-import factory
-import partition
-from globals import *
+from game import Game
+from factory import Factory
+from partition import Partition
+from utils import *
 import matplotlib.pyplot as plt
-import blueprinter
+from blueprinter import Blueprinter
 
 # bptr = blueprinter.Blueprinter()
 # bptr.testEntityTransfer()
-# bptr = blueprinter.Blueprinter("data/micro_blocks_v0.9.txt")
+# bptr = Blueprinter("data/micro_blocks_v0.9.txt")
 # bptr.test123('data/labs_with_circuits.txt')
 # bptr.testFactoryBlueprint()
 
-base_game = game.Game()
+base_game = Game()
 
 base_game.loadItemList("data/item_list.csv")
-base_factory = factory.Factory(2000, base_game.item_list)
+base_factory = Factory(2000, base_game.item_list)
 
 base_factory.loadFactoryRecipeList("data/recipe_list.csv")
 base_factory.importBlockTemplates("data/factory_block_templates.csv")
 base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
 
-# part = partition.Partition(base_game.item_list['labs'])
+# part = Partition(base_game.item_list['labs'])
 # base_factory.partitions[base_game.item_list['labs']] = part
 
-# part2 = partition.Partition(base_game.item_list["logistic-science-pack"])
+# part2 = Partition(base_game.item_list["logistic-science-pack"])
 # base_factory.partitions[base_game.item_list["logistic-science-pack"]] = part2
-# part2 = partition.Partition(base_game.item_list['military-science-pack'])
+# part2 = Partition(base_game.item_list['military-science-pack'])
 # base_factory.partitions[base_game.item_list['military-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['automation-science-pack'])
+# part2 = Partition(base_game.item_list['automation-science-pack'])
 # base_factory.partitions[base_game.item_list['automation-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['utility-science-pack'])
+# part2 = Partition(base_game.item_list['utility-science-pack'])
 # base_factory.partitions[base_game.item_list['utility-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['production-science-pack'])
+# part2 = Partition(base_game.item_list['production-science-pack'])
 # base_factory.partitions[base_game.item_list['production-science-pack']] = part2
-part2 = partition.Partition(base_game.item_list['chemical-science-pack'])
-base_factory.partitions[base_game.item_list['chemical-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['space-science-pack'])
+part2 = Partition(base_game.item_list["chemical-science-pack"])
+base_factory.partitions[base_game.item_list["chemical-science-pack"]] = part2
+# part2 = Partition(base_game.item_list['space-science-pack'])
 # base_factory.partitions[base_game.item_list['space-science-pack']] = part2
-# part2 = partition.Partition(base_game.item_list['sulfur'])
+# part2 = Partition(base_game.item_list['sulfur'])
 # base_factory.partitions[base_game.item_list['sulfur']] = part2
 
 
 base_factory.calculateFactoryBlockRequirements()
 base_factory.calculateFactoryBlockNumbers()
 
-factory_annealer = annealer.Annealer(base_factory)
+factory_annealer = Annealer(base_factory)
 factory_annealer.initializeRouteGroups()
 
 print("number of blocks " + str(base_factory.getFactoryBlockAmount()))

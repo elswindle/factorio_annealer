@@ -8,11 +8,17 @@ Done - Initialize RouteGroups
 Done - Populate RouteGroups and assign to FactoryCellIOs
 Done - Create Annealer
 Done - Create cell swap functionality
-____ - Fix depot checking
-____ - Evaluate generated move
+Done - Fix depot checking
 ____ - Test temperature values
 ____ - Make cost adjustments
 ____ - Determine best conditional negative acceptance
-____ - Test single partition results on smaller factory (i.e. just red+green science)
+Done - Test single partition results on smaller factory (i.e. just red+green science)
 Done - Setup Partitions
 ____ - Test multiple partition results (i.e. red+green+blue science partitions)
+____ - Add more information in FactoryCellIOs like number of inserters/chests
+____ - Use number of chests and input rate to calculate LTN numbers for combinator
+____ - Figure out how to handle fluids + non-fluids on same station
+____ - Ensure inputs and outputs can be at the same station
+____ - Finish adjusting factory cell controls
+____ - Refactor code, make more pythonic
+____ - Squash bug regarding partition requirements

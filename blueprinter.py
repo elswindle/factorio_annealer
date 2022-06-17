@@ -1,21 +1,17 @@
-from html import entities
-
 from matplotlib.pyplot import grid
 from factory import Factory
 from factory_blueprint import FactoryCellGroup
 from factorycell import FactoryCell
-from globals import *
+from utils import *
 from draftsman.classes.blueprint import Blueprint
 from draftsman.classes.blueprintbook import BlueprintBook
 from draftsman.classes.group import Group
 
-# from draftsman import utils
-import sys
-
 
 class Blueprinter:
-    def __init__(self, bpb_path=EMPTY):
-        if bpb_path is not EMPTY:
+    def __init__(self, bpb_path=None):
+        # type: (str) -> None
+        if bpb_path is not None:
             bpb_file = open(bpb_path)
             self.bpb_str = bpb_file.readline()
 
@@ -29,6 +25,7 @@ class Blueprinter:
         self.fcgroups = {}  # recipe : FactoryCellGroup
 
     def loadBlueprintBookString(self, path):
+        # type: (str) -> None
         file = open(path)
         self.bpb_str = path.readline()
 
@@ -43,7 +40,7 @@ class Blueprinter:
         for x in range(factory.dimensions.x + 2):
             for y in range(factory.dimensions.y + 2):
                 cell = factory.factory[x][y]
-                position = (x * self.x_interval, (y+1) * self.y_interval)
+                position = (x * self.x_interval, (y + 1) * self.y_interval)
                 if cell is not EMPTY:
                     cell: FactoryCell
                     if cell.recipe.item.is_resource:
@@ -129,30 +126,30 @@ class Blueprinter:
                 gg.position = (x * self.x_interval, y * self.y_interval)
                 factory_blueprint.entities.append(gg)
 
-        ymax = 18 + 4*self.y_interval
-        xmax = 20 + 6*self.x_interval
-        position1 = {'x': 20-self.x_interval, 'y': 18}
-        position2 = {'x': 20-self.x_interval, 'y': ymax}
+        ymax = 18 + 4 * self.y_interval
+        xmax = 20 + 6 * self.x_interval
+        position1 = {"x": 20 - self.x_interval, "y": 18}
+        position2 = {"x": 20 - self.x_interval, "y": ymax}
         for x in range(8):
             gre.position = position1
             factory_blueprint.entities.append(gre)
             gre.position = position2
             factory_blueprint.entities.append(gre)
-            position1['x'] += self.x_interval
-            position2['x'] += self.x_interval
+            position1["x"] += self.x_interval
+            position2["x"] += self.x_interval
 
         # Corners handled by x for loop
-        position1 = {'x': 20-self.x_interval, 'y': 18+self.y_interval}
-        position2 = {'x': xmax, 'y': 18+self.y_interval}
+        position1 = {"x": 20 - self.x_interval, "y": 18 + self.y_interval}
+        position2 = {"x": xmax, "y": 18 + self.y_interval}
         for y in range(3):
             gre.position = position1
             factory_blueprint.entities.append(gre)
             gre.position = position2
             factory_blueprint.entities.append(gre)
-            position1['y'] += self.y_interval
-            position2['y'] += self.y_interval
+            position1["y"] += self.y_interval
+            position2["y"] += self.y_interval
 
-        position = {"x": 20, "y": 18+self.y_interval}
+        position = {"x": 20, "y": 18 + self.y_interval}
         gd.position = position
         factory_blueprint.entities.append(gd)
         position["x"] += self.x_interval
@@ -171,7 +168,7 @@ class Blueprinter:
         gd.position = position
         factory_blueprint.entities.append(gd)
 
-        position = {"x": 20, "y": self.y_interval*2 + 18}
+        position = {"x": 20, "y": self.y_interval * 2 + 18}
         gd.position = position
         factory_blueprint.entities.append(gd)
         position["x"] += self.x_interval

@@ -1,8 +1,13 @@
-from globals import IS_RESOURCE
+from utils import *
+
+if TYPE_CHECKING:
+    from recipe import Recipe
+    from factorycellio import FactoryCellIO
 
 
 class Item:
     def __init__(self, row):
+        # type: (list[str]) -> None
         self.name = row[0]
         self.stack_size = int(row[1])
         if row[2] == "Yes":
@@ -68,6 +73,7 @@ class Item:
         print("routes from...")
 
     def addRouteToItem(self, item):
+        # type: (Item) -> None
         if self.routes_to.has_key(item):
             self.routes_to[item] += 1
         else:
@@ -75,6 +81,7 @@ class Item:
             self.routes_to[item] = 1
 
     def addRouteFromItem(self, item):
+        # type: (Item) -> None
         if self.routes_from.has_key(item):
             self.routes_from[item] += 1
         else:
@@ -82,10 +89,13 @@ class Item:
             self.routes_from[item] = 1
 
     def addProducer(self, cell_io):
+        # type: (FactoryCellIO) -> None
         self.is_producer.append(cell_io)
 
     def addRequester(self, cell_io):
+        # type: (FactoryCellIO) -> None
         self.is_requester.append(cell_io)
 
     def addRecipe(self, recipe):
+        # type: (Recipe) -> None
         self.recipe = recipe

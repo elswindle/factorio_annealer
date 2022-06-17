@@ -1,8 +1,9 @@
-import item
+from item import Item
 
 
 class Recipe:
     def __init__(self, ct, ips, ops, init_item):
+        # type: (str, list[Item], list[Item], bool) -> None
         # Special case for depot recipe
         if ct == "depot":
             self.name = ct
@@ -12,7 +13,7 @@ class Recipe:
         self.craft_time = ct
         self.inputs = ips  # array of Items
         self.outputs = ops  # array of Items
-        self.item: item.Item = ops[0]
+        self.item: Item = ops[0]
 
         # Recipe name exceptions
         if self.item.name == "heavy-oil":

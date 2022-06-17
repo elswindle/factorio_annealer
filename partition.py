@@ -1,12 +1,17 @@
-import item
-import recipe
+from item import Item
+from recipe import Recipe
+from utils import *
+from factoryblock import FactoryBlock
+
+if TYPE_CHECKING:
+    from factory import Factory
+
 import math
-import factoryblock
-from globals import *
 
 
 class Partition:
     def __init__(self, item):
+        # type: (Item) -> None
         self.num_factory_blocks = {}  # Recipe : int
         self.part_reqs = {}  # Item : rate
         self.reqs_breakdown = {}  # Item : Recipe : rate
@@ -18,8 +23,7 @@ class Partition:
         return self.top_item.name + " is top"
 
     def calculateFactoryBlockRequirements(self, base_factory):
-        import factory
-
+        # type: (Factory) -> None
         self.factory_scalar = base_factory.factory_scalar
         top_recipes = []
         for recipe in base_factory.recipe_list.values():
@@ -39,7 +43,7 @@ class Partition:
             self.recurseCalculateFBR(base_factory, top_recipe, 1, True)
 
     def recurseCalculateFBR(self, factory, recipe, share, is_top=False):
-        # type: (factory.Factory, recipe.Recipe, float, bool) -> None
+        # type: (Factory, Recipe, float, bool) -> None
         for producer in recipe.inputs:
             # Special treatment for top item's requester
             # Don't process anything from top's requester if it isn't top
@@ -48,7 +52,7 @@ class Partition:
                     continue
 
             if recipe.name == "advanced-oil-processing":
-                print('hi')
+                print("hi")
             # Get the total amount of the producer and
             # the amount of the producer going to the recipe
             # i.e. producer=gear, only 10% gear go to inserters
@@ -88,6 +92,7 @@ class Partition:
                 self.recurseCalculateFBR(factory, producer.recipe, rate / total_rate)
 
     def calculateFactoryBlockNumbers(self, factory):
+        # type: (Factory) -> None
         for producer in self.part_reqs.keys():
             if not producer.is_resource:
                 req_rate = self.part_reqs[producer]
@@ -100,10 +105,17 @@ class Partition:
                     req_rate / factory_block_rate + factory.block_num_buffer
                 )
                 print(producer.name + " needs " + str(num_blocks) + " blocks")
-                print("  producer: " + str(req_rate) + " " + "block: " + str(factory_block_rate))
+                print(
+                    "  producer: "
+                    + str(req_rate)
+                    + " "
+                    + "block: "
+                    + str(factory_block_rate)
+                )
                 self.num_factory_blocks[producer.recipe] = num_blocks
 
     def getFactoryBlockAmount(self, base_factory):
+        # type: (Factory) -> int
         blocks = 0
         for block in self.num_factory_blocks.keys():
             # Search for other partitions top item and don't include it
@@ -119,7 +131,8 @@ class Partition:
 
         return blocks
 
-    def getFactoryCellAmount(self, base_factory):
+    def getFactoryCellAmount(self):
+        # type: () -> int
         cells = 0
         for block in self.factory_blocks:
             cells += len(block.fcells)
@@ -127,6 +140,7 @@ class Partition:
         return cells
 
     def populateFactoryBlocks(self, factory):
+        # type: (Factory) -> None
         for recipe in self.num_factory_blocks.keys():
             template = factory.block_templates[recipe]
             # Check if recipe is a top level item of partition
@@ -137,12 +151,13 @@ class Partition:
 
             if not found:
                 for i in range(self.num_factory_blocks[recipe]):
-                    new_block = factoryblock.FactoryBlock(template, self)
+                    new_block = FactoryBlock(template, self)
                     self.factory_blocks.append(new_block)
             else:
                 print(recipe.name + " is top item of a partition, skipping")
 
     def populateRouteGroups(self, factory, rgs):
+        # type: (Factory, dict) -> None
         # rg is sub dictionary of annealer's rg
         # rg[item (pro)][recipe (req)] = RouteGroup
         for item in rgs.keys():
