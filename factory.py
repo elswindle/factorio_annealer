@@ -11,29 +11,191 @@ import csv as csv
 
 
 class Factory:
-    def __init__(self, rate, item_list):
+    def __init__(self, rate, item_list_path=None):
         # type: (float, list[Item]) -> None
         self.science_rate = rate
         self.factory_scalar = rate / 1000  # Amount to scale requirements by
-        self.factory_reqs = {}  # Item : rate
-        self.pin_reqs = {}  # Item (Resource) : num pins
-        self.pin_blocks = []  # FactoryBlock
-        self.reqs_breakdown = {}  # Item : Recipe : rate
-        self.partitions = {}  # Item : Partition
-        self.block_templates = {}  # Recipe : FactoryBlockTemplate
-        self.recipe_list = {}  # String : Recipe
-        self.item_list = item_list  # String : Item
+        self.factory_reqs = {}  # type: Mapping[Item, float] # rate
+        self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
+        self.pin_blocks = []  # type: list[FactoryBlock]
+        self.reqs_breakdown = (
+            {}
+        )  # type: Mapping[Item, Mapping[Recipe, float]] # Producer to Requester rate
+        self.partitions = {}  # type: Mapping[Item, Partition]
+        self.block_templates = {}  # type: Mapping[Recipe, FactoryBlockTemplate]
+        self.recipe_list = {}  # type: Mapping[str, Recipe]
+        self.item_list = {}  # type: Mapping[str, Item]
         self.block_num_buffer = 0.1
         self.depot_ratio = 1 / 4
         self.dimensions = -1
-        self.factory = -1  # FactoryCells[x][y]
-        self.tf = -1  # same as factory, but the test one
+        self.factory = None  # type: list[list[FactoryCell]] # FactoryCells[x][y]
+        self.tf = (
+            None
+        )  # type: list[list[FactoryCell]] # same as factory, but the test one
+        self.prod_limitations = (
+            []
+        )  # type: list[str] # Specifies which recipes can use productivity modules
         self.placement_ptr = Location(
             1, 1
         )  # keeps track of location to place next block
 
+        if item_list_path is not None:
+            # type: (str) -> None
+            item_csv = csv.reader(open(item_list_path), delimiter=",")
+            next(item_csv)
+            for row in item_csv:
+                self.item_list[row[0]] = Item(row)
+        else:
+            self.loadItemsFromGameData()
+
+        self.loadRecipesFromGameData()
+
+    def loadItemsFromGameData(self):
+        # This function is jank, it basically just hacks the file removes any references
+        # to functions or data structures defined by the game outside of the file
+        try:
+            solids_file = open("factorio-data/base/prototypes/item.lua", "r")
+        except:
+            print(
+                "Unable to load solids file from game data, ensure factorio-data is populated"
+            )
+        try:
+            fluid_file = open("factorio-data/base/prototypes/fluid.lua", "r")
+        except:
+            print(
+                "Unable to load fluids file from game data, ensure factorio-data is populated"
+            )
+
+        next(solids_file)
+        next(solids_file)
+        next(solids_file)
+        next(solids_file)
+        next(solids_file)
+
+        # Load productivity module limitations
+        prod_str = ""
+        line = solids_file.readline()
+        while line.find("}") == -1:
+            prod_str += line
+            line = solids_file.readline()
+
+        # Remove new lines, quotes and spaces
+        prod_str = prod_str.replace("\n", "")
+        prod_str = prod_str.replace(" ", "")
+        prod_str = prod_str.replace('"', "")
+        self.prod_limitations = prod_str.split(",")
+
+        # Load solids
+        # get to the solids data section
+        line = solids_file.readline()
+        while line != "data:extend(\n":
+            line = solids_file.readline()
+
+        item_str = ""
+        line = solids_file.readline()
+        while line != ")\n":
+            add = True
+            if line.find("sounds") != -1:
+                line = line.replace("sounds.", '"')
+                line = line.replace("\n", '"\n')
+
+            if line.find("require(") != -1 or line.find("limitation()") != -1:
+                add = False
+
+            if add:
+                item_str += line
+
+            line = solids_file.readline()
+        # item_str = item_str[: len(item_str) - 2]  # Throw away final ")"
+        item_table = lua.eval(item_str)
+        solids = convert_table_to_dict(item_table)
+
+        # Load fluids
+        next(fluid_file)
+        fluid_str = fluid_file.read()
+        fluid_str = fluid_str[: len(fluid_str) - 2]
+        fluid_table = lua.eval(fluid_str)
+        fluids = convert_table_to_dict(fluid_table)
+
+        # Compile all dict entries into Item objects and add to item_list
+        for solid in solids:
+            self.item_list[solid["name"]] = Item(**solid)
+
+        for fluid in fluids:
+            self.item_list[fluid["name"]] = Item(**fluid)
+
+        # Add custom items, these are "fake" items to represent performing research
+        # Enables consuming science packs and gives raw resources to consume something
+        self.item_list["labs"] = Item(
+            **{"row": "labs,1000,No,No"}
+        )  # item that consumes all science packs
+        self.item_list["research"] = Item(
+            **{"row": "research,10000000,No,No"}
+        )  # Parent item for labs
+        self.item_list["miner"] = Item(
+            **{"row": "miner,1,No,No"}
+        )  # raw-resources consume this
+
+    def loadRecipesFromGameData(self):
+        with open("factorio-data/base/prototypes/recipe.lua", "r") as file:
+            next(file)
+            recipe_str = file.read()
+            recipe_str = recipe_str[: len(recipe_str) - 2]
+            recipe_table = lua.eval(recipe_str)
+            recipes = convert_table_to_dict(recipe_table)
+
+            for recipe in recipes:
+                if recipe["name"] == "rocket_part":
+                    recipe["name"] = "space-science-pack"
+                    recipe["result"] = "space-science-pack"
+                recipe["item"] = self.getRecipeItem(recipe["name"])
+                self.recipe_list[recipe["name"]] = Recipe(**recipe)
+
+            # Add special recipes for labs and for research
+            labs_dict = {
+                "name": "labs",
+                "ingredients": [
+                    ["automation-science-pack", 1],
+                    ["logistic-science-pack", 1],
+                    ["military-science-pack", 1],
+                    ["chemical-science-pack", 1],
+                    ["production-science-pack", 1],
+                    ["utility-science-pack", 1],
+                    ["space-science-pack", 1],
+                ],
+                "result": "labs",
+                "item": self.item_list["labs"],
+            }
+            self.recipe_list["labs"] = Recipe(**labs_dict)
+
+            research_dict = {
+                "name": "research",
+                "ingredients": [["labs", 1]],
+                "result": "research",
+                "item": self.item_list["research"],
+            }
+            self.recipe_list["research"] = Recipe(**research_dict)
+
+            space_dict = {
+                "name": "space-science-pack",
+                "ingredients": [["rocket-part", 100], ["satellite", 1]],
+                "results": [["space-science-pack", 1000]],
+                "item": self.item_list["space-science-pack"],
+            }
+            self.recipe_list["space-science-pack"] = Recipe(**space_dict)
+
+            for item in self.item_list.values():
+                if item.is_resource or item.name in ["crude-oil", "water"]:
+                    r_dict = {
+                        "name": item.name,
+                        "ingredients": [["miner", 1]],
+                        "result": item.name,
+                        "item": item,
+                    }
+                    self.recipe_list[item.name] = Recipe(**r_dict)
+
     def loadFactoryRecipeList(self, path):
-        # type: (str) -> None
+        # type: (str, bool) -> None
         recipe_csv = csv.reader(open(path), delimiter=",")
         # Skip headers
         next(recipe_csv)
@@ -62,7 +224,15 @@ class Factory:
                 op_item = self.item_list[op]
                 outputs.append(op_item)
 
-            new_recipe = Recipe(craft_time, inputs, outputs, True)
+            item = self.getRecipeItem(recipe_name)
+            recipe_dict = {
+                "name": recipe_name,
+                "ingredients": inputs,
+                "results": outputs,
+                "energy_required": craft_time,
+                "item": item,
+            }
+            new_recipe = Recipe(**recipe_dict)
             self.recipe_list[new_recipe.name] = new_recipe
 
     def importBlockTemplates(self, path):
@@ -115,6 +285,10 @@ class Factory:
                     self.reqs_breakdown[producer][requester] = float(row[2])
 
                 row = next(csv_req)
+
+    def calculateFactoryRequirements(self):
+        for partition in self.partitions:
+            partition.calculateNormalizedPartitionRequirements(self)
 
     def createPartitions(self, path):
         # type: (str) -> None
@@ -408,6 +582,24 @@ class Factory:
 
     def shufflePins(self):
         print("to do I guess, I'm honestly fine with keeping it as is")
+
+    def getRecipeItem(self, name):
+        if name == "advanced-oil-processing" or name == "coal-liquefaction":
+            item = self.item_list["heavy-oil"]
+        elif name == "heavy-oil-cracking":
+            item = self.item_list["light-oil"]
+        elif name == "light-oil-cracking" or name == "basic-oil-processing":
+            item = self.item_list["petroleum-gas"]
+        elif name.find("solid-fuel") != -1:
+            item = self.item_list["solid-fuel"]
+        elif name == "uranium-processing" or name == "nuclear-fuel-reprocessing":
+            item = self.item_list["uranium-238"]
+        elif name == "kovarex-enrichment-process":
+            item = self.item_list["uranium-235"]
+        else:
+            item = self.item_list[name]
+
+        return item
 
     def printFactoryRecipeList(self):
         for recipe in self.recipe_list.values():

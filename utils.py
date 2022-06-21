@@ -1,5 +1,9 @@
 from constants import *
-from typing import TYPE_CHECKING
+from draftsman.env import convert_table_to_dict
+from typing import TYPE_CHECKING, Mapping
+import lupa
+
+lua = lupa.LuaRuntime(unpack_returned_tuples=True)
 
 
 class Location:
@@ -126,3 +130,28 @@ def validLocations(loc_list, factory):
             return False
 
     return True
+
+
+# def convert_table_to_dict(table):
+#     """
+#     Converts a Lua table to a Python dict. Correctly handles nesting, and
+#     interprets Lua arrays as lists.
+#     """
+#     out = dict(table)
+#     # print(out)
+#     is_list = True
+#     for key in out:
+#         # print(key)
+#         if not isinstance(key, int):
+#             is_list = False
+
+#         if lupa.lua_type(out[key]) == "table":
+#             # print(out[key])
+#             out[key] = convert_table_to_dict(out[key])
+#             # out[key] = convert_table_to_dict(out[key])
+#             # check if its actually a dict and not a list
+
+#     if is_list:
+#         return list(out.values())
+
+#     return out

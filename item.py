@@ -6,37 +6,62 @@ if TYPE_CHECKING:
 
 
 class Item:
-    def __init__(self, row):
-        # type: (list[str]) -> None
-        self.name = row[0]
-        self.stack_size = int(row[1])
-        if row[2] == "Yes":
-            self.is_fluid = True
-        elif row[2] == "No":
+    def __init__(self, **kwargs):
+        # type: (**dict) -> None
+        from_game_data = True
+        if "row" in kwargs:
+            from_game_data = False
+            row = kwargs.pop("row").split(",")
+
+        if not from_game_data:
+            self.name = row[0]
+            self.stack_size = int(row[1])
+            if row[2] == "Yes":
+                self.is_fluid = True
+            elif row[2] == "No":
+                self.is_fluid = False
+            else:
+                self.is_fluid = -1
+                print(
+                    "Issue with reading item reader, is fluid not specified correctly for item"
+                )
+                print(self.name)
+
+            if row[3] == "Yes":
+                self.is_resource = True
+            elif row[3] == "No":
+                self.is_resource = False
+            else:
+                self.is_resource = -1
+                print("Issue with reading item reader, resource not specified")
+                print(self.name)
+        else:
             self.is_fluid = False
-        else:
-            self.is_fluid = -1
-            print(
-                "Issue with reading item reader, is fluid not specified correctly for item"
-            )
-            print(self.name)
-
-        if row[3] == "Yes":
-            self.is_resource = True
-        elif row[3] == "No":
             self.is_resource = False
-        else:
-            self.is_resource = -1
-            print("Issue with reading item reader, resource not specified")
-            print(self.name)
 
-        self.is_producer = []
-        self.is_requester = []
+            if "name" in kwargs:
+                self.name = kwargs.pop("name")
+
+            if "stack_size" in kwargs:
+                self.stack_size = kwargs.pop("stack_size")
+
+            if "type" in kwargs:
+                item_type = kwargs.pop("type")
+                if item_type == "fluid":
+                    self.is_fluid = True
+
+            if "subgroup" in kwargs:
+                subgroup = kwargs.pop("subgroup")
+                if subgroup == "raw-resource":
+                    self.is_resource = True
+
+        self.is_producer = []  # type: list[FactoryCellIO]
+        self.is_requester = []  # type: list[FactoryCellIO]
 
         self.routes_to = {}
         self.routes_from = {}
 
-        self.recipe = IS_RESOURCE
+        self.recipes = []  # type: list[Recipe]
 
     def __str__(self):
         item_str = self.name + ", stack size=" + str(self.stack_size)

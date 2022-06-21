@@ -12,10 +12,10 @@ class FactoryBlockTemplate:
             self.recipe = recipe
             return
 
-        self.recipe = recipe
-        self.inputs = []  # IOTemplates
-        self.outputs = []  # IOTemplates
-        self.pcells = []  # Locations
+        self.recipe = recipe  # type: Recipe
+        self.inputs = []  # type: list[IOTemplate]
+        self.outputs = []  # type: list[IOTemplate]
+        self.pcells = []  # type: Location
 
         self.item = 0
         self.direction = 0

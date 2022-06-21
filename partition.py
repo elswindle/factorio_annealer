@@ -12,15 +12,52 @@ import math
 class Partition:
     def __init__(self, item):
         # type: (Item) -> None
-        self.num_factory_blocks = {}  # Recipe : int
-        self.part_reqs = {}  # Item : rate
-        self.reqs_breakdown = {}  # Item : Recipe : rate
+        self.num_factory_blocks = {}  # type: Mapping[Recipe, int]
+        self.part_reqs = {}  # type: Mapping[Item, float]
+        self.reqs_breakdown = {}  # type: Mapping[Item, Mapping[Recipe, float]]
         self.top_item = item
         self.factory_scalar = 0
-        self.factory_blocks = []  # FactoryBlock
+        self.factory_blocks = []  # type: list[FactoryBlock]
+        self.parition_scalar = (
+            1  # This will be modified when we know how much of the top item is required
+        )
 
     def __repr__(self):
         return self.top_item.name + " is top"
+
+    def calculateNormalizedPartitionRequirements(self, factory, **kwargs):
+        # type: (Factory, **dict) -> None
+        """
+        Calculate the amount of items that are needed within the partition.
+        This is normalized since it is unknown how much of this item is
+        needed within the full factory.
+
+        :param factory: Factory object, used for accessing items and recipes
+        :param kwargs: Calculation options
+            "productivity-module-level" : 0-3
+        """
+        for recipe in self.top_item.recipes:
+            self.recurseCalculateNPR(factory, recipe, **kwargs)
+
+    def recurseCalculateNPR(self, factory, recipe, **kwargs):
+        # type: (Factory, Recipe, **dict) -> None
+        if "productivity-bonus" in kwargs:
+            prod_bonus = kwargs["productivity-bonus"]
+        else:
+            prod_bonus = 0.1
+
+        prod_amount = 1
+        if recipe.name in factory.prod_limitations:
+            prod_amount += prod_bonus * recipe.getMaxModules()
+
+        for ingredient in recipe.ingredients:
+            ingredient_requirement = 1 / prod_amount
+
+            if ingredient not in factory.partitions.keys():
+                for recipe in ingredient.recipes:
+                    self.recurseCalculateNPR(self, factory, recipe, **kwargs)
+                # Don't recurse in this instance, still calculate
+                pass
 
     def calculateFactoryBlockRequirements(self, base_factory):
         # type: (Factory) -> None
@@ -44,15 +81,15 @@ class Partition:
 
     def recurseCalculateFBR(self, factory, recipe, share, is_top=False):
         # type: (Factory, Recipe, float, bool) -> None
-        for producer in recipe.inputs:
+        for producer in recipe.ingredients:
             # Special treatment for top item's requester
             # Don't process anything from top's requester if it isn't top
             if is_top:
                 if producer != self.top_item:
                     continue
 
-            if recipe.name == "advanced-oil-processing":
-                print("hi")
+            # print(recipe.name)
+            # print(producer.name)
             # Get the total amount of the producer and
             # the amount of the producer going to the recipe
             # i.e. producer=gear, only 10% gear go to inserters
@@ -62,7 +99,7 @@ class Partition:
 
             # Adjust rate based on actual spm
             adjusted_rate = rate * self.factory_scalar
-
+            # print("tr: " + str(total_rate) + " r: " + str(rate) + " ar: " + str(adjusted_rate))
             # is producer part of requirements
             # add to requirements or add adjusted rate to existing
             if self.part_reqs.get(producer) is None:

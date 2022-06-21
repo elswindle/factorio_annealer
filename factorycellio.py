@@ -4,22 +4,23 @@ from utils import *
 
 if TYPE_CHECKING:
     from factorycell import FactoryCell
+    from partition import Partition
 from routegroup import RouteGroup
 
 
 class FactoryCellIO:
     def __init__(self, template, cell):
         # type: (FactoryBlockTemplate, FactoryCell) -> None
-        self.item = template.item
+        self.item = template.item  # type: Item
         self.rate = template.rate
         self.direction = template.direction  # IN/OUT
         self.placement = template.placement  # TOP/BOT
-        self.offset = template.location  # Offset from main cell
-        self.location = -1  # -1 means unplaced
-        self.tl = -1
-        self.route_groups = []
-        self.parent_cell = cell
-        self.parent_part = cell.partition
+        self.offset = template.location  # type: Location # Offset from main cell
+        self.location = -1  # type: Location # -1 means unplaced
+        self.tl = -1  # type: Location # test location
+        self.route_groups = []  # type: list[RouteGroup]
+        self.parent_cell = cell  # type: FactoryCell
+        self.parent_part = cell.partition  # type: Partition
 
         if self.direction == INPUT:
             self.item.is_requester.append(self)

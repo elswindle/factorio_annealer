@@ -2,6 +2,9 @@ from utils import *
 from item import Item
 from recipe import Recipe
 
+if TYPE_CHECKING:
+    from factorycellio import FactoryCellIO
+
 
 class RouteGroup:
     def __init__(self, producer, requester, tpm):
@@ -9,9 +12,9 @@ class RouteGroup:
         self.producer = producer  # Item
         self.requester = requester  # Recipe
 
-        self.routes = {}  # FactoryCellIO : FactoryCellIO
-        self.producers = []  # FactoryCellIO
-        self.requesters = []  # FactoryCellIO
+        self.routes = {}  # type: Mapping[FactoryCellIO, FactoryCellIO]
+        self.producers = []  # type: list[FactoryCellIO]
+        self.requesters = []  # type: list[FactoryCellIO]
         self.avg_dist = -1
         self.trains_per_min = tpm  # Calculated @ partition level
         self.cost = calculateTrafficCost(self.avg_dist, self.trains_per_min)

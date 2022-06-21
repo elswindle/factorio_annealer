@@ -1,5 +1,6 @@
 from factorycellio import FactoryCellIO
 from factoryblocktemplates import FactoryBlockTemplate, IOTemplate
+from routegroup import RouteGroup
 from utils import *
 
 if TYPE_CHECKING:
@@ -23,13 +24,13 @@ class FactoryCell:
             self.tl = -1
             return
 
-        self.recipe = -1
-        self.inputs = []
-        self.outputs = []
-        self.route_groups = []
+        self.recipe = None  # type: Recipe
+        self.inputs = []  # type: list[FactoryCellIO]
+        self.outputs = []  # type: list[FactoryCellIO]
+        self.route_groups = []  # type: list[RouteGroup]
         self.is_depot = False
-        self.location = -1
-        self.tl = -1
+        self.location = -1  # type: Location
+        self.tl = -1  # type: Location # Test location
         self.is_main = False
         self.offset = -1
 

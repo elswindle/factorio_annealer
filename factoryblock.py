@@ -1,7 +1,8 @@
 from factorycell import FactoryCell
 from utils import *
 from factorycellio import FactoryCellIO
-from factoryblocktemplates import FactoryBlockTemplate
+from factoryblocktemplates import FactoryBlockTemplate, IOTemplate
+from recipe import Recipe
 
 if TYPE_CHECKING:
     from partition import Partition
@@ -10,11 +11,11 @@ if TYPE_CHECKING:
 class FactoryBlock:
     def __init__(self, template, part):
         # type: (FactoryBlockTemplate, Partition) -> None
-        self.recipe = -1
-        self.inputs = []
-        self.outputs = []
-        self.fcells = []  # FactoryCell
-        self.location = -1
+        self.recipe = None  # type: Recipe
+        self.inputs = []  # type: list[IOTemplate]
+        self.outputs = []  # type: list[IOTemplate]
+        self.fcells = []  # type: list[FactoryCell]
+        self.location = None  # type: Location
         self.dimension = -1  # Simplify block placement
         self.num_left = 0  # Simplify block placement
         self.num_below = 0  # Simplify block placement

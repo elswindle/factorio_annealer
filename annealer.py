@@ -5,6 +5,8 @@ from factory import Factory
 from factorydrawer import FactoryDrawer
 from partition import Partition
 from routegroup import RouteGroup
+from item import Item
+from recipe import Recipe
 from utils import *
 import random
 from math import ceil
@@ -25,7 +27,9 @@ class Annealer:
         # type: (Factory) -> None
         random.seed()
         self.factory = factory
-        self.route_groups = {}  # Partition : Item : Recipe : RouteGroup
+        self.route_groups = (
+            {}
+        )  # type: Mapping[Partition, Mapping[Item, Mapping[Recipe, RouteGroup]]]
         self.temperature = INITIAL_TEMP
 
     def initializeRouteGroups(self):
