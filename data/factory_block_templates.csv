@@ -38,7 +38,7 @@ ip,light-oil,0,0,TOP
 ip,water,0,0,TOP
 op,petroleum-gas,0,0,BOT,14265
 end
-solid-fuel
+solid-fuel-from-light-oil
 ip,light-oil,0,0,TOP
 op,solid-fuel,0,0,BOT,1064
 end
@@ -88,7 +88,7 @@ op,processing-unit,0,0,BOT,256
 end
 rocket-control-unit
 ip,processing-unit,0,0,TOP
-ip,speed-module-1,0,0,TOP
+ip,speed-module,0,0,TOP
 op,rocket-control-unit,0,0,BOT,115
 end
 low-density-structure
@@ -97,15 +97,15 @@ ip,steel-plate,0,0,TOP
 ip,plastic-bar,0,0,TOP
 op,low-density-structure,0,0,BOT,195
 end
-speed-module-1
+speed-module
 ip,electronic-circuit,0,0,TOP
 ip,advanced-circuit,0,0,TOP
-op,speed-module-1,0,0,BOT,245
+op,speed-module,0,0,BOT,245
 end
-productivity-module-1
+productivity-module
 ip,electronic-circuit,0,0,TOP
 ip,advanced-circuit,0,0,TOP
-op,productivity-module-1,0,0,BOT,245
+op,productivity-module,0,0,BOT,245
 end
 solar-panel
 ip,electronic-circuit,0,0,TOP
@@ -152,7 +152,7 @@ end
 production-science-pack
 ip,rail,0,0,TOP
 ip,electric-furnace,0,0,TOP
-ip,productivity-module-1,0,0,TOP
+ip,productivity-module,0,0,TOP
 op,production-science-pack,0,0,BOT,408
 end
 electric-furnace
