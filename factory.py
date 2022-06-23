@@ -11,20 +11,52 @@ import csv as csv
 
 
 class Factory:
-    def __init__(self, rate, item_list_path=None):
-        # type: (float, list[Item]) -> None
-        self.science_rate = rate
-        self.factory_scalar = rate / 1000  # Amount to scale requirements by
+    def __init__(self, **kwargs):
+        """
+        Factory initialization, arguments contain different options for calculation,
+        top level items.  Loads item and recipe lists from game data if not 
+        specified in arguments
+        :param kwargs: Available factory options
+            "rate" : Production rate of given top level items
+            "top-items" : Top level item names for the factory to produce.  These
+            cannot be a dependency of each other or of any of the top level
+            items of the partitions.  Assignment and addition will check ensure
+            this criteria is met
+            "depot-adjacency-requirement" : Factory layout requirement for the
+            number of LTN depots adjacent to each FactoryCell.  Default is 2
+            "productivity-bonus" : Productivity bonus from a single module.
+            Vanilla bonuses are in [0, 0.04, 0.06, 0.1], default is prod-3 (0.1)
+            "calc-exceptions" : List of solids/fluids to be handled differently,
+            these might include oil products since they will be produced from
+            different recipes
+            "item_list_path" : Custom list of items to be loaded from a file
+            and not from Factorio item lists
+        """
+        # type: (float, **dict) -> None
+        if "rate" in kwargs:
+            self.top_item_rate = kwargs.pop("rate")
+        else:
+            self.top_item_rate = 1000
+        self.factory_scalar = self.top_item_rate / 1000  # Amount to scale requirements by
+
         self.factory_reqs = {}  # type: Mapping[Item, float] # rate
         self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
         self.reqs_breakdown = (
             {}
         )  # type: Mapping[Item, Mapping[Recipe, float]] # Producer to Requester rate
+
         self.partitions = {}  # type: Mapping[Item, Partition]
+        
+        if "depot-adjacency-requirement" in kwargs:
+            self.depot_req = kwargs.pop("depot-adjacency-requirement")
+        else:
+            self.depot_req = 2
+
         self.block_templates = {}  # type: Mapping[Recipe, FactoryBlockTemplate]
         self.recipe_list = {}  # type: Mapping[str, Recipe]
         self.item_list = {}  # type: Mapping[str, Item]
+
         self.block_num_buffer = 0.1
         self.depot_ratio = 1 / 4
         self.dimensions = -1
@@ -39,20 +71,47 @@ class Factory:
             1, 1
         )  # keeps track of location to place next block
 
-        if item_list_path is not None:
+        # Load calculation options
+        if "productivity-bonus" in kwargs:
+            self.prod_bonus = kwargs.pop("productivity-bonus")
+        else:
+            self.prod_bonus = 0.1
+
+        if "calc-exceptions" in kwargs:
+            self.calc_exceptions = kwargs.pop("calc-exceptions")
+        else:
+            self.calc_exceptions = []
+
+        if "item_list_path" in kwargs:
             # type: (str) -> None
-            item_csv = csv.reader(open(item_list_path), delimiter=",")
+            self.item_list_path = kwargs.pop("item_list_path")
+            item_csv = csv.reader(open(self.item_list_path), delimiter=",")
             next(item_csv)
             for row in item_csv:
-                self.item_list[row[0]] = Item(row)
+                self.item_list[row[0]] = Item(**{"row" : row})
         else:
             self.loadItemsFromGameData()
 
+        self.top_items = [] # type: list[Item]
+        if "top-items" in kwargs:
+            top = kwargs.pop("top-items")
+            for item_name in top:
+                self.top_items.append(self.item_list[item_name])
+
         self.loadRecipesFromGameData()
 
+        for arg in kwargs:
+            print(arg)
+
     def loadItemsFromGameData(self):
-        # This function is jank, it basically just hacks the file removes any references
-        # to functions or data structures defined by the game outside of the file
+        """
+        Loads list of Item objects from Factorio game data.  This function is jank, 
+        it basically just hacks item.lua and fluid.lua and removes any references 
+        to functions or data structures defined by the game outside of the file.  
+        Ideally, this will be getting data from loaded Factorio data through Lua.  
+        In addition, this can be expanded to include mods and can build a layout
+        from modded data.
+        """
         try:
             solids_file = open("factorio-data/base/prototypes/item.lua", "r")
         except:
@@ -145,13 +204,15 @@ class Factory:
             recipes = convert_table_to_dict(recipe_table)
 
             for recipe in recipes:
-                if recipe["name"] == "rocket_part":
-                    recipe["name"] = "space-science-pack"
-                    recipe["result"] = "space-science-pack"
+                # if recipe["name"] == "rocket_part":
+                #     recipe["name"] = "space-science-pack"
+                #     recipe["result"] = "space-science-pack"
                 recipe["item"] = self.getRecipeItem(recipe["name"])
                 self.recipe_list[recipe["name"]] = Recipe(**recipe)
 
-            # Add special recipes for labs and for research
+            # Custom recipes for non-standard products
+            # This includes science pack consumption, research
+            # space-science packs and resources
             labs_dict = {
                 "name": "labs",
                 "ingredients": [
@@ -176,6 +237,7 @@ class Factory:
             }
             self.recipe_list["research"] = Recipe(**research_dict)
 
+            # Gives a recipe for space science
             space_dict = {
                 "name": "space-science-pack",
                 "ingredients": [["rocket-part", 100], ["satellite", 1]],
@@ -184,6 +246,7 @@ class Factory:
             }
             self.recipe_list["space-science-pack"] = Recipe(**space_dict)
 
+            # Placeholder recipe for resources, helps with recursion
             for item in self.item_list.values():
                 if item.is_resource or item.name in ["crude-oil", "water"]:
                     r_dict = {
@@ -193,6 +256,21 @@ class Factory:
                         "item": item,
                     }
                     self.recipe_list[item.name] = Recipe(**r_dict)
+
+            # Make sure every item has a preferred recipe if one is available
+            for item in self.item_list.values():
+                if len(item.recipes) != 0:
+                    item.setPreferredRecipe(item.recipes[0])
+
+                    # Exceptions
+                    if item.name == 'petroleum-gas':
+                        item.setPreferredRecipe(self.recipe_list['light-oil-cracking'])
+                    elif item.name == 'light-oil':
+                        item.setPreferredRecipe(self.recipe_list['heavy-oil-cracking'])
+                    elif item.name == 'heavy-oil':
+                        item.setPreferredRecipe(self.recipe_list['advanced-oil-processing'])
+                    elif item.name == 'solid-fuel':
+                        item.setPreferredRecipe(self.recipe_list['solid-fuel-from-light-oil'])
 
     def loadFactoryRecipeList(self, path):
         # type: (str, bool) -> None
@@ -287,7 +365,7 @@ class Factory:
                 row = next(csv_req)
 
     def calculateFactoryRequirements(self):
-        for partition in self.partitions:
+        for partition in self.partitions.values():
             partition.calculateNormalizedPartitionRequirements(self)
 
     def createPartitions(self, path):
@@ -352,7 +430,7 @@ class Factory:
             part.populateFactoryBlocks(self)
 
     def initializeBlockPlacement(self):
-        depot = FactoryBlockTemplate(Recipe("depot", -1, -1, -1), -1, -1)
+        depot = FactoryBlockTemplate(Recipe(**{"is_depot" : True}), -1, -1)
         placed_blocks = 0
         for part in self.partitions.values():
             for block in part.factory_blocks:

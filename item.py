@@ -55,13 +55,29 @@ class Item:
                 if subgroup == "raw-resource":
                     self.is_resource = True
 
+            # Manually add fluid raw-resources
+            if self.name in ['crude-oil', 'water']:
+                self.is_resource = True
+
         self.is_producer = []  # type: list[FactoryCellIO]
         self.is_requester = []  # type: list[FactoryCellIO]
 
         self.routes_to = {}
         self.routes_from = {}
 
+        self.preferred_recipe = None
         self.recipes = []  # type: list[Recipe]
+
+    def setPreferredRecipe(self, recipe):
+        # type: (Recipe) -> None
+        if recipe in self.recipes:
+            for rec in self.recipes:
+                recipe.is_preferred = False
+
+            recipe.is_preferred = True
+            self.preferred_recipe = recipe
+        else:
+            raise AttributeError("Recipe not in recipe list")
 
     def __str__(self):
         item_str = self.name + ", stack size=" + str(self.stack_size)
@@ -121,6 +137,12 @@ class Item:
         # type: (FactoryCellIO) -> None
         self.is_requester.append(cell_io)
 
-    def addRecipe(self, recipe):
-        # type: (Recipe) -> None
-        self.recipe = recipe
+    def addRecipe(self, recipe, is_preferred=False):
+        # type: (Recipe, bool) -> None
+        if recipe not in self.recipes:
+            self.recipes.append(recipe)
+            recipe.is_preferred = is_preferred
+            if is_preferred:
+                self.preferred_recipe = recipe
+        else:
+            raise AttributeError("Recipe already in item's recipe list")

@@ -2,6 +2,7 @@ from item import Item
 from recipe import Recipe
 from utils import *
 from factoryblock import FactoryBlock
+import factorycalculator as calculator
 
 if TYPE_CHECKING:
     from factory import Factory
@@ -25,39 +26,8 @@ class Partition:
     def __repr__(self):
         return self.top_item.name + " is top"
 
-    def calculateNormalizedPartitionRequirements(self, factory, **kwargs):
-        # type: (Factory, **dict) -> None
-        """
-        Calculate the amount of items that are needed within the partition.
-        This is normalized since it is unknown how much of this item is
-        needed within the full factory.
-
-        :param factory: Factory object, used for accessing items and recipes
-        :param kwargs: Calculation options
-            "productivity-module-level" : 0-3
-        """
-        for recipe in self.top_item.recipes:
-            self.recurseCalculateNPR(factory, recipe, **kwargs)
-
-    def recurseCalculateNPR(self, factory, recipe, **kwargs):
-        # type: (Factory, Recipe, **dict) -> None
-        if "productivity-bonus" in kwargs:
-            prod_bonus = kwargs["productivity-bonus"]
-        else:
-            prod_bonus = 0.1
-
-        prod_amount = 1
-        if recipe.name in factory.prod_limitations:
-            prod_amount += prod_bonus * recipe.getMaxModules()
-
-        for ingredient in recipe.ingredients:
-            ingredient_requirement = 1 / prod_amount
-
-            if ingredient not in factory.partitions.keys():
-                for recipe in ingredient.recipes:
-                    self.recurseCalculateNPR(self, factory, recipe, **kwargs)
-                # Don't recurse in this instance, still calculate
-                pass
+    def calculateNormalizedPartitionRequirements(self, factory):
+        calculator.calculateNormalizedRequirements(factory, self.part_reqs, self.reqs_breakdown, self.top_item)
 
     def calculateFactoryBlockRequirements(self, base_factory):
         # type: (Factory) -> None

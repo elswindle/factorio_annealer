@@ -6,8 +6,11 @@ from partition import Partition
 from utils import *
 import matplotlib.pyplot as plt
 from blueprinter import Blueprinter
+from factoryoptions import FactoryOptions
 
-base_factory = Factory(2000)
+fopts = FactoryOptions()
+
+base_factory = Factory(**fopts.factory_args)
 
 # base_factory.loadFactoryRecipeList("data/recipe_list.csv")
 base_factory.importBlockTemplates("data/factory_block_templates.csv")
@@ -16,8 +19,8 @@ base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
 # part = Partition(base_factory.item_list['labs'])
 # base_factory.partitions[base_factory.item_list['labs']] = part
 
-# part2 = Partition(base_factory.item_list["logistic-science-pack"])
-# base_factory.partitions[base_factory.item_list["logistic-science-pack"]] = part2
+part2 = Partition(base_factory.item_list["logistic-science-pack"])
+base_factory.partitions[base_factory.item_list["logistic-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list['military-science-pack'])
 # base_factory.partitions[base_factory.item_list['military-science-pack']] = part2
 # part2 = Partition(base_factory.item_list['automation-science-pack'])
@@ -26,15 +29,15 @@ base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
 # base_factory.partitions[base_factory.item_list['utility-science-pack']] = part2
 # part2 = Partition(base_factory.item_list['production-science-pack'])
 # base_factory.partitions[base_factory.item_list['production-science-pack']] = part2
-part2 = Partition(base_factory.item_list["chemical-science-pack"])
-base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
-# part2 = Partition(base_factory.item_list['space-science-pack'])
-# base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
+# part2 = Partition(base_factory.item_list["chemical-science-pack"])
+# base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
+part2 = Partition(base_factory.item_list['space-science-pack'])
+base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
 # part2 = Partition(base_factory.item_list['sulfur'])
 # base_factory.partitions[base_factory.item_list['sulfur']] = part2
 
-
-base_factory.calculateFactoryBlockRequirements()
+base_factory.calculateFactoryRequirements()
+# base_factory.calculateFactoryBlockRequirements()
 base_factory.calculateFactoryBlockNumbers()
 
 factory_annealer = Annealer(base_factory)

@@ -26,7 +26,7 @@ class Annealer:
     def __init__(self, factory):
         # type: (Factory) -> None
         random.seed()
-        self.factory = factory
+        self.factory = factory # tpye: Factory
         self.route_groups = (
             {}
         )  # type: Mapping[Partition, Mapping[Item, Mapping[Recipe, RouteGroup]]]
@@ -210,7 +210,7 @@ class Annealer:
                                 else:
                                     curr_cell = self.factory.tf[x][y]
                                     if not curr_cell.is_depot:
-                                        depot_req = DEPOT_REQ
+                                        depot_req = self.factory.depot_req
 
                                         # Ignore depot requirement for corners
                                         if (x == 1 or x == xmax) and (
