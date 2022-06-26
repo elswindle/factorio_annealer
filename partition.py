@@ -6,6 +6,7 @@ import factorycalculator as calculator
 
 if TYPE_CHECKING:
     from factory import Factory
+    from routegroup import RouteGroup
 
 import math
 
@@ -17,11 +18,9 @@ class Partition:
         self.part_reqs = {}  # type: Mapping[Item, float]
         self.reqs_breakdown = {}  # type: Mapping[Item, Mapping[Recipe, float]]
         self.top_item = item
-        self.factory_scalar = 0
         self.factory_blocks = []  # type: list[FactoryBlock]
-        self.parition_scalar = (
-            1  # This will be modified when we know how much of the top item is required
-        )
+        # This will be calculated later after population
+        self.parition_scalar = 0
 
     def __repr__(self):
         return self.top_item.name + " is top"
@@ -102,9 +101,9 @@ class Partition:
         # type: (Factory) -> None
         for producer in self.part_reqs.keys():
             if not producer.is_resource:
-                req_rate = self.part_reqs[producer]
+                req_rate = self.part_reqs[producer] * self.parition_scalar
                 factory_block_rate = (
-                    factory.block_templates[producer.recipe].outputs[0].rate
+                    factory.block_templates[producer.preferred_recipe].outputs[0].rate
                 )
 
                 factory_block_rate = float(factory_block_rate)
@@ -119,7 +118,7 @@ class Partition:
                     + "block: "
                     + str(factory_block_rate)
                 )
-                self.num_factory_blocks[producer.recipe] = num_blocks
+                self.num_factory_blocks[producer.preferred_recipe] = num_blocks
 
     def getFactoryBlockAmount(self, base_factory):
         # type: (Factory) -> int
@@ -164,12 +163,12 @@ class Partition:
                 print(recipe.name + " is top item of a partition, skipping")
 
     def populateRouteGroups(self, factory, rgs):
-        # type: (Factory, dict) -> None
+        # type: (Factory, Mapping[Item, Mapping[Recipe, RouteGroup]]) -> None
         # rg is sub dictionary of annealer's rg
         # rg[item (pro)][recipe (req)] = RouteGroup
         for item in rgs.keys():
             # Iterate on FactoryCellIOs that request the item
-            requester_recipe = -1
+            requester_recipe = None
             for requester in item.is_requester:
                 # Make sure IO is in current partition
                 if requester.parent_part == self:

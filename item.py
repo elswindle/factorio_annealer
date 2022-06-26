@@ -49,6 +49,7 @@ class Item:
                 item_type = kwargs.pop("type")
                 if item_type == "fluid":
                     self.is_fluid = True
+                    self.stack_size = 25000
 
             if "subgroup" in kwargs:
                 subgroup = kwargs.pop("subgroup")

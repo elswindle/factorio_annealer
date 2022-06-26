@@ -15,7 +15,7 @@ class FactoryBlockTemplate:
         self.recipe = recipe  # type: Recipe
         self.inputs = []  # type: list[IOTemplate]
         self.outputs = []  # type: list[IOTemplate]
-        self.pcells = []  # type: Location
+        self.pcells = []  # type: list[Location]
 
         self.item = 0
         self.direction = 0

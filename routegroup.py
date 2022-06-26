@@ -12,7 +12,7 @@ class RouteGroup:
         self.producer = producer  # Item
         self.requester = requester  # Recipe
 
-        self.routes = {}  # type: Mapping[FactoryCellIO, FactoryCellIO]
+        self.routes = {}  # type: Mapping[FactoryCellIO, list[FactoryCellIO]]
         self.producers = []  # type: list[FactoryCellIO]
         self.requesters = []  # type: list[FactoryCellIO]
         self.avg_dist = -1

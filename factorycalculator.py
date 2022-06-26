@@ -194,13 +194,13 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
     crafts_ho = reqs[heavy] / oil_product_per_craft[heavy]
     excess_light += crafts_ho * oil_process.products[light.name]
     excess_petro += crafts_ho * oil_process.products[petro.name]
-    assert crafts_ho >= 0
+    # assert crafts_ho >= 0
 
     oil_process_crafts += crafts_ho
 
     crafts_lo = (reqs[light] - excess_light) / oil_product_per_craft[light]
     excess_petro += crafts_lo * oil_process.products[petro.name]
-    assert crafts_lo >= 0
+    # assert crafts_lo >= 0
 
     oil_process_crafts += crafts_lo
 
@@ -267,3 +267,23 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
     reqs[light] += light_for_cracking
     breakdown[heavy][light.preferred_recipe] = heavy_for_cracking
     breakdown[light][petro.preferred_recipe] = light_for_cracking
+
+def scaleRequirements(reqs, breakdown, rate):
+    # type: (Mapping[Item, float], Mapping[Item, Mapping[Recipe, float]], float) -> None
+    # Iterate on all items and multiply by rate
+    for item in reqs.keys():
+        reqs[item] *= rate
+
+    for item in breakdown.keys():
+        for recipe in breakdown[item].keys():
+            breakdown[item][recipe] *= rate
+
+    # Double check
+    for item in reqs.keys():
+        total_req = reqs[item]
+
+        summed = 0
+        for recipe in breakdown[item].keys():
+            summed += breakdown[item][recipe]
+
+        assert abs(total_req - summed) < 0.01
