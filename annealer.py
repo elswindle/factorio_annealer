@@ -29,19 +29,24 @@ class Annealer:
         self.factory = factory # tpye: Factory
         self.route_groups = (
             {}
-        )  # type: Mapping[Partition, Mapping[Item, Mapping[Recipe, RouteGroup]]]
+        )  # type: Mapping[Item, Mapping[Item, Mapping[Recipe, RouteGroup]]]
         self.temperature = INITIAL_TEMP
 
     def initializeRouteGroups(self):
-        for part in self.factory.partitions.values():
-            reqs_bd = part.reqs_breakdown
-            if self.route_groups.get(part) is None:
-                self.route_groups[part] = {}
+        for part in self.factory.partitions.values() + self.factory.top_items.keys():
+            if isinstance(part, Partition):
+                reqs_bd = part.reqs_breakdown
+                top_item = part.top_item
+            elif isinstance(part, Item):
+                reqs_bd = self.factory.reqs_breakdown[part]
+                top_item = part
+            if self.route_groups.get(top_item) is None:
+                self.route_groups[top_item] = {}
 
             # Iterate item requirements
             for producer in reqs_bd.keys():  # producer is Item
-                if self.route_groups[part].get(producer) is None:
-                    self.route_groups[part][producer] = {}
+                if self.route_groups[top_item].get(producer) is None:
+                    self.route_groups[top_item][producer] = {}
                 # Iterate on recipe requesters
                 for requester in reqs_bd[producer].keys():  # requester is Recipe
                     rate = reqs_bd[producer][requester]
@@ -53,7 +58,7 @@ class Annealer:
                     tpm = rate / train_size  # Trains have 40 inventory slots
                     new_rg = RouteGroup(producer, requester, tpm)
 
-                    self.route_groups[part][producer][requester] = new_rg
+                    self.route_groups[top_item][producer][requester] = new_rg
 
     def populateRouteGroups(self):
         # for each partition, create delivery vectors
@@ -61,8 +66,8 @@ class Annealer:
         # and assign to the route group
         #
         # Iterate through partitions
-        for part in self.route_groups.keys():
-            part.populateRouteGroups(self.factory, self.route_groups[part])
+        for part in self.factory.partitions.values():
+            part.populateRouteGroups(self.factory, self.route_groups[part.top_item])
 
     def getFactoryCost(self):
         cost = 0
@@ -73,7 +78,7 @@ class Annealer:
     def getPartitionCost(self, partition):
         # type: (Partition) -> None
         cost = 0
-        for rg in self.route_groups[partition]:
+        for rg in self.route_groups[partition.top_item]:
             cost += len(rg)
         return cost
 
