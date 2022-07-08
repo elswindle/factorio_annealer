@@ -57,7 +57,7 @@ class Item:
                     self.is_resource = True
 
             # Manually add fluid raw-resources
-            if self.name in ['crude-oil', 'water']:
+            if self.name in ["crude-oil", "water"]:
                 self.is_resource = True
 
         self.is_producer = []  # type: list[FactoryCellIO]

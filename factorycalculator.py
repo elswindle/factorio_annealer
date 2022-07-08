@@ -9,42 +9,48 @@ if TYPE_CHECKING:
 #     def __init__(self):
 #         pass
 
+
 def calculateNormalizedRequirements(factory, reqs, breakdown, top_item):
     # type: (Factory, Mapping[Item, float], Mapping[Item, Mapping[Recipe, float]], Item) -> None
     """
     Calculate the amount of items that are needed within the partition.
     This is normalized since it is unknown how much of this item is
-    needed within the full factory.  This will be calculated after the 
+    needed within the full factory.  This will be calculated after the
     partition requirements have been completed.  This starts the
     recursion and handles items that require special calculations
 
     :param factory: Factory object, used for accessing items and recipes
     """
     # Requirements are calculated initially with a normalized value
-    passed_items = recurseCalculateNR(factory, reqs, breakdown, top_item.preferred_recipe, 1)
+    passed_items = recurseCalculateNR(
+        factory, reqs, breakdown, top_item.preferred_recipe, 1
+    )
 
     if any(x in factory.calc_exceptions for x in list(passed_items)):
         # This will catch instances where light-oil is needed except for cracking
-        if 'petroleum-gas' in passed_items:
+        if "petroleum-gas" in passed_items:
             calculateVanillaOilRequirements(factory, reqs, breakdown)
             try:
-                passed_items.pop('petroleum-gas')
+                passed_items.pop("petroleum-gas")
             except:
                 pass
             try:
-                passed_items.pop('light-oil')
+                passed_items.pop("light-oil")
             except:
                 pass
             try:
-                passed_items.pop('heavy-oil')
+                passed_items.pop("heavy-oil")
             except:
                 pass
         else:
-            raise AttributeError("If one of the oil products is in exclusion list, petroleum gas must be")
+            raise AttributeError(
+                "If one of the oil products is in exclusion list, petroleum gas must be"
+            )
 
     # Add additional specific handling here for other exceptions
     for passed in passed_items:
         print(passed)
+
 
 def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
     # type: (Factory, Mapping[Item, float], Mapping[Item, Mapping[Recipe, float]], Recipe, float) -> dict
@@ -61,20 +67,26 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
         if ingredient_name not in factory.calc_exceptions:
             # This could be put in a loop for recipes that produce more than 1 output
             # This would require the partition requirements to be an Item->Item
-            # relationship instead of Item->Recipe.  I don't know the implications 
-            # of this change.  
+            # relationship instead of Item->Recipe.  I don't know the implications
+            # of this change.
             try:
                 prod_amount = recipe.products[recipe.name]
             except:
                 # This will happen for recipes that have special names, i.e. oil
                 # and nuclear recipes
-                raise TypeError("I think this is not supposed to happen, product not called recipe name")
+                raise TypeError(
+                    "I think this is not supposed to happen, product not called recipe name"
+                )
 
             # Calculate the amount of the ingredient needed
             #                        Num recipe crafts * ingredient per craft
             # Amount of ingredient = ----------------------------------------
             #                        Productivity * amount produced per craft
-            ingredient_amount = craft_amount * recipe.ingredients[ingredient_name] / (productivity * prod_amount)
+            ingredient_amount = (
+                craft_amount
+                * recipe.ingredients[ingredient_name]
+                / (productivity * prod_amount)
+            )
 
             # Check if data structure is created yet
             if reqs.get(ingredient) is None:
@@ -89,12 +101,21 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
                 breakdown[ingredient][recipe] = ingredient_amount
             else:
                 breakdown[ingredient][recipe] += ingredient_amount
-            
-            # Do not continue recursion for ingredients that are the top level 
+
+            # Do not continue recursion for ingredients that are the top level
             # item of a partition
-            if ingredient not in factory.partitions.keys() and not ingredient.is_resource:
+            if (
+                ingredient not in factory.partitions.keys()
+                and not ingredient.is_resource
+            ):
                 # Only use preferred recipe for an item
-                passed = recurseCalculateNR(factory, reqs, breakdown, ingredient.preferred_recipe, ingredient_amount)
+                passed = recurseCalculateNR(
+                    factory,
+                    reqs,
+                    breakdown,
+                    ingredient.preferred_recipe,
+                    ingredient_amount,
+                )
                 for item in passed.keys():
                     passed_items[item] = 1
         else:
@@ -102,24 +123,25 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
 
     return passed_items
 
+
 def calculateVanillaOilRequirements(factory, reqs, breakdown):
     # type: (Factory, Mapping[Item, float], Mapping[Item, Mapping[Recipe, float]]) -> None
-    heavy = factory.item_list['heavy-oil']
-    light = factory.item_list['light-oil']
-    petro = factory.item_list['petroleum-gas']
-    oil = factory.item_list['crude-oil']
-    water = factory.item_list['water']
+    heavy = factory.item_list["heavy-oil"]
+    light = factory.item_list["light-oil"]
+    petro = factory.item_list["petroleum-gas"]
+    oil = factory.item_list["crude-oil"]
+    water = factory.item_list["water"]
 
     oil_process = heavy.preferred_recipe
 
-    heavy_requesters = ['lubricant']
-    light_requesters = ['solid-fuel', 'rocket-fuel']
-    petro_requesters = ['sulfur', 'plastic-bar']
+    heavy_requesters = ["lubricant"]
+    light_requesters = ["solid-fuel", "rocket-fuel"]
+    petro_requesters = ["sulfur", "plastic-bar"]
     # oil_requesters MUST be ordered from top to bottom
     oil_requesters = {
-        heavy : heavy_requesters,
-        light : light_requesters,
-        petro : petro_requesters
+        heavy: heavy_requesters,
+        light: light_requesters,
+        petro: petro_requesters,
     }
 
     # Calculate the amount of product from a single oil process craft
@@ -129,24 +151,26 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
         heavy_req = oil_process.ingredients[heavy.name]
     except:
         heavy_req = 0
-    oil_product_per_craft = {
-        heavy : oil_process.products[heavy.name] - heavy_req
-    }
+    oil_product_per_craft = {heavy: oil_process.products[heavy.name] - heavy_req}
 
     # Light oil
     light_per_craft = oil_process.products[light.name]
     heavy_ing = light.preferred_recipe.ingredients[heavy.name]
     light_prod = light.preferred_recipe.products[light.name]
-    productivity = 1 + factory.prod_bonus*light.preferred_recipe.getMaxModules()
-    light_per_craft += oil_product_per_craft[heavy]*light_prod*productivity/heavy_ing
+    productivity = 1 + factory.prod_bonus * light.preferred_recipe.getMaxModules()
+    light_per_craft += (
+        oil_product_per_craft[heavy] * light_prod * productivity / heavy_ing
+    )
     oil_product_per_craft[light] = light_per_craft
 
     # Petroleum gas
     petro_per_craft = oil_process.products[petro.name]
     light_ing = petro.preferred_recipe.ingredients[light.name]
     petro_prod = petro.preferred_recipe.products[petro.name]
-    productivity = 1 + factory.prod_bonus*petro.preferred_recipe.getMaxModules()
-    petro_per_craft += oil_product_per_craft[light]*petro_prod*productivity/light_ing
+    productivity = 1 + factory.prod_bonus * petro.preferred_recipe.getMaxModules()
+    petro_per_craft += (
+        oil_product_per_craft[light] * petro_prod * productivity / light_ing
+    )
     oil_product_per_craft[petro] = petro_per_craft
 
     excess_light = 0
@@ -165,7 +189,7 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
             req_item = factory.item_list[requester]
             req_recipe = None
             req_recipe = req_item.preferred_recipe
-            productivity = 1 + factory.prod_bonus*req_recipe.getMaxModules()
+            productivity = 1 + factory.prod_bonus * req_recipe.getMaxModules()
 
             # Retrieve the needed inputs to calculate the needed ingredient
             if reqs.get(req_item) is not None:
@@ -176,7 +200,9 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
             ing_per_craft = req_recipe.ingredients[oil_product.name]
             prod_per_craft = req_recipe.products[requester]
 
-            oil_prod_req = craft_amount * ing_per_craft / (productivity * prod_per_craft)
+            oil_prod_req = (
+                craft_amount * ing_per_craft / (productivity * prod_per_craft)
+            )
 
             # Add needed oil product to requirements, don't add if 0
             if oil_prod_req > 0:
@@ -210,16 +236,18 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
     oil_process_crafts += crafts_pg
 
     oil_process_out = {
-        heavy : oil_process_crafts * oil_process.products[heavy.name],
-        light : oil_process_crafts * oil_process.products[light.name],
-        petro : oil_process_crafts * oil_process.products[petro.name]
+        heavy: oil_process_crafts * oil_process.products[heavy.name],
+        light: oil_process_crafts * oil_process.products[light.name],
+        petro: oil_process_crafts * oil_process.products[petro.name],
     }
 
-    productivity = 1 + factory.prod_bonus*oil_process.getMaxModules()
+    productivity = 1 + factory.prod_bonus * oil_process.getMaxModules()
     for ingredient_name in oil_process.ingredients.keys():
         ingredient = factory.item_list[ingredient_name]
-        
-        ingredient_amount = oil_process.ingredients[ingredient_name] * oil_process_crafts / productivity
+
+        ingredient_amount = (
+            oil_process.ingredients[ingredient_name] * oil_process_crafts / productivity
+        )
 
         if reqs.get(ingredient) is None:
             reqs[ingredient] = ingredient_amount
@@ -235,15 +263,23 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
             breakdown[ingredient][oil_process] += ingredient_amount
 
     heavy_for_cracking = oil_process_out[heavy] - reqs[heavy]
-    light_from_cracking = heavy_for_cracking*light_prod*productivity/heavy_ing
+    light_from_cracking = heavy_for_cracking * light_prod * productivity / heavy_ing
     light_for_cracking = oil_process_out[light] + light_from_cracking - reqs[light]
-    petro_from_cracking = light_for_cracking*petro_prod*productivity/light_ing
+    petro_from_cracking = light_for_cracking * petro_prod * productivity / light_ing
     # This assertion should catch any time the limitation above is broken
     assert abs(oil_process_out[petro] + petro_from_cracking - reqs[petro] < 0.1)
 
     # Add water requirements for cracking
-    heavy_water = light_from_cracking * light.preferred_recipe.ingredients[water.name] / (productivity*light_prod)
-    light_water = petro_from_cracking * petro.preferred_recipe.ingredients[water.name] / (productivity*petro_prod)
+    heavy_water = (
+        light_from_cracking
+        * light.preferred_recipe.ingredients[water.name]
+        / (productivity * light_prod)
+    )
+    light_water = (
+        petro_from_cracking
+        * petro.preferred_recipe.ingredients[water.name]
+        / (productivity * petro_prod)
+    )
     if reqs.get(water) is None:
         reqs[water] = heavy_water + light_water
     else:
@@ -267,6 +303,7 @@ def calculateVanillaOilRequirements(factory, reqs, breakdown):
     reqs[light] += light_for_cracking
     breakdown[heavy][light.preferred_recipe] = heavy_for_cracking
     breakdown[light][petro.preferred_recipe] = light_for_cracking
+
 
 def scaleRequirements(reqs, breakdown, rate):
     # type: (Mapping[Item, float], Mapping[Item, Mapping[Recipe, float]], float) -> None

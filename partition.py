@@ -12,21 +12,24 @@ import math
 
 
 class Partition:
-    def __init__(self, item):
-        # type: (Item) -> None
+    def __init__(self, item, main=False, rate=0):
+        # type: (Item, bool, float) -> None
         self.num_factory_blocks = {}  # type: Mapping[Recipe, int]
         self.part_reqs = {}  # type: Mapping[Item, float]
         self.reqs_breakdown = {}  # type: Mapping[Item, Mapping[Recipe, float]]
         self.top_item = item
         self.factory_blocks = []  # type: list[FactoryBlock]
         # This will be calculated later after population
-        self.parition_scalar = 0
+        self.parition_scalar = rate
+        self.main = main
 
     def __repr__(self):
         return self.top_item.name + " is top"
 
     def calculateNormalizedPartitionRequirements(self, factory):
-        calculator.calculateNormalizedRequirements(factory, self.part_reqs, self.reqs_breakdown, self.top_item)
+        calculator.calculateNormalizedRequirements(
+            factory, self.part_reqs, self.reqs_breakdown, self.top_item
+        )
 
     def calculateFactoryBlockRequirements(self, base_factory):
         # type: (Factory) -> None

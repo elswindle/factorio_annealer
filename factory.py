@@ -2,6 +2,7 @@ from factorycellio import FactoryCellIO
 from factoryblocktemplates import FactoryBlockTemplate
 from factorycell import FactoryCell
 from factoryblock import FactoryBlock
+from numpy import isin
 from recipe import Recipe
 from item import Item
 from partition import Partition
@@ -16,7 +17,7 @@ class Factory:
     def __init__(self, **kwargs):
         """
         Factory initialization, arguments contain different options for calculation,
-        top level items.  Loads item and recipe lists from game data if not 
+        top level items.  Loads item and recipe lists from game data if not
         specified in arguments
         :param kwargs: Available factory options
             "rate" : Production rate of given top level items
@@ -47,11 +48,13 @@ class Factory:
         self.factory_reqs = {}  # type: Mapping[Item, Mapping[Item, float]] # rate
         self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
+        self.num_factory_blocks = {}  # type: Mapping[Item, Mapping[Recipe, int]]
+        self.factory_blocks = {}  # type: Mapping[Item, list[FactoryBlock]]
         # Requirements breakdown: top_item->item->Recipe->rate
         self.reqs_breakdown = (
             {}
         )  # type: Mapping[Item, Mapping[Item, Mapping[Recipe, float]]]
-        
+
         if "depot-adjacency-requirement" in kwargs:
             self.depot_req = kwargs.pop("depot-adjacency-requirement")
         else:
@@ -92,24 +95,21 @@ class Factory:
             item_csv = csv.reader(open(self.item_list_path), delimiter=",")
             next(item_csv)
             for row in item_csv:
-                self.item_list[row[0]] = Item(**{"row" : row})
+                self.item_list[row[0]] = Item(**{"row": row})
         else:
             self.loadItemsFromGameData()
 
-        self.top_items = {} # type: Mapping[Item, float]
+        self.top_items = {}  # type: Mapping[Item, float]
         if "top-items" in kwargs:
             top = kwargs.pop("top-items")
             for item_data in top:
                 item = self.item_list[item_data[0]]
                 self.top_items[item] = item_data[1]
-                self.reqs_breakdown[item] = {}
-                self.factory_reqs[item] = {}
-
-        if "partitions" in kwargs:
-            parts = kwargs.pop("partitions")
-        else:
-            parts = []
-        self.partitions = PartitionDict(self, parts) # type: Mapping[Item, Partition]
+                # self.partitions[item] = Partition(item)
+                # self.reqs_breakdown[item] = {}
+                # self.factory_reqs[item] = {}
+                # self.num_factory_blocks[item] = {}
+                # self.factory_blocks[item] = []
 
         self.loadRecipesFromGameData()
 
@@ -118,15 +118,25 @@ class Factory:
             self.importBlockTemplates(self.template_path)
             self.overrideRecipes()
 
+        if "partitions" in kwargs:
+            parts = kwargs.pop("partitions")
+        else:
+            parts = []
+        self.partitions = PartitionDict(self, parts)  # type: Mapping[Item, Partition]
+        for item in self.top_items.keys():
+            self.partitions[item] = Partition(
+                item, main=True, rate=self.top_items[item]
+            )
+
         for arg in kwargs:
             print(arg)
 
     def loadItemsFromGameData(self):
         """
-        Loads list of Item objects from Factorio game data.  This function is jank, 
-        it basically just hacks item.lua and fluid.lua and removes any references 
-        to functions or data structures defined by the game outside of the file.  
-        Ideally, this will be getting data from loaded Factorio data through Lua.  
+        Loads list of Item objects from Factorio game data.  This function is jank,
+        it basically just hacks item.lua and fluid.lua and removes any references
+        to functions or data structures defined by the game outside of the file.
+        Ideally, this will be getting data from loaded Factorio data through Lua.
         In addition, this can be expanded to include mods and can build a layout
         from modded data.
         """
@@ -281,14 +291,18 @@ class Factory:
                     item.setPreferredRecipe(item.recipes[0])
 
                     # Exceptions
-                    if item.name == 'petroleum-gas':
-                        item.setPreferredRecipe(self.recipe_list['light-oil-cracking'])
-                    elif item.name == 'light-oil':
-                        item.setPreferredRecipe(self.recipe_list['heavy-oil-cracking'])
-                    elif item.name == 'heavy-oil':
-                        item.setPreferredRecipe(self.recipe_list['advanced-oil-processing'])
-                    elif item.name == 'solid-fuel':
-                        item.setPreferredRecipe(self.recipe_list['solid-fuel-from-light-oil'])
+                    if item.name == "petroleum-gas":
+                        item.setPreferredRecipe(self.recipe_list["light-oil-cracking"])
+                    elif item.name == "light-oil":
+                        item.setPreferredRecipe(self.recipe_list["heavy-oil-cracking"])
+                    elif item.name == "heavy-oil":
+                        item.setPreferredRecipe(
+                            self.recipe_list["advanced-oil-processing"]
+                        )
+                    elif item.name == "solid-fuel":
+                        item.setPreferredRecipe(
+                            self.recipe_list["solid-fuel-from-light-oil"]
+                        )
 
     def loadFactoryRecipeList(self, path):
         # type: (str, bool) -> None
@@ -363,7 +377,9 @@ class Factory:
                     ingredient_amt = recipe.ingredients[ingredient_name]
 
                     if self.block_templates.get(ingredient.preferred_recipe) is None:
-                        items_to_add += self.templateRecursiveSearch(ingredient.preferred_recipe, ingredient_amt, ingredient)
+                        items_to_add += self.templateRecursiveSearch(
+                            ingredient.preferred_recipe, ingredient_amt, ingredient
+                        )
                         items_to_remove.append(ingredient_name)
 
                 for item in items_to_remove:
@@ -373,16 +389,25 @@ class Factory:
                         recipe.ingredients[item[0]] = item[1]
                     else:
                         recipe.ingredients[item[0]] += item[1]
-            
+
     def templateRecursiveSearch(self, recipe, craft_amt, product):
-        # type: (Recipe, float, Item, Recipe) -> list
+        # type: (Recipe, float, Item) -> list
         items_to_add = []
         for ingredient_name in recipe.ingredients:
+            productivity = 1
+            if recipe.name in self.prod_limitations:
+                productivity = 1 + recipe.getMaxModules() * self.prod_bonus
             ingredient = self.item_list[ingredient_name]
-            ingredient_amt = craft_amt * recipe.ingredients[ingredient_name] / recipe.products[product.name]
+            ingredient_amt = (
+                craft_amt
+                * recipe.ingredients[ingredient_name]
+                / (productivity * recipe.products[product.name])
+            )
 
             if self.block_templates.get(ingredient.preferred_recipe) is None:
-                items_to_add += self.templateRecursiveSearch(ingredient.preferred_recipe, ingredient_amt, ingredient)
+                items_to_add += self.templateRecursiveSearch(
+                    ingredient.preferred_recipe, ingredient_amt, ingredient
+                )
             else:
                 items_to_add.append((ingredient_name, ingredient_amt))
 
@@ -424,20 +449,30 @@ class Factory:
         for partition in self.partitions.values():
             partition.calculateNormalizedPartitionRequirements(self)
 
-        for top_item in self.top_items.keys():
-            calculator.calculateNormalizedRequirements(self, self.factory_reqs[top_item], self.reqs_breakdown[top_item], top_item)
+        # for top_item in self.top_items.keys():
+        #     calculator.calculateNormalizedRequirements(
+        #         self,
+        #         self.factory_reqs[top_item],
+        #         self.reqs_breakdown[top_item],
+        #         top_item,
+        #     )
 
-        for top_item in self.top_items.keys():
-            calculator.scaleRequirements(self.factory_reqs[top_item], self.reqs_breakdown[top_item], self.top_items[top_item])
+        # for top_item in self.top_items.keys():
+        #     calculator.scaleRequirements(
+        #         self.factory_reqs[top_item],
+        #         self.reqs_breakdown[top_item],
+        #         self.top_items[top_item],
+        #     )
 
         scalars = {}
         for part in self.partitions.values():
             scalar = 0
-            for top_item in self.top_items.keys():
-                try:
-                    scalar += self.factory_reqs[top_item][part.top_item]
-                except:
-                    pass
+            for top_part in self.partitions.values():
+                if top_part.main:
+                    try:
+                        scalar += top_part.part_reqs[part.top_item] * top_part.parition_scalar
+                    except:
+                        pass
 
             if scalar != 0:
                 self.getPartitionScalars(part, scalar, [part])
@@ -452,14 +487,21 @@ class Factory:
             except:
                 part_scalar = 0
 
+            # if part.main:
+            #     part_scalar *= part.parition_scalar
+
             if part != partition and part_scalar != 0:
                 if part not in visited:
-                    self.getPartitionScalars(part, part_scalar*scalar, [part] + visited)
+                    self.getPartitionScalars(
+                        part, part_scalar * scalar, [part] + visited
+                    )
                 else:
                     raise BaseException(
-                        "Circular dependecy detected, partition already visited\n" + 
-                        "Partition: " + str(part) + "\n" + 
-                        str(visited)
+                        "Circular dependecy detected, partition already visited\n"
+                        + "Partition: "
+                        + str(part)
+                        + "\n"
+                        + str(visited)
                     )
 
     def createPartitions(self, path):
@@ -482,14 +524,47 @@ class Factory:
         for partition in self.partitions.values():
             partition.calculateFactoryBlockNumbers(self)
 
-        
+        for top_item in self.factory_reqs.keys():
+            for producer in self.factory_reqs[top_item].keys():
+                if not producer.is_resource:
+                    req_rate = self.factory_reqs[top_item][producer]
+                    factory_block_rate = (
+                        self.block_templates[producer.preferred_recipe].outputs[0].rate
+                    )
+
+                    factory_block_rate = float(factory_block_rate)
+                    num_blocks = ceil(
+                        req_rate / factory_block_rate + self.block_num_buffer
+                    )
+                    print(producer.name + " needs " + str(num_blocks) + " blocks")
+                    print(
+                        "  producer: "
+                        + str(req_rate)
+                        + " "
+                        + "block: "
+                        + str(factory_block_rate)
+                    )
+                    self.num_factory_blocks[top_item][
+                        producer.preferred_recipe
+                    ] = num_blocks
 
     def getFactoryBlockAmount(self):
         blocks = 0
         for partition in self.partitions.values():
             blocks += partition.getFactoryBlockAmount(self)
-            
-        
+
+        for top_item in self.num_factory_blocks.keys():
+            for block in self.num_factory_blocks[top_item].keys():
+                # Search for other partitions top item and don't include it
+                found = False
+                for part in self.partitions.values():
+                    # Only include top item blocks of current partition
+                    if part.top_item == block.item:
+                        # Check if block item and partition top item are equal
+                        found = True
+
+                if not found:
+                    blocks += self.num_factory_blocks[top_item][block]
 
         self.num_blocks = blocks
         return blocks
@@ -498,6 +573,10 @@ class Factory:
         cells = 0
         for partition in self.partitions.values():
             cells += partition.getFactoryCellAmount()
+
+        for top_item in self.factory_blocks.keys():
+            for block in self.factory_blocks[top_item]:
+                cells += len(block.fcells)
 
         return cells
 
@@ -523,27 +602,42 @@ class Factory:
         self.factory = [[EMPTY] * (y + 2) for i in range(x + 2)]
         self.tf = [[EMPTY] * (y + 2) for i in range(x + 2)]
 
-    def populatePartitions(self):
+    def populateFactory(self):
         for part in self.partitions.values():
             part.populateFactoryBlocks(self)
+
+        for top_item in self.num_factory_blocks.keys():
+            for recipe in self.num_factory_blocks[top_item].keys():
+                template = self.block_templates[recipe]
+                # Check if recipe is a top level item of partition
+                found = False
+                for part in self.partitions.values():
+                    if part.top_item == recipe.item:
+                        found = True
+
+                if not found:
+                    for i in range(self.num_factory_blocks[top_item][recipe]):
+                        new_block = FactoryBlock(template, self)
+                        self.factory_blocks[top_item].append(new_block)
+                else:
+                    print(recipe.name + " is top item of a partition, skipping")
 
     def initializeBlockPlacement(self):
         self.num_cells = self.getFactoryCellAmount()
         self.num_blocks = self.getFactoryBlockAmount()
 
-        depot = FactoryBlockTemplate(Recipe(**{"is_depot" : True}), -1, -1)
+        depot = FactoryBlockTemplate(Recipe(**{"is_depot": True}), -1, -1)
         placed_blocks = 0
         for part in self.partitions.values():
-            for block in part.factory_blocks:
+            factory_blocks = part.factory_blocks
+            for block in factory_blocks:
                 # Make sure block can fit in available location
                 # Check for different sized blocks
                 anchor = Location(block.num_left, block.num_below)
                 if block.dimension != Dimension(1, 1):
                     # Check if block will fit in current location
-                    space_left = (
-                        self.dimensions.x - block.dimension.x - self.placement_ptr.x + 1
-                    )
-                    if space_left <= 0:
+                    space_left = self.dimensions.x - self.placement_ptr.x + 1
+                    if space_left < block.dimension.x:
                         # place depots instead
                         while self.placement_ptr.x <= self.dimensions.x:
                             x = self.placement_ptr.x
@@ -657,35 +751,41 @@ class Factory:
             self.placement_ptr.x += 1
 
     def calculatePinRequirements(self):
-        for item in self.factory_reqs.keys():
-            if item.is_resource:
-                # Calculate number of needed pins
-                # Pins are shared across partitions
-                # Since handled at factory level
+        # Go through all items
+        for item in self.item_list.values():
+            # For any item that is marked as a resource and has a block
+            # template, calculate the number of pins required
+            if (
+                item.is_resource
+                and self.block_templates.get(item.preferred_recipe) is not None
+            ):
                 num_pins = 0
+                # Iterate over partitions and factory top items
                 for part in self.partitions.values():
-                    # Get the resource requirement for the partition, if exists
-                    if not part.part_reqs.get(item) is None:
-                        part_resource_rate = part.part_reqs[item]
-                        # Determine the needed pins for that requirement
+                    # Get the correct requirements dictionary
+                    reqs = part.part_reqs
+
+                    # Check if the item is required
+                    if reqs.get(item) is not None:
+                        resource_rate = reqs[item] * part.parition_scalar
+
+                        # Determine number of pins based on the resource type
                         if item.is_fluid:
-                            num_pins += ceil(part_resource_rate / 25000)
+                            num_pins += ceil(resource_rate / 25000)
                         else:
-                            num_belts = ceil(part_resource_rate / BLUE_BELT)
+                            num_belts = ceil(resource_rate / BLUE_BELT)
                             belts_per_car = 2.0
 
                             num_pins += ceil(
-                                num_belts / belts_per_car + self.block_num_buffer
+                                self.block_num_buffer + (num_belts / belts_per_car)
                             )
-
-                            # Don't remember what this was for...
-                            # if(num_pins % 2 == 1):
-                            #     num_pins += 1
 
                 num_8car_trains = ceil(num_pins / 8)
 
+                # Store the number of pins and create the factory block
                 self.pin_reqs[item] = num_pins
                 template = self.block_templates[item.preferred_recipe]
+
                 for _ in range(num_pins):
                     new_block = FactoryBlock(template, self.item_list["research"])
                     self.pin_blocks.append(new_block)
@@ -756,62 +856,6 @@ class Factory:
                 if cell.location.x != x or cell.location.y != y:
                     print("factory bad")
                     return False
-
-        return True
-
-    def testTopDependency(self, item):
-        # type: (Item) -> bool
-        """
-        Check to see if one of the factory's top level items is a dependency of
-        the given partition item.  If it is violated, the factory will double up on 
-        the top item's dependencies.  This function checks each input of the
-        item's recipe and then recursively checks their recipes.
-        
-        :param item: Item to test if inside factory's top items
-
-        :exception AttributeError: if ``item`` is part of factory's top items
-
-        :returns: True if completed
-        """
-        if item in self.top_items:
-            raise AttributeError(
-                "Factory top items must not be a dependency of another top item\n" +
-                "Factory top items: " + str(self.top_items) + "\n" +
-                "Offending item: " + str(item)
-            )
-        recipe = item.preferred_recipe
-        for ingredient_name in recipe.ingredients:
-            ingredient = self.item_list[ingredient_name]
-
-            # Test ingredient's recipe
-            if not ingredient.is_resource:
-                self.testTopDependency(ingredient)
-
-        return True
-
-    def testDependenceToTop(self, item):
-        # type: (Item) -> bool
-        """
-        Same as testTopDependency except backwards.  Instead of checking ingredients,
-        this checks products to a recipe
-        """
-
-        if item in self.top_items:
-            raise AttributeError(
-                "A new top Factory item must not be dependent on current top items\n" +
-                "Factory top items: " + str(self.top_items) + "\n" +
-                "Offending item: " + str(item)
-            )
-        # If an item doesn't have a recipe, we're at the top of the tree, call it good
-        try:
-            recipe = item.preferred_recipe
-        except:
-            return True
-
-        for product_name in recipe.products:
-            product = self.item_list[product_name]
-
-            self.testDependenceToTop(product)
 
         return True
 

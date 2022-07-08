@@ -20,8 +20,8 @@ class Recipe:
 
         found_ing = False
         found_res = False
-        self.ingredients = {} # type: Mapping[str, float]
-        self.products = {} # type: Mapping[str, float]
+        self.ingredients = {}  # type: Mapping[str, float]
+        self.products = {}  # type: Mapping[str, float]
         if "normal" in kwargs:
             norm_settings = kwargs.pop("normal")
             if "ingredients" in norm_settings:
@@ -57,7 +57,7 @@ class Recipe:
         if "results" in kwargs:
             results = kwargs.pop("results")
             found_res = True
-            
+
         if found_res:
             for result in results:
                 if isinstance(result, list):

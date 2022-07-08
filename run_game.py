@@ -19,20 +19,22 @@ base_factory.importBlockTemplates("data/factory_block_templates.csv")
 # part = Partition(base_factory.item_list['labs'])
 # base_factory.partitions[base_factory.item_list['labs']] = part
 
-part2 = Partition(base_factory.item_list["logistic-science-pack"])
-base_factory.partitions[base_factory.item_list["logistic-science-pack"]] = part2
+# part2 = Partition(base_factory.item_list["logistic-science-pack"])
+# base_factory.partitions[base_factory.item_list["logistic-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list['military-science-pack'])
 # base_factory.partitions[base_factory.item_list['military-science-pack']] = part2
 # part2 = Partition(base_factory.item_list['automation-science-pack'])
 # base_factory.partitions[base_factory.item_list['automation-science-pack']] = part2
-part2 = Partition(base_factory.item_list['utility-science-pack'])
-base_factory.partitions[base_factory.item_list['utility-science-pack']] = part2
+# part2 = Partition(base_factory.item_list['utility-science-pack'])
+# base_factory.partitions[base_factory.item_list['utility-science-pack']] = part2
 part2 = Partition(base_factory.item_list['production-science-pack'])
 base_factory.partitions[base_factory.item_list['production-science-pack']] = part2
 # part2 = Partition(base_factory.item_list["chemical-science-pack"])
 # base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list['space-science-pack'])
 # base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
+# part2 = Partition(base_factory.item_list['electronic-circuit'])
+# base_factory.partitions[base_factory.item_list['electronic-circuit']] = part2
 # part2 = Partition(base_factory.item_list['sulfur'])
 # base_factory.partitions[base_factory.item_list['sulfur']] = part2
 
@@ -42,8 +44,8 @@ base_factory.calculateFactoryBlockNumbers()
 
 # print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
-base_factory.populatePartitions()
-base_factory.calculateFactoryDimensions(1.6, 0)
+base_factory.populateFactory()
+base_factory.calculateFactoryDimensions(1.3, 0)
 print(base_factory.dimensions)
 base_factory.getFactoryBlockAmount()
 base_factory.initializeBlockPlacement()
