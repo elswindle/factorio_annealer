@@ -46,16 +46,26 @@ class Annealer:
                     self.route_groups[top_item][producer] = {}
                 # Iterate on recipe requesters
                 for requester in reqs_bd[producer].keys():  # requester is Recipe
-                    rate = reqs_bd[producer][requester]
-                    stack_size = producer.stack_size
-                    if producer.is_fluid:
-                        train_size = 25000
-                    else:
-                        train_size = stack_size * 40
-                    tpm = rate / train_size  # Trains have 40 inventory slots
-                    new_rg = RouteGroup(producer, requester, tpm)
+                    # Don't add dummy recipe for top level items
+                    if requester.name != "dummy":
+                        rate = reqs_bd[producer][requester]
+                        stack_size = producer.stack_size
+                        if producer.is_fluid:
+                            train_size = 25000
+                        else:
+                            train_size = stack_size * 40
+                        tpm = rate / train_size  # Trains have 40 inventory slots
+                        new_rg = RouteGroup(producer, requester, tpm)
 
-                    self.route_groups[top_item][producer][requester] = new_rg
+                        self.route_groups[top_item][producer][requester] = new_rg
+
+        # Link top partition items to route groups from other partitions
+        for part in self.route_groups.keys():
+            for producer in self.route_groups[part].keys():
+                if producer in self.factory.partitions.keys():
+                    for requester in self.route_groups[part][producer].keys():
+                        rg = self.route_groups[part][producer][requester]
+                        self.route_groups[producer][producer][requester] = rg
 
     def populateRouteGroups(self):
         # for each partition, create delivery vectors

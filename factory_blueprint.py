@@ -5,22 +5,29 @@ from draftsman.classes.entitylike import EntityLike
 from draftsman.classes.entitylist import EntityList
 from draftsman.classes.entity import Entity
 from draftsman.classes.association import Association
+from recipe import Recipe
 from copy import deepcopy
 from utils import *
 
 
 class FactoryCellGroup(Group):
     def __init__(
-        self, id, name="factory-cell", position=(0, 0), recipe=EMPTY, **kwargs
+        self, name="factory-cell", position=(0, 0), rel_pos=(0,0), recipe=EMPTY, **kwargs
     ):
-        super(FactoryCellGroup, self).__init__(id, position=position)
-        self.id = id
+        # type: (str, tuple, tuple, Recipe, **dict) -> None
+        super(FactoryCellGroup, self).__init__(position=position, **kwargs)
+        # self.id = id
         self.name = name
         if recipe is not EMPTY:
             self._type = recipe.item
         else:
             self._type = EMPTY
         self.position = position
+
+        if rel_pos is not None:
+            self.rel_pos = {"x": rel_pos["x"], "y": rel_pos["y"]}
+        else:
+            self.rel_pos = {"x": 0, "y": 0}
 
         # Optional to flip the group, but this may not be surported
         # by the annealer.  Could be something we try for a swap: a flip

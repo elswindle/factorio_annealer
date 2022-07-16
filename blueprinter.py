@@ -16,6 +16,42 @@ class Blueprinter:
             self.bpb_str = bpb_file.readline()
 
             self.ub_book = BlueprintBook(self.bpb_str)
+            self.book = {} # type: Mapping[str, FactoryCellGroup]
+            for i, bp in enumerate(self.ub_book.blueprints, 0):
+                label = bp.label # type: str
+                if label is not None:
+                    # Contains a signal
+                    bp_icons = {}
+                    bp_name = None
+                    if label.find('=') != -1:
+                        s = label.replace(']', ' ')
+                        s = s.replace('[', '')
+                        ll = s.split()
+                        for icon in ll:
+                            [key, value] = icon.split('=')
+                            bp_icons[key] = value
+
+                        if bp_icons.get("virtual-signal") is None:
+                            try:
+                                bp_name = bp_icons["item"]
+                            except:
+                                try:
+                                    bp_name = bp_icons["fluid"]
+                                except:
+                                    bp_name = bp_icons["recipe"]
+                        else:
+                            if bp_icons["virtual-signal"] == "ltn-depot":
+                                if bp_icons.get("item") is None:
+                                    bp_name = "fluid-depot"
+                                else:
+                                    bp_name = "solid-depot"
+                    else:
+                        bp_name = label
+
+                    if bp_name == "lab":
+                        bp_name = "labs"
+                    new_fg = FactoryCellGroup(bp_name, rel_pos=bp.position_relative_to_grid, entities=bp.entities)
+                    self.book[bp_name] = new_fg
             grid_bp = self.ub_book.blueprints[0]
             self.x_interval = grid_bp.snapping_grid_size["x"]
             self.y_interval = -grid_bp.snapping_grid_size["y"]  # Negative is up
@@ -37,63 +73,118 @@ class Blueprinter:
 
         # Add factory cells to blueprint
         # Need a way to handle cells not 1x1, ie advanced circuits
-        for x in range(factory.dimensions.x + 2):
-            for y in range(factory.dimensions.y + 2):
-                cell = factory.factory[x][y]
-                position = (x * self.x_interval, (y + 1) * self.y_interval)
-                if cell is not EMPTY:
-                    cell: FactoryCell
-                    if cell.recipe.item.is_resource:
-                        print("hello")
-                    else:
-                        bp = self.ub_book.blueprints[cell.recipe.name]
-                        rel_pos = bp.position_relative_to_grid
-                        cell_pos = (
-                            position["x"] + rel_pos["x"],
-                            position["y"] + rel_pos["y"],
-                        )
-                        group = Group(entities=bp.entities, position=cell_pos)
+        # This will break for blocks that are vertical
+        skip_cells = 0
+        for y in range(factory.dimensions.y + 2):
+            for x in range(factory.dimensions.x + 2):
+                if skip_cells == 0:
+                    cell = factory.factory[x][y]
 
-                        self.factory_blueprint.entities.append(group)
+                    if cell is not EMPTY:
+                        position = {"x": x * self.x_interval, "y": (y + 1) * self.y_interval}
+                        name = ""
+                        if cell.is_depot:
+                            name = "solid-depot"
+                        else:
+                            # For blocks with x dimension greater than 1, skip some cells
+                            if cell.parent_block.dimension.x > 1:
+                                skip_cells = cell.parent_block.dimension.x-1
 
-        grid_bp = self.ub_book.blueprints["grid"]
-        grid_group = Group(entities=grid_bp.entities)
+                            cell_item = cell.recipe.item
+                            if cell_item.is_resource:
+                                location = None
+                                if x == 0:
+                                    location = LEFT
+                                elif x == factory.dimensions.x+1:
+                                    location = RIGHT
+                                elif y == 0:
+                                    location = BOT
+                                else:
+                                    location = TOP
+
+                                if location == TOP:
+                                    if cell_item.is_fluid:
+                                        name = "pin-top-fluid"
+                                    else:
+                                        name = "pin-top-chest"
+                                elif location == RIGHT:
+                                    if cell_item.is_fluid:
+                                        name = "pin-right-fluid"
+                                    else:
+                                        name = "pin-right-chest"
+                                elif location == BOT:
+                                    if cell_item.is_fluid:
+                                        name = "pin-bot-fluid"
+                                    else:
+                                        name = "pin-bot-chest"
+                                else:
+                                    if cell_item.is_fluid:
+                                        name = "pin-left-fluid"
+                                    else:
+                                        name = "pin-left-chest"
+                                    
+                                print("hello")
+                            else:
+                                name = cell.recipe.name
+                                if name == "solid-fuel-from-light-oil":
+                                    name = "solid-fuel"
+
+                        fcg = self.book[name]
+                        rel_pos = fcg.rel_pos
+                        cell_pos = {
+                            "x": position["x"] + rel_pos["x"],
+                            "y": position["y"] + rel_pos["y"],
+                        }
+                        fcg.position = cell_pos
+
+                        self.factory_blueprint.entities.append(fcg)
+                else:
+                    skip_cells -= 1
+
+        grid_bp = self.book["rail-grid"]
+        # grid_group = Group(entities=grid_bp.entities)
         # Add additional rail grid row/column
         for x in range(factory.dimensions.x + 3):
             for y in range(factory.dimensions.y + 3):
-                grid_group = position = (x * self.x_interval, y * self.y_interval)
-                self.factory_blueprint.entities.append(grid_group)
+                grid_bp.position = {"x": x * self.x_interval, "y": y * self.y_interval}
+                self.factory_blueprint.entities.append(grid_bp)
 
         # Add edges to blueprint
         xmax = (factory.dimensions.x + 3) * self.x_interval
         ymax = (factory.dimensions.y + 3) * self.y_interval
-        edge_bp = self.ub_book.blueprints["edge"]
+        edge_bp = self.book["rail-edge"]
         edge_group = Group(entities=edge_bp.entities)
         for x in range(factory.dimensions.x + 4):
-            position1 = ((x - 1) * self.x_interval, ymax)
-            position2 = ((x - 1) * self.x_interval, -self.y_interval)
-            rel_pos = edge_bp.position_relative_to_grid
-            cell_pos1 = (position1["x"] + rel_pos["x"], position1["y"] + rel_pos["y"])
-            cell_pos2 = (position2["x"] + rel_pos["x"], position2["y"] + rel_pos["y"])
-            edge_group.position = cell_pos1
-            self.factory_blueprint.entities.append(edge_group)
-            edge_group.position = cell_pos2
-            self.factory_blueprint.entities.append(edge_group)
+            position1 = {"x": (x - 1) * self.x_interval, "y": ymax}
+            position2 = {"x": (x - 1) * self.x_interval, "y": -self.y_interval}
+            rel_pos = edge_bp.rel_pos
+            cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
+            cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
+            edge_bp.position = cell_pos1
+            self.factory_blueprint.entities.append(edge_bp)
+            edge_bp.position = cell_pos2
+            self.factory_blueprint.entities.append(edge_bp)
 
         # No need to add corners, these should be added by above
         for y in range(factory.dimensions.y + 2):
-            position1 = (xmax, y * self.y_interval)
-            position2 = (-self.x_interval, y * self.y_interval)
-            rel_pos = edge_bp.position_relative_to_grid
-            cell_pos1 = (position1["x"] + rel_pos["x"], position1["y"] + rel_pos["y"])
-            cell_pos2 = (position2["x"] + rel_pos["x"], position2["y"] + rel_pos["y"])
-            edge_group.position = cell_pos1
-            self.factory_blueprint.entities.append(edge_group)
-            edge_group.position = cell_pos2
-            self.factory_blueprint.entities.append(edge_group)
+            position1 = {"x": xmax, "y": y * self.y_interval}
+            position2 = {"x": -self.x_interval, "y": y * self.y_interval}
+            rel_pos = edge_bp.rel_pos
+            cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
+            cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
+            edge_bp.position = cell_pos1
+            self.factory_blueprint.entities.append(edge_bp)
+            edge_bp.position = cell_pos2
+            self.factory_blueprint.entities.append(edge_bp)
+
+        self.exportFactoryBlueprint()
 
     def testFactoryCellGroup(self):
         pass
+
+    def exportFactoryBlueprint(self, path="data/factory_blueprint.txt"):
+        file = open(path)
+        file.write(self.factory_blueprint.to_string())
 
     def testFactoryBlueprint(self, factory=EMPTY):
         f = open("data/op_str.txt", "w")
@@ -237,6 +328,3 @@ class Blueprinter:
         print(bp2.to_string())
 
         print("123")
-
-    def generateFactoryBlueprint(self, factory):
-        print("hello")

@@ -241,7 +241,7 @@ class Factory:
             # Custom recipes for non-standard products
             # This includes science pack consumption, research
             # space-science packs and resources
-            labs_dict = {
+            lab_dict = {
                 "name": "labs",
                 "ingredients": [
                     ["automation-science-pack", 1],
@@ -255,7 +255,7 @@ class Factory:
                 "result": "labs",
                 "item": self.item_list["labs"],
             }
-            self.recipe_list["labs"] = Recipe(**labs_dict)
+            self.recipe_list["labs"] = Recipe(**lab_dict)
 
             research_dict = {
                 "name": "research",
@@ -466,34 +466,35 @@ class Factory:
 
         scalars = {}
         for part in self.partitions.values():
-            scalar = 0
-            for top_part in self.partitions.values():
-                if top_part.main:
-                    try:
-                        scalar += top_part.part_reqs[part.top_item] * top_part.parition_scalar
-                    except:
-                        pass
+            # scalar = 0
+            # for top_part in self.partitions.values():
+            #     if top_part.main:
+            #         try:
+            #             scalar += top_part.part_reqs[part.top_item] * top_part.partition_scalar
+            #         except:
+            #             pass
 
-            if scalar != 0:
-                self.getPartitionScalars(part, scalar, [part])
-            scalars[part] = scalar
+            # if scalar != 0:
+            if part.main:
+                self.getPartitionScalars(part, 0, [part])
+                scalars[part] = 0
 
     def getPartitionScalars(self, partition, scalar, visited):
         # type: (Partition, float, list[Partition]) -> None
-        partition.parition_scalar += scalar
+        partition.partition_scalar += scalar
         for part in self.partitions.values():
             try:
                 part_scalar = partition.part_reqs[part.top_item]
             except:
                 part_scalar = 0
 
-            # if part.main:
-            #     part_scalar *= part.parition_scalar
+            # if partition.main:
+            part_scalar *= partition.partition_scalar
 
             if part != partition and part_scalar != 0:
                 if part not in visited:
                     self.getPartitionScalars(
-                        part, part_scalar * scalar, [part] + visited
+                        part, part_scalar, [part] + visited
                     )
                 else:
                     raise BaseException(
@@ -524,47 +525,34 @@ class Factory:
         for partition in self.partitions.values():
             partition.calculateFactoryBlockNumbers(self)
 
-        for top_item in self.factory_reqs.keys():
-            for producer in self.factory_reqs[top_item].keys():
-                if not producer.is_resource:
-                    req_rate = self.factory_reqs[top_item][producer]
-                    factory_block_rate = (
-                        self.block_templates[producer.preferred_recipe].outputs[0].rate
-                    )
+        # for top_item in self.factory_reqs.keys():
+        #     for producer in self.factory_reqs[top_item].keys():
+        #         if not producer.is_resource:
+        #             req_rate = self.factory_reqs[top_item][producer]
+        #             factory_block_rate = (
+        #                 self.block_templates[producer.preferred_recipe].outputs[0].rate
+        #             )
 
-                    factory_block_rate = float(factory_block_rate)
-                    num_blocks = ceil(
-                        req_rate / factory_block_rate + self.block_num_buffer
-                    )
-                    print(producer.name + " needs " + str(num_blocks) + " blocks")
-                    print(
-                        "  producer: "
-                        + str(req_rate)
-                        + " "
-                        + "block: "
-                        + str(factory_block_rate)
-                    )
-                    self.num_factory_blocks[top_item][
-                        producer.preferred_recipe
-                    ] = num_blocks
+        #             factory_block_rate = float(factory_block_rate)
+        #             num_blocks = ceil(
+        #                 req_rate / factory_block_rate + self.block_num_buffer
+        #             )
+        #             print(producer.name + " needs " + str(num_blocks) + " blocks")
+        #             print(
+        #                 "  producer: "
+        #                 + str(req_rate)
+        #                 + " "
+        #                 + "block: "
+        #                 + str(factory_block_rate)
+        #             )
+        #             self.num_factory_blocks[top_item][
+        #                 producer.preferred_recipe
+        #             ] = num_blocks
 
     def getFactoryBlockAmount(self):
         blocks = 0
         for partition in self.partitions.values():
             blocks += partition.getFactoryBlockAmount(self)
-
-        for top_item in self.num_factory_blocks.keys():
-            for block in self.num_factory_blocks[top_item].keys():
-                # Search for other partitions top item and don't include it
-                found = False
-                for part in self.partitions.values():
-                    # Only include top item blocks of current partition
-                    if part.top_item == block.item:
-                        # Check if block item and partition top item are equal
-                        found = True
-
-                if not found:
-                    blocks += self.num_factory_blocks[top_item][block]
 
         self.num_blocks = blocks
         return blocks
@@ -573,10 +561,6 @@ class Factory:
         cells = 0
         for partition in self.partitions.values():
             cells += partition.getFactoryCellAmount()
-
-        for top_item in self.factory_blocks.keys():
-            for block in self.factory_blocks[top_item]:
-                cells += len(block.fcells)
 
         return cells
 
@@ -767,7 +751,7 @@ class Factory:
 
                     # Check if the item is required
                     if reqs.get(item) is not None:
-                        resource_rate = reqs[item] * part.parition_scalar
+                        resource_rate = reqs[item] * part.partition_scalar
 
                         # Determine number of pins based on the resource type
                         if item.is_fluid:

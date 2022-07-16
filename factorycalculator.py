@@ -1,9 +1,9 @@
 from utils import *
+from recipe import Recipe
 
 if TYPE_CHECKING:
     from factory import Factory
     from item import Item
-    from recipe import Recipe
 
 # class FactoryCalculator:
 #     def __init__(self):
@@ -21,9 +21,13 @@ def calculateNormalizedRequirements(factory, reqs, breakdown, top_item):
 
     :param factory: Factory object, used for accessing items and recipes
     """
+    # Create a dummy recipe that uses the top item as an ingredient
+    # We do this so the top item gets included in the partition requirements
+    top_recipe = Recipe(**{"name":"dummy", "ingredients":[[top_item.name, 1]], "result":1})
+
     # Requirements are calculated initially with a normalized value
     passed_items = recurseCalculateNR(
-        factory, reqs, breakdown, top_item.preferred_recipe, 1
+        factory, reqs, breakdown, top_recipe, 1
     )
 
     if any(x in factory.calc_exceptions for x in list(passed_items)):
@@ -62,6 +66,7 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
     passed = {}
     for ingredient_name in recipe.ingredients.keys():
         ingredient = factory.item_list[ingredient_name]
+
         # Do not calculate requirements for a solid/fluid that is handled
         # differently, i.e. oil products
         if ingredient_name not in factory.calc_exceptions:
@@ -105,7 +110,7 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
             # Do not continue recursion for ingredients that are the top level
             # item of a partition
             if (
-                ingredient not in factory.partitions.keys()
+                (ingredient not in factory.partitions.keys() or recipe.name == "dummy")
                 and not ingredient.is_resource
             ):
                 # Only use preferred recipe for an item

@@ -1,7 +1,6 @@
 from item import Item
 from utils import *
 
-
 class Recipe:
     def __init__(self, **kwargs):
         # type: (str, **dict) -> None
@@ -70,7 +69,7 @@ class Recipe:
         else:
             self.category = "assembling-machine"
 
-        self.item = None
+        self.item = None # type: Item
         if "item" in kwargs:
             self.item = kwargs.pop("item")
             self.item.recipes.append(self)

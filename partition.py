@@ -20,7 +20,7 @@ class Partition:
         self.top_item = item
         self.factory_blocks = []  # type: list[FactoryBlock]
         # This will be calculated later after population
-        self.parition_scalar = rate
+        self.partition_scalar = rate
         self.main = main
 
     def __repr__(self):
@@ -104,7 +104,7 @@ class Partition:
         # type: (Factory) -> None
         for producer in self.part_reqs.keys():
             if not producer.is_resource:
-                req_rate = self.part_reqs[producer] * self.parition_scalar
+                req_rate = self.part_reqs[producer] * self.partition_scalar
                 factory_block_rate = (
                     factory.block_templates[producer.preferred_recipe].outputs[0].rate
                 )

@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 from blueprinter import Blueprinter
 from factoryoptions import FactoryOptions
 
-fopts = FactoryOptions()
+bpter = Blueprinter("data/micro_blocks_v1.0.txt")
+
+fopts = FactoryOptions(dar=3, top=[["labs",100]])
 
 base_factory = Factory(**fopts.factory_args)
 
@@ -33,8 +35,8 @@ base_factory.partitions[base_factory.item_list['production-science-pack']] = par
 # base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list['space-science-pack'])
 # base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
-# part2 = Partition(base_factory.item_list['electronic-circuit'])
-# base_factory.partitions[base_factory.item_list['electronic-circuit']] = part2
+part2 = Partition(base_factory.item_list['electronic-circuit'])
+base_factory.partitions[base_factory.item_list['electronic-circuit']] = part2
 # part2 = Partition(base_factory.item_list['sulfur'])
 # base_factory.partitions[base_factory.item_list['sulfur']] = part2
 
@@ -56,6 +58,7 @@ base_factory.populateTestFactory()
 factory_annealer = Annealer(base_factory)
 factory_annealer.initializeRouteGroups()
 factory_annealer.populateRouteGroups()
+bpter.generateFactoryBlueprint(base_factory)
 
 fd = FactoryDrawer(base_factory)
 fd.drawFactory()
@@ -65,8 +68,8 @@ for _ in range(25000):
     if _ % 1000 == 0:
         print(_)
         base_factory.validateFactoryCellLocations()
-        fd.drawFactory()
-        plt.show()
+        # fd.drawFactory()
+        # plt.show()
     g1, g2 = factory_annealer.generateMove()
     # fd.drawFactory()
     # fd.circleGroup(g1,'b')
