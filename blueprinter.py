@@ -144,19 +144,19 @@ class Blueprinter:
         grid_bp = self.book["rail-grid"]
         # grid_group = Group(entities=grid_bp.entities)
         # Add additional rail grid row/column
-        for x in range(factory.dimensions.x + 3):
-            for y in range(factory.dimensions.y + 3):
+        for x in range(1,factory.dimensions.x + 2):
+            for y in range(1, factory.dimensions.y + 2):
                 grid_bp.position = {"x": x * self.x_interval, "y": y * self.y_interval}
                 self.factory_blueprint.entities.append(grid_bp)
 
         # Add edges to blueprint
-        xmax = (factory.dimensions.x + 3) * self.x_interval
-        ymax = (factory.dimensions.y + 3) * self.y_interval
+        xmax = (factory.dimensions.x + 1) * self.x_interval
+        ymax = (factory.dimensions.y + 2) * self.y_interval
         edge_bp = self.book["rail-edge"]
         edge_group = Group(entities=edge_bp.entities)
-        for x in range(factory.dimensions.x + 4):
-            position1 = {"x": (x - 1) * self.x_interval, "y": ymax}
-            position2 = {"x": (x - 1) * self.x_interval, "y": -self.y_interval}
+        for x in range(factory.dimensions.x + 2):
+            position1 = {"x": x * self.x_interval, "y": ymax}
+            position2 = {"x": x * self.x_interval, "y": self.y_interval}
             rel_pos = edge_bp.rel_pos
             cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
             cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
@@ -168,7 +168,7 @@ class Blueprinter:
         # No need to add corners, these should be added by above
         for y in range(factory.dimensions.y + 2):
             position1 = {"x": xmax, "y": y * self.y_interval}
-            position2 = {"x": -self.x_interval, "y": y * self.y_interval}
+            position2 = {"x": 0, "y": y * self.y_interval}
             rel_pos = edge_bp.rel_pos
             cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
             cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
@@ -177,13 +177,14 @@ class Blueprinter:
             edge_bp.position = cell_pos2
             self.factory_blueprint.entities.append(edge_bp)
 
+        self.factory_blueprint.generate_power_connections()
         self.exportFactoryBlueprint()
 
     def testFactoryCellGroup(self):
         pass
 
     def exportFactoryBlueprint(self, path="data/factory_blueprint.txt"):
-        file = open(path)
+        file = open(path, "w")
         file.write(self.factory_blueprint.to_string())
 
     def testFactoryBlueprint(self, factory=EMPTY):

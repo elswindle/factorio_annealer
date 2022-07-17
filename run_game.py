@@ -58,7 +58,6 @@ base_factory.populateTestFactory()
 factory_annealer = Annealer(base_factory)
 factory_annealer.initializeRouteGroups()
 factory_annealer.populateRouteGroups()
-bpter.generateFactoryBlueprint(base_factory)
 
 fd = FactoryDrawer(base_factory)
 fd.drawFactory()
@@ -90,6 +89,7 @@ for _ in range(25000):
 
 # g1, g2 = factory_annealer.generateMove()
 # factory_annealer.setTestLocations(g1, g2)
+bpter.generateFactoryBlueprint(base_factory)
 fd.drawFactory()
 # fd.circleGroup(g1,'b')
 # fd.circleGroup(g2)
