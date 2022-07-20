@@ -20,40 +20,41 @@ class Factory:
         top level items.  Loads item and recipe lists from game data if not
         specified in arguments
         :param kwargs: Available factory options
-            "rate" : Production rate of given top level items
-            "top-items" : Top level item names for the factory to produce.  These
-            cannot be a dependency of each other or of any of the top level
-            items of the partitions.  Assignment and addition will check ensure
-            this criteria is met
+            "top-items" : Top level item names and production rates for the
+            factory to produce.  These cannot be a dependency of each other or
+            of any of the top level items of the partitions.  Assignment and
+            addition will check ensure this criteria is met.
             "depot-adjacency-requirement" : Factory layout requirement for the
-            number of LTN depots adjacent to each FactoryCell.  Default is 2
+            number of LTN depots adjacent to each FactoryCell.  Default is 2, maximum
+            is 6.
             "productivity-bonus" : Productivity bonus from a single module.
             Vanilla bonuses are in [0, 0.04, 0.06, 0.1], default is prod-3 (0.1)
-            "calc-exceptions" : List of solids/fluids to be handled differently,
-            these might include oil products since they will be produced from
-            different recipes
-            "partitions" : List of all item names as top level partitions
-            "item_list_path" : Custom list of items to be loaded from a file
-            and not from Factorio item lists
+            "calc-exceptions" : List of solids/fluids to be handled differently
+            when calculating the factory requirements.  These will generally be
+            items that can be produced via multiple recipes.  For vanilla Factorio,
+            this includes oil products, i.e. light oil and petroleum.  Default items
+            are heavy oil, light oil and petroluem gas.
+            "partitions" : List of all item names as top level partitions.  A partition
+            is defined as a set of factory blocks that produce the resources needed to
+            create the top item.  The size and requirements for these partitions are
+            calculated based on the desired rate of the factory's top level items
+            defined in "top-items".
+            "block-template-path" : Custom list of all block templates to be used
+            in the factory.  For any partition, all sub-recipes must be defined
+            within the given file.
+            "use-unique-network" : Boolean specifying if the LTN train stations
+            should operate using unique network ids.  This means blocks within a
+            partition will only service blocks within the partition unless the item
+            is the top item in a partition.  For example, if advanced circuits
+            have their own partition, those factory blocks will have to be assigned
+            to the advanced circuit partition blocks to get the needed resources
+            and also assigned to any other partition network that uses them, i.e.
+            chemical science packs.
         """
         # type: (float, **dict) -> None
-        # No single rate, must be defined by top item kwarg
-        # if "rate" in kwargs:
-        #     self.top_item_rate = kwargs.pop("rate")
-        # else:
-        #     self.top_item_rate = 1000
-        # self.factory_scalar = self.top_item_rate / 1000  # Amount to scale requirements by
 
-        # Total requirements: top_item->Item->rate
-        self.factory_reqs = {}  # type: Mapping[Item, Mapping[Item, float]] # rate
         self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
-        self.num_factory_blocks = {}  # type: Mapping[Item, Mapping[Recipe, int]]
-        self.factory_blocks = {}  # type: Mapping[Item, list[FactoryBlock]]
-        # Requirements breakdown: top_item->item->Recipe->rate
-        self.reqs_breakdown = (
-            {}
-        )  # type: Mapping[Item, Mapping[Item, Mapping[Recipe, float]]]
 
         if "depot-adjacency-requirement" in kwargs:
             self.depot_req = kwargs.pop("depot-adjacency-requirement")
@@ -67,10 +68,9 @@ class Factory:
         self.block_num_buffer = 0.1
         self.depot_ratio = 1 / 4
         self.dimensions = -1
-        self.factory = None  # type: list[list[FactoryCell]] # FactoryCells[x][y]
-        self.tf = (
-            None
-        )  # type: list[list[FactoryCell]] # same as factory, but the test one
+        # Factory and test factory, FactoryCell[x][y]
+        self.factory = None  # type: list[list[FactoryCell]]
+        self.tf = None  # type: list[list[FactoryCell]]
         self.prod_limitations = (
             []
         )  # type: list[str] # Specifies which recipes can use productivity modules
@@ -105,11 +105,6 @@ class Factory:
             for item_data in top:
                 item = self.item_list[item_data[0]]
                 self.top_items[item] = item_data[1]
-                # self.partitions[item] = Partition(item)
-                # self.reqs_breakdown[item] = {}
-                # self.factory_reqs[item] = {}
-                # self.num_factory_blocks[item] = {}
-                # self.factory_blocks[item] = []
 
         self.loadRecipesFromGameData()
 
@@ -119,14 +114,23 @@ class Factory:
             self.overrideRecipes()
 
         if "partitions" in kwargs:
-            parts = kwargs.pop("partitions")
+            part_names = kwargs.pop("partitions")
         else:
-            parts = []
+            part_names = []
+
+        parts = []
+        for name in part_names:
+            parts.append(self.item_list[name])
         self.partitions = PartitionDict(self, parts)  # type: Mapping[Item, Partition]
-        for item in self.top_items.keys():
+        next_id = len(self.partitions)
+        for i, item in enumerate(self.top_items.keys()):
             self.partitions[item] = Partition(
-                item, main=True, rate=self.top_items[item]
+                item, next_id + i, main=True, rate=self.top_items[item]
             )
+
+        self.unique_networks = False
+        if "use-unique-network" in kwargs:
+            self.unique_networks = kwargs.pop("use-unique-network")
 
         for arg in kwargs:
             print(arg)
@@ -365,23 +369,36 @@ class Factory:
             row = next(block_csv)
 
     def overrideRecipes(self):
+        # Go over block templates and modify game data recipes to
+        # match ones given by the template
+        # This function requires items to be exclusively produced 
+        # either locally or in their own template.  It can't have both
         for recipe in self.block_templates:
             template = self.block_templates[recipe]
 
+            # For any recipe that is not a resource
             if not recipe.item.is_resource:
+                # Keep track of items to remove or add to a recipe
                 items_to_add = []
                 items_to_remove = []
+
+                # Iterate on the recipe's ingredients
                 for ingredient_name in recipe.ingredients:
                     ingredient = self.item_list[ingredient_name]
                     item = self.getRecipeItem(recipe.name)
                     ingredient_amt = recipe.ingredients[ingredient_name]
 
+                    # If the recipe's ingredient doesn't have a template, search
+                    # it's ingredients for templates
                     if self.block_templates.get(ingredient.preferred_recipe) is None:
+                        # Keep track of the which items need to be added to the recipe
                         items_to_add += self.templateRecursiveSearch(
                             ingredient.preferred_recipe, ingredient_amt, ingredient
                         )
+                        # Any item that doesn't have a template is marked for removal
                         items_to_remove.append(ingredient_name)
 
+                # Perform removal/addition of items to recipe
                 for item in items_to_remove:
                     recipe.ingredients.pop(item)
                 for item in items_to_add:
@@ -392,18 +409,26 @@ class Factory:
 
     def templateRecursiveSearch(self, recipe, craft_amt, product):
         # type: (Recipe, float, Item) -> list
+        # Recursively search recipes of a given ingredient for recipes
+        # that have templates
         items_to_add = []
         for ingredient_name in recipe.ingredients:
+            # Since item is produced locally, the factory calculator
+            # will not take productivity into consideration, so it must
+            # be done here
             productivity = 1
             if recipe.name in self.prod_limitations:
                 productivity = 1 + recipe.getMaxModules() * self.prod_bonus
             ingredient = self.item_list[ingredient_name]
+            # Keep track of the amount of each item that is needed in order
+            # for the calculator to produce correct results
             ingredient_amt = (
                 craft_amt
                 * recipe.ingredients[ingredient_name]
                 / (productivity * recipe.products[product.name])
             )
 
+            # Continue the recursion if the current recipe does not have a template
             if self.block_templates.get(ingredient.preferred_recipe) is None:
                 items_to_add += self.templateRecursiveSearch(
                     ingredient.preferred_recipe, ingredient_amt, ingredient
@@ -449,32 +474,8 @@ class Factory:
         for partition in self.partitions.values():
             partition.calculateNormalizedPartitionRequirements(self)
 
-        # for top_item in self.top_items.keys():
-        #     calculator.calculateNormalizedRequirements(
-        #         self,
-        #         self.factory_reqs[top_item],
-        #         self.reqs_breakdown[top_item],
-        #         top_item,
-        #     )
-
-        # for top_item in self.top_items.keys():
-        #     calculator.scaleRequirements(
-        #         self.factory_reqs[top_item],
-        #         self.reqs_breakdown[top_item],
-        #         self.top_items[top_item],
-        #     )
-
         scalars = {}
         for part in self.partitions.values():
-            # scalar = 0
-            # for top_part in self.partitions.values():
-            #     if top_part.main:
-            #         try:
-            #             scalar += top_part.part_reqs[part.top_item] * top_part.partition_scalar
-            #         except:
-            #             pass
-
-            # if scalar != 0:
             if part.main:
                 self.getPartitionScalars(part, 0, [part])
                 scalars[part] = 0
@@ -488,14 +489,11 @@ class Factory:
             except:
                 part_scalar = 0
 
-            # if partition.main:
             part_scalar *= partition.partition_scalar
 
             if part != partition and part_scalar != 0:
                 if part not in visited:
-                    self.getPartitionScalars(
-                        part, part_scalar, [part] + visited
-                    )
+                    self.getPartitionScalars(part, part_scalar, [part] + visited)
                 else:
                     raise BaseException(
                         "Circular dependecy detected, partition already visited\n"
@@ -524,30 +522,6 @@ class Factory:
     def calculateFactoryBlockNumbers(self):
         for partition in self.partitions.values():
             partition.calculateFactoryBlockNumbers(self)
-
-        # for top_item in self.factory_reqs.keys():
-        #     for producer in self.factory_reqs[top_item].keys():
-        #         if not producer.is_resource:
-        #             req_rate = self.factory_reqs[top_item][producer]
-        #             factory_block_rate = (
-        #                 self.block_templates[producer.preferred_recipe].outputs[0].rate
-        #             )
-
-        #             factory_block_rate = float(factory_block_rate)
-        #             num_blocks = ceil(
-        #                 req_rate / factory_block_rate + self.block_num_buffer
-        #             )
-        #             print(producer.name + " needs " + str(num_blocks) + " blocks")
-        #             print(
-        #                 "  producer: "
-        #                 + str(req_rate)
-        #                 + " "
-        #                 + "block: "
-        #                 + str(factory_block_rate)
-        #             )
-        #             self.num_factory_blocks[top_item][
-        #                 producer.preferred_recipe
-        #             ] = num_blocks
 
     def getFactoryBlockAmount(self):
         blocks = 0
@@ -590,21 +564,26 @@ class Factory:
         for part in self.partitions.values():
             part.populateFactoryBlocks(self)
 
-        for top_item in self.num_factory_blocks.keys():
-            for recipe in self.num_factory_blocks[top_item].keys():
-                template = self.block_templates[recipe]
-                # Check if recipe is a top level item of partition
-                found = False
-                for part in self.partitions.values():
-                    if part.top_item == recipe.item:
-                        found = True
+        if self.unique_networks:
+            self.setNetworkIDs()
 
-                if not found:
-                    for i in range(self.num_factory_blocks[top_item][recipe]):
-                        new_block = FactoryBlock(template, self)
-                        self.factory_blocks[top_item].append(new_block)
-                else:
-                    print(recipe.name + " is top item of a partition, skipping")
+    def setNetworkIDs(self):
+        for partition in self.partitions.values():
+            for item in partition.part_reqs.keys():
+                # Handle top partition items differently since
+                # factory blocks are not stored within this partition
+                if item in self.partitions.keys() and item != partition.top_item:
+                    # For top level items, go into partition and iterate on
+                    # blocks that match item's recipe and add current partition's
+                    # id to the block's ID
+                    for block in self.partitions[item].factory_blocks:
+                        if block.recipe in item.recipes:
+                            block.network_id += pow(2,partition.id)
+
+            # For non top level items, assign all factory blocks
+            # to the current partition's ID
+            for block in partition.factory_blocks:
+                block.network_id += pow(2,partition.id)
 
     def initializeBlockPlacement(self):
         self.num_cells = self.getFactoryCellAmount()

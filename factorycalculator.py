@@ -23,12 +23,12 @@ def calculateNormalizedRequirements(factory, reqs, breakdown, top_item):
     """
     # Create a dummy recipe that uses the top item as an ingredient
     # We do this so the top item gets included in the partition requirements
-    top_recipe = Recipe(**{"name":"dummy", "ingredients":[[top_item.name, 1]], "result":1})
+    top_recipe = Recipe(
+        **{"name": "dummy", "ingredients": [[top_item.name, 1]], "result": 1}
+    )
 
     # Requirements are calculated initially with a normalized value
-    passed_items = recurseCalculateNR(
-        factory, reqs, breakdown, top_recipe, 1
-    )
+    passed_items = recurseCalculateNR(factory, reqs, breakdown, top_recipe, 1)
 
     if any(x in factory.calc_exceptions for x in list(passed_items)):
         # This will catch instances where light-oil is needed except for cracking
@@ -110,9 +110,8 @@ def recurseCalculateNR(factory, reqs, breakdown, recipe, craft_amount):
             # Do not continue recursion for ingredients that are the top level
             # item of a partition
             if (
-                (ingredient not in factory.partitions.keys() or recipe.name == "dummy")
-                and not ingredient.is_resource
-            ):
+                ingredient not in factory.partitions.keys() or recipe.name == "dummy"
+            ) and not ingredient.is_resource:
                 # Only use preferred recipe for an item
                 passed = recurseCalculateNR(
                     factory,

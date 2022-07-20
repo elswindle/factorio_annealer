@@ -6,6 +6,7 @@ from utils import *
 from draftsman.classes.blueprint import Blueprint
 from draftsman.classes.blueprintbook import BlueprintBook
 from draftsman.classes.group import Group
+from draftsman.prototypes.constant_combinator import ConstantCombinator
 
 
 class Blueprinter:
@@ -16,19 +17,21 @@ class Blueprinter:
             self.bpb_str = bpb_file.readline()
 
             self.ub_book = BlueprintBook(self.bpb_str)
-            self.book = {} # type: Mapping[str, FactoryCellGroup]
+            self.book = {}  # type: Mapping[str, FactoryCellGroup]
             for i, bp in enumerate(self.ub_book.blueprints, 0):
-                label = bp.label # type: str
+                label = bp.label  # type: str
                 if label is not None:
                     # Contains a signal
                     bp_icons = {}
                     bp_name = None
-                    if label.find('=') != -1:
-                        s = label.replace(']', ' ')
-                        s = s.replace('[', '')
+
+                    # Getting the name for the blueprint is a bit of jank
+                    if label.find("=") != -1:
+                        s = label.replace("]", " ")
+                        s = s.replace("[", "")
                         ll = s.split()
                         for icon in ll:
-                            [key, value] = icon.split('=')
+                            [key, value] = icon.split("=")
                             bp_icons[key] = value
 
                         if bp_icons.get("virtual-signal") is None:
@@ -48,9 +51,14 @@ class Blueprinter:
                     else:
                         bp_name = label
 
+                    # Override, lab icon has different name than the labs recipe we want
                     if bp_name == "lab":
                         bp_name = "labs"
-                    new_fg = FactoryCellGroup(bp_name, rel_pos=bp.position_relative_to_grid, entities=bp.entities)
+                    new_fg = FactoryCellGroup(
+                        bp_name,
+                        rel_pos=bp.position_relative_to_grid,
+                        entities=bp.entities,
+                    )
                     self.book[bp_name] = new_fg
             grid_bp = self.ub_book.blueprints[0]
             self.x_interval = grid_bp.snapping_grid_size["x"]
@@ -74,6 +82,7 @@ class Blueprinter:
         # Add factory cells to blueprint
         # Need a way to handle cells not 1x1, ie advanced circuits
         # This will break for blocks that are vertical
+        print("Adding factory cell blueprints...")
         skip_cells = 0
         for y in range(factory.dimensions.y + 2):
             for x in range(factory.dimensions.x + 2):
@@ -81,21 +90,26 @@ class Blueprinter:
                     cell = factory.factory[x][y]
 
                     if cell is not EMPTY:
-                        position = {"x": x * self.x_interval, "y": (y + 1) * self.y_interval}
+                        position = {
+                            "x": x * self.x_interval,
+                            "y": (y + 1) * self.y_interval,
+                        }
                         name = ""
                         if cell.is_depot:
                             name = "solid-depot"
                         else:
+                            cell_id = cell.parent_block.network_id
+
                             # For blocks with x dimension greater than 1, skip some cells
                             if cell.parent_block.dimension.x > 1:
-                                skip_cells = cell.parent_block.dimension.x-1
+                                skip_cells = cell.parent_block.dimension.x - 1
 
                             cell_item = cell.recipe.item
                             if cell_item.is_resource:
                                 location = None
                                 if x == 0:
                                     location = LEFT
-                                elif x == factory.dimensions.x+1:
+                                elif x == factory.dimensions.x + 1:
                                     location = RIGHT
                                 elif y == 0:
                                     location = BOT
@@ -122,8 +136,6 @@ class Blueprinter:
                                         name = "pin-left-fluid"
                                     else:
                                         name = "pin-left-chest"
-                                    
-                                print("hello")
                             else:
                                 name = cell.recipe.name
                                 if name == "solid-fuel-from-light-oil":
@@ -137,19 +149,40 @@ class Blueprinter:
                         }
                         fcg.position = cell_pos
 
+                        if not cell.is_depot:
+                            # Find constant combinators and add ltn-network-id
+                            ccs = fcg.find_entities_filtered(name="constant-combinator")
+                            cc : ConstantCombinator
+                            for cc in ccs:
+                                signals = cc.signals
+                                # Find open index
+                                idxs = []
+                                for signal in signals:
+                                    idxs.append(signal['index'])
+                                index = 1
+                                for i in range(1,cc.item_slot_count+1):
+                                    if i not in idxs:
+                                        index = i
+                                        break
+                                
+                                cc.set_signal(index, 'ltn-network-id', cell_id)
+
                         self.factory_blueprint.entities.append(fcg)
+                        print("Added the " + name.replace('-', ' ') + " factory cell at (" + str(x) + ", " + str(y) + ")")
                 else:
                     skip_cells -= 1
 
+        print("Adding rail grid...")
         grid_bp = self.book["rail-grid"]
         # grid_group = Group(entities=grid_bp.entities)
         # Add additional rail grid row/column
-        for x in range(1,factory.dimensions.x + 2):
+        for x in range(1, factory.dimensions.x + 2):
             for y in range(1, factory.dimensions.y + 2):
                 grid_bp.position = {"x": x * self.x_interval, "y": y * self.y_interval}
                 self.factory_blueprint.entities.append(grid_bp)
 
         # Add edges to blueprint
+        print("Adding top and bottom edges to grid...")
         xmax = (factory.dimensions.x + 1) * self.x_interval
         ymax = (factory.dimensions.y + 2) * self.y_interval
         edge_bp = self.book["rail-edge"]
@@ -158,26 +191,83 @@ class Blueprinter:
             position1 = {"x": x * self.x_interval, "y": ymax}
             position2 = {"x": x * self.x_interval, "y": self.y_interval}
             rel_pos = edge_bp.rel_pos
-            cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
-            cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
+            cell_pos1 = {
+                "x": position1["x"] + rel_pos["x"],
+                "y": position1["y"] + rel_pos["y"],
+            }
+            cell_pos2 = {
+                "x": position2["x"] + rel_pos["x"],
+                "y": position2["y"] + rel_pos["y"],
+            }
             edge_bp.position = cell_pos1
             self.factory_blueprint.entities.append(edge_bp)
             edge_bp.position = cell_pos2
             self.factory_blueprint.entities.append(edge_bp)
 
         # No need to add corners, these should be added by above
+        print("Adding left and right edges to grid...")
         for y in range(factory.dimensions.y + 2):
             position1 = {"x": xmax, "y": y * self.y_interval}
             position2 = {"x": 0, "y": y * self.y_interval}
             rel_pos = edge_bp.rel_pos
-            cell_pos1 = {"x": position1["x"] + rel_pos["x"], "y": position1["y"] + rel_pos["y"]}
-            cell_pos2 = {"x": position2["x"] + rel_pos["x"], "y": position2["y"] + rel_pos["y"]}
+            cell_pos1 = {
+                "x": position1["x"] + rel_pos["x"],
+                "y": position1["y"] + rel_pos["y"],
+            }
+            cell_pos2 = {
+                "x": position2["x"] + rel_pos["x"],
+                "y": position2["y"] + rel_pos["y"],
+            }
             edge_bp.position = cell_pos1
             self.factory_blueprint.entities.append(edge_bp)
             edge_bp.position = cell_pos2
             self.factory_blueprint.entities.append(edge_bp)
 
+        # Remove duplicate power poles
+        print("Removing duplicate power poles...")
+        for fcg in self.factory_blueprint.entities:
+            if isinstance(fcg, FactoryCellGroup):
+                fcg.remove_power_connections()
+        self.factory_blueprint.remove_power_connections()
+
+        # Find all big electric poles
+        power_poles = self.factory_blueprint.find_entities_filtered(name='big-electric-pole')
+        duplicates = {}
+        uniques = {}
+        # Find duplicates
+        for pp in power_poles:
+            ptup = (pp.global_position['x'], pp.global_position['y'])
+            if uniques.get(ptup) is None:
+                uniques[ptup] = pp
+            else:
+                duplicates[ptup] = pp
+
+        # Remove duplicates, requires iterating through all of the groups
+        # within the blueprint
+        for pp in duplicates.values():
+            removed = False
+            for fcg in self.factory_blueprint.entities:
+                if isinstance(fcg, Group):
+                    try:
+                        fcg.entities.remove(pp)
+                        removed = True
+                        break
+                    except:
+                        pass
+
+            if not removed:
+                try:
+                    self.factory_blueprint.entities.remove(pp)
+                    removed = True
+                except:
+                    pass
+
+            if not removed:
+                raise TypeError("Power pole not found...")
+
+        print("Generating new power connections...")
         self.factory_blueprint.generate_power_connections()
+        print("Exporting blueprint to file...")
         self.exportFactoryBlueprint()
 
     def testFactoryCellGroup(self):

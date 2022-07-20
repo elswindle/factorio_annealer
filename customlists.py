@@ -1,9 +1,9 @@
 from utils import *
+from partition import Partition
 
 if TYPE_CHECKING:
     from factory import Factory
     from item import Item
-    from partition import Partition
 
 
 class PartitionDict(dict):
@@ -12,10 +12,12 @@ class PartitionDict(dict):
         super(PartitionDict, self).__init__()
         self.factory = parent  # type: Factory
 
-        for item in top_items:
-            self[item] = Partition(item)
+        id = 0
+        for id, item in enumerate(top_items):
+            self[item] = Partition(item, id)
 
-    def __setitem__(self, item, partition) -> None:
+    def __setitem__(self, item, partition):
+        # type: (Item, Partition) -> None
         if partition.main:
             self.testDependenceToTop(item)
         else:

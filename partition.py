@@ -12,8 +12,8 @@ import math
 
 
 class Partition:
-    def __init__(self, item, main=False, rate=0):
-        # type: (Item, bool, float) -> None
+    def __init__(self, item, id, main=False, rate=0):
+        # type: (Item, int, bool, float) -> None
         self.num_factory_blocks = {}  # type: Mapping[Recipe, int]
         self.part_reqs = {}  # type: Mapping[Item, float]
         self.reqs_breakdown = {}  # type: Mapping[Item, Mapping[Recipe, float]]
@@ -22,6 +22,7 @@ class Partition:
         # This will be calculated later after population
         self.partition_scalar = rate
         self.main = main
+        self.id = id
 
     def __repr__(self):
         return self.top_item.name + " is top"

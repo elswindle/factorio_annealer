@@ -10,7 +10,8 @@ from factoryoptions import FactoryOptions
 
 bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
-fopts = FactoryOptions(dar=3, top=[["labs",100]])
+parts = ["logistic-science-pack", "space-science-pack", "electronic-circuit"]
+fopts = FactoryOptions(dar=3, top=[["labs", 100]], partitions=parts)
 
 base_factory = Factory(**fopts.factory_args)
 
@@ -29,14 +30,14 @@ base_factory.importBlockTemplates("data/factory_block_templates.csv")
 # base_factory.partitions[base_factory.item_list['automation-science-pack']] = part2
 # part2 = Partition(base_factory.item_list['utility-science-pack'])
 # base_factory.partitions[base_factory.item_list['utility-science-pack']] = part2
-part2 = Partition(base_factory.item_list['production-science-pack'])
-base_factory.partitions[base_factory.item_list['production-science-pack']] = part2
+# part2 = Partition(base_factory.item_list["production-science-pack"])
+# base_factory.partitions[base_factory.item_list["production-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list["chemical-science-pack"])
 # base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
 # part2 = Partition(base_factory.item_list['space-science-pack'])
 # base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
-part2 = Partition(base_factory.item_list['electronic-circuit'])
-base_factory.partitions[base_factory.item_list['electronic-circuit']] = part2
+# part2 = Partition(base_factory.item_list["electronic-circuit"])
+# base_factory.partitions[base_factory.item_list["electronic-circuit"]] = part2
 # part2 = Partition(base_factory.item_list['sulfur'])
 # base_factory.partitions[base_factory.item_list['sulfur']] = part2
 
@@ -47,7 +48,7 @@ base_factory.calculateFactoryBlockNumbers()
 # print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
 base_factory.populateFactory()
-base_factory.calculateFactoryDimensions(1.3, 0)
+base_factory.calculateFactoryDimensions(2, 0)
 print(base_factory.dimensions)
 base_factory.getFactoryBlockAmount()
 base_factory.initializeBlockPlacement()
@@ -60,10 +61,10 @@ factory_annealer.initializeRouteGroups()
 factory_annealer.populateRouteGroups()
 
 fd = FactoryDrawer(base_factory)
-fd.drawFactory()
-plt.show()
+# fd.drawFactory()
+# plt.show()
 
-for _ in range(25000):
+for _ in range(1000):
     if _ % 1000 == 0:
         print(_)
         base_factory.validateFactoryCellLocations()

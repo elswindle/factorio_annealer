@@ -19,6 +19,7 @@ class FactoryBlock:
         self.dimension = -1  # Simplify block placement
         self.num_left = 0  # Simplify block placement
         self.num_below = 0  # Simplify block placement
+        self.network_id = 0
 
         # if(template != IS_RESOURCE):
         self.recipe = template.recipe

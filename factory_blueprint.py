@@ -12,7 +12,12 @@ from utils import *
 
 class FactoryCellGroup(Group):
     def __init__(
-        self, name="factory-cell", position=(0, 0), rel_pos=(0,0), recipe=EMPTY, **kwargs
+        self,
+        name="factory-cell",
+        position=(0, 0),
+        rel_pos=(0, 0),
+        recipe=EMPTY,
+        **kwargs
     ):
         # type: (str, tuple, tuple, Recipe, **dict) -> None
         super(FactoryCellGroup, self).__init__(position=position, **kwargs)
