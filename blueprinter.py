@@ -206,7 +206,7 @@ class Blueprinter:
 
         # No need to add corners, these should be added by above
         print("Adding left and right edges to grid...")
-        for y in range(factory.dimensions.y + 2):
+        for y in range(2, factory.dimensions.y + 2):
             position1 = {"x": xmax, "y": y * self.y_interval}
             position2 = {"x": 0, "y": y * self.y_interval}
             rel_pos = edge_bp.rel_pos
@@ -225,48 +225,48 @@ class Blueprinter:
 
         # Remove duplicate power poles
         print("Removing duplicate power poles...")
-        for fcg in self.factory_blueprint.entities:
-            if isinstance(fcg, FactoryCellGroup):
-                fcg.remove_power_connections()
-        self.factory_blueprint.remove_power_connections()
+        # for fcg in self.factory_blueprint.entities:
+        #     if isinstance(fcg, FactoryCellGroup):
+        #         fcg.remove_power_connections()
+        # self.factory_blueprint.remove_power_connections()
 
-        # Find all big electric poles
-        power_poles = self.factory_blueprint.find_entities_filtered(name='big-electric-pole')
-        duplicates = {}
-        uniques = {}
-        # Find duplicates
-        for pp in power_poles:
-            ptup = (pp.global_position['x'], pp.global_position['y'])
-            if uniques.get(ptup) is None:
-                uniques[ptup] = pp
-            else:
-                duplicates[ptup] = pp
+        # # Find all big electric poles
+        # power_poles = self.factory_blueprint.find_entities_filtered(name='big-electric-pole')
+        # duplicates = {}
+        # uniques = {}
+        # # Find duplicates
+        # for pp in power_poles:
+        #     ptup = (pp.global_position['x'], pp.global_position['y'])
+        #     if uniques.get(ptup) is None:
+        #         uniques[ptup] = pp
+        #     else:
+        #         duplicates[ptup] = pp
 
-        # Remove duplicates, requires iterating through all of the groups
-        # within the blueprint
-        for pp in duplicates.values():
-            removed = False
-            for fcg in self.factory_blueprint.entities:
-                if isinstance(fcg, Group):
-                    try:
-                        fcg.entities.remove(pp)
-                        removed = True
-                        break
-                    except:
-                        pass
+        # # Remove duplicates, requires iterating through all of the groups
+        # # within the blueprint
+        # for pp in duplicates.values():
+        #     removed = False
+        #     for fcg in self.factory_blueprint.entities:
+        #         if isinstance(fcg, Group):
+        #             try:
+        #                 fcg.entities.remove(pp)
+        #                 removed = True
+        #                 break
+        #             except:
+        #                 pass
 
-            if not removed:
-                try:
-                    self.factory_blueprint.entities.remove(pp)
-                    removed = True
-                except:
-                    pass
+        #     if not removed:
+        #         try:
+        #             self.factory_blueprint.entities.remove(pp)
+        #             removed = True
+        #         except:
+        #             pass
 
-            if not removed:
-                raise TypeError("Power pole not found...")
+        #     if not removed:
+        #         raise TypeError("Power pole not found...")
 
         print("Generating new power connections...")
-        self.factory_blueprint.generate_power_connections()
+        # self.factory_blueprint.generate_power_connections(False, False)
         print("Exporting blueprint to file...")
         self.exportFactoryBlueprint()
 

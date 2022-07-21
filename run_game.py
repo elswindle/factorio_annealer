@@ -11,7 +11,7 @@ from factoryoptions import FactoryOptions
 bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
 parts = ["logistic-science-pack", "space-science-pack", "electronic-circuit"]
-fopts = FactoryOptions(dar=3, top=[["labs", 100]], partitions=parts)
+fopts = FactoryOptions(dar=3, top=[["labs", 1000]], partitions=parts)
 
 base_factory = Factory(**fopts.factory_args)
 
@@ -48,7 +48,7 @@ base_factory.calculateFactoryBlockNumbers()
 # print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
 
 base_factory.populateFactory()
-base_factory.calculateFactoryDimensions(2, 0)
+base_factory.calculateFactoryDimensions(1.7, 0)
 print(base_factory.dimensions)
 base_factory.getFactoryBlockAmount()
 base_factory.initializeBlockPlacement()
@@ -64,7 +64,7 @@ fd = FactoryDrawer(base_factory)
 # fd.drawFactory()
 # plt.show()
 
-for _ in range(1000):
+for _ in range(5000):
     if _ % 1000 == 0:
         print(_)
         base_factory.validateFactoryCellLocations()
