@@ -232,7 +232,7 @@ ip,production-science-pack,0,0,TOP
 ip,logistic-science-pack,0,0,TOP
 ip,automation-science-pack,0,0,TOP
 ip,military-science-pack,0,0,TOP
-op,labs,0,0,BOT,75
+op,labs,0,0,BOT,150
 end
 iron-ore
 op,iron-ore,0,0,TOP,5400
