@@ -10,7 +10,7 @@ from factoryoptions import FactoryOptions
 
 bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
-parts = ["logistic-science-pack"]#, "space-science-pack", "electronic-circuit"]
+parts = ["logistic-science-pack", "space-science-pack", "electronic-circuit"]
 fopts = FactoryOptions(dar=3, top=[["labs", 1000]], partitions=parts)
 
 base_factory = Factory(**fopts.factory_args)
@@ -90,6 +90,7 @@ for _ in range(5000):
 
 # g1, g2 = factory_annealer.generateMove()
 # factory_annealer.setTestLocations(g1, g2)
+base_factory.addFluidDepots()
 bpter.generateFactoryBlueprint(base_factory)
 fd.drawFactory()
 # fd.circleGroup(g1,'b')

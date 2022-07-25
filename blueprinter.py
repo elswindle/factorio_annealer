@@ -96,7 +96,10 @@ class Blueprinter:
                         }
                         name = ""
                         if cell.is_depot:
-                            name = "solid-depot"
+                            if cell.is_fluid:
+                                name = "fluid-depot"
+                            else:
+                                name = "solid-depot"
                         else:
                             cell_id = cell.parent_block.network_id
 

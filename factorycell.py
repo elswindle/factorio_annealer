@@ -22,6 +22,7 @@ class FactoryCell:
             self.parent_block = -1
             self.offset = Location(0, 0)
             self.tl = -1
+            self.is_fluid = False
             return
 
         self.recipe = None  # type: Recipe

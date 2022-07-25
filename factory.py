@@ -797,6 +797,52 @@ class Factory:
             else:
                 print("Too many pins for the factory")
 
+    def addFluidDepots(self):
+        fluid_recipes = []
+        for recipe in self.recipe_list.values():
+            requires_fluid = False
+            for ingredient in recipe.ingredients.keys():
+                if self.item_list[ingredient].is_fluid:
+                    requires_fluid = True
+                    break
+
+            if requires_fluid:
+                fluid_recipes.append(recipe)
+
+        for x in range(self.dimensions.x + 2):
+            for y in range(self.dimensions.y + 2):
+                cell = self.factory[x][y]
+                if cell is not EMPTY:
+                    if cell.recipe in fluid_recipes:
+                        # Replace one depot with a fluid depot
+                        replaced = False
+                        for xoff in range(-1, 2):
+                            for yoff in range(-1,2):
+                                if xoff != 0 or y != 0:
+                                    neighbor = self.factory[x+xoff][y+yoff]
+                                    if neighbor is not EMPTY:
+                                        if neighbor.is_depot:
+                                            neighbor.is_fluid = True
+                                            replaced = True
+                                            break
+                            if replaced:
+                                break
+
+        ns = 0
+        nf = 0
+        for x in range(self.dimensions.x + 2):
+            for y in range(self.dimensions.y + 2):
+                cell = self.factory[x][y]
+                if cell is not EMPTY:
+                    if cell.is_depot:
+                        if cell.is_fluid:
+                            nf +=1
+                        else:
+                            ns += 1
+
+        print(nf)
+        print(ns)
+
     def populateTestFactory(self):
         for x in range(self.dimensions.x + 2):
             for y in range(self.dimensions.y + 2):
