@@ -7,11 +7,21 @@ from utils import *
 import matplotlib.pyplot as plt
 from blueprinter import Blueprinter
 from factoryoptions import FactoryOptions
+from annealeroptions import AnnealerOptions
 
-bpter = Blueprinter("data/micro_blocks_v1.0.txt")
+# bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
-parts = ["logistic-science-pack", "space-science-pack", "electronic-circuit"]
-fopts = FactoryOptions(dar=3, top=[["labs", 1000]], partitions=parts)
+parts = [
+    "logistic-science-pack", 
+    "space-science-pack", 
+    "automation-science-pack", 
+    "chemical-science-pack", 
+    "production-science-pack", 
+    "utility-science-pack", 
+    "military-science-pack"
+]
+fopts = FactoryOptions(dar=0, top=[["labs", 1000]], partitions=parts)
+aopts = AnnealerOptions(function_tolerance=0.1,max_iterations=100000)
 
 base_factory = Factory(**fopts.factory_args)
 
@@ -56,29 +66,31 @@ base_factory.calculatePinRequirements()
 base_factory.placePins()
 base_factory.populateTestFactory()
 
-factory_annealer = Annealer(base_factory)
+factory_annealer = Annealer(base_factory, **aopts.annealer_args)
 factory_annealer.initializeRouteGroups()
 factory_annealer.populateRouteGroups()
+
+factory_annealer.anneal()
 
 fd = FactoryDrawer(base_factory)
 # fd.drawFactory()
 # plt.show()
 
-for _ in range(5000):
-    if _ % 1000 == 0:
-        print(_)
-        base_factory.validateFactoryCellLocations()
-        # fd.drawFactory()
-        # plt.show()
-    g1, g2 = factory_annealer.generateMove()
-    # fd.drawFactory()
-    # fd.circleGroup(g1,'b')
-    # fd.circleGroup(g2)
-    # factory_annealer.evaluateMove(g1, g2)
-    # plt.show()
+# for _ in range(5000):
+#     if _ % 1000 == 0:
+#         print(_)
+#         base_factory.validateFactoryCellLocations()
+#         # fd.drawFactory()
+#         # plt.show()
+#     g1, g2 = factory_annealer.generateMove()
+#     # fd.drawFactory()
+#     # fd.circleGroup(g1,'b')
+#     # fd.circleGroup(g2)
+#     # factory_annealer.evaluateMove(g1, g2)
+#     # plt.show()
 
-    if factory_annealer.evaluateMove(g1, g2):
-        factory_annealer.performMove(g1, g2)
+#     if factory_annealer.evaluateMove(g1, g2):
+#         factory_annealer.performMove(g1, g2)
 
 # g1, g2 = factory_annealer.generateMove()
 # factory_annealer.setTestLocations(g1, g2)
@@ -91,7 +103,7 @@ for _ in range(5000):
 # g1, g2 = factory_annealer.generateMove()
 # factory_annealer.setTestLocations(g1, g2)
 base_factory.addFluidDepots()
-bpter.generateFactoryBlueprint(base_factory)
+# bpter.generateFactoryBlueprint(base_factory)
 fd.drawFactory()
 # fd.circleGroup(g1,'b')
 # fd.circleGroup(g2)

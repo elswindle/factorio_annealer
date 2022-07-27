@@ -1,15 +1,17 @@
+from queue import Queue
 from factoryblock import FactoryBlock
 from factorycell import FactoryCell
 from factorycellio import FactoryCellIO
 from factory import Factory
 from factorydrawer import FactoryDrawer
+from numpy import average
 from partition import Partition
 from routegroup import RouteGroup
 from item import Item
 from recipe import Recipe
 from utils import *
 import random
-from math import ceil
+from math import ceil, exp
 
 
 def factoryBlockLength(block):
@@ -23,14 +25,42 @@ def factoryBlockLength(block):
 
 
 class Annealer:
-    def __init__(self, factory):
-        # type: (Factory) -> None
+    def __init__(self, factory, **kwargs):
+        # type: (Factory, dict) -> None
         random.seed()
         self.factory = factory  # type: Factory
         self.route_groups = (
             {}
         )  # type: Mapping[Item, Mapping[Item, Mapping[Recipe, RouteGroup]]]
-        self.temperature = INITIAL_TEMP
+        
+        if "initial-temperature" in kwargs:
+            self.init_temp = kwargs.pop("initial-temperature")
+        else:
+            self.init_temp = 1000
+
+        if "moves-per-iteration-ratio" in kwargs:
+            moves_ratio = kwargs.pop("moves-per-iteration-ratio")
+        else:
+            moves_ratio = 0.1
+
+        if "max-iterations" in kwargs:
+            self.max_iters = kwargs.pop("max-iterations")
+        else:
+            self.max_iters = 10000
+
+        if "function-tolerance" in kwargs:
+            self.func_tol = kwargs.pop("function-tolerance")
+        else:
+            self.func_tol = 0.5
+
+        self.moves_per_iter = ceil(factory.num_cells*moves_ratio)
+        self.iter_moves = 0
+        self.iteration = 1
+
+        self.temperature = self.init_temp/self.iteration
+
+        # Keeps track of the moving average of the annealer
+        self.past_changes = [1000]*self.moves_per_iter
 
     def initializeRouteGroups(self):
         for part in self.factory.partitions.values():
@@ -42,13 +72,17 @@ class Annealer:
 
             # Iterate item requirements
             for producer in reqs_bd.keys():  # producer is Item
+                if producer.name == "plastic-bar":
+                    print('Hello')
                 if self.route_groups[top_item].get(producer) is None:
                     self.route_groups[top_item][producer] = {}
                 # Iterate on recipe requesters
                 for requester in reqs_bd[producer].keys():  # requester is Recipe
+                    if requester.name == "plastic-bar":
+                        print('ehllo')
                     # Don't add dummy recipe for top level items
                     if requester.name != "dummy":
-                        rate = reqs_bd[producer][requester]
+                        rate = reqs_bd[producer][requester] * part.partition_scalar
                         stack_size = producer.stack_size
                         if producer.is_fluid:
                             train_size = 25000
@@ -88,6 +122,20 @@ class Annealer:
         for rg in self.route_groups[partition.top_item]:
             cost += len(rg)
         return cost
+
+    def anneal(self):
+        avg_change = average(self.past_changes)
+
+        # Run the annelaer as long as the past iter_moves evaluations is greater
+        # than the given functional tolerance and the number of iterations has
+        # not exceeded the maximum iterations
+        while avg_change > self.func_tol and self.iteration < self.max_iters:
+            cg1, cg2 = self.generateMove()
+
+            if self.evaluateMove(cg1, cg2):
+                self.performMove(cg1, cg2)
+
+            avg_change = average(self.past_changes)
 
     def generateMove(self, inloc1=None, inloc2=None):
         # type: (Location, Location) -> None
@@ -366,17 +414,41 @@ class Annealer:
         total_change = 0
         for cc in cost_change:
             total_change += cc
-        # print(cost_change)
+
+        # print("change: " + str(total_change))
+        # Update temperature and iteration
+        self.iter_moves += 1
+        if self.iter_moves >= self.moves_per_iter:
+            self.iter_moves = 0
+            self.iteration += 1
+            self.temperature = self.init_temp/self.iteration
+            print(self.temperature)
+
         # If the cost is negative, accept move
         # Negative values means curr_cost > test_cost
+        accept_move = False
         if total_change <= 0:
-            return True
+            acceptance_rate = 1     # 100% acceptance
+        else:
+            # Calculate the propability to accept this move
+            acceptance_rate = exp(-total_change/self.temperature)
+
+        accept_move = random.random() <= acceptance_rate
+
+        if accept_move:
+            # print("accepted!")
+            if total_change > 0:
+                print("accepted! " + str(acceptance_rate))
+            # Update the queue of past changes, remove oldest item, insert newest
+            self.past_changes.pop(0)
+            self.past_changes.append(abs(total_change))
         else:
             self.resetTestLocations(cg1, cg2, False)
-            return False
             # Randomly choose to accept move if cost_change is > 0
             # This chance will be higher with higher temperature
             # print("temperature")
+
+        return accept_move
 
     def setTestLocations(self, cg1, cg2):
         # type: (list[FactoryCell], list[FactoryCell]) -> None
