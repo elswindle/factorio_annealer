@@ -72,14 +72,10 @@ class Annealer:
 
             # Iterate item requirements
             for producer in reqs_bd.keys():  # producer is Item
-                if producer.name == "plastic-bar":
-                    print('Hello')
                 if self.route_groups[top_item].get(producer) is None:
                     self.route_groups[top_item][producer] = {}
                 # Iterate on recipe requesters
                 for requester in reqs_bd[producer].keys():  # requester is Recipe
-                    if requester.name == "plastic-bar":
-                        print('ehllo')
                     # Don't add dummy recipe for top level items
                     if requester.name != "dummy":
                         rate = reqs_bd[producer][requester] * part.partition_scalar
@@ -134,8 +130,7 @@ class Annealer:
 
             if self.evaluateMove(cg1, cg2):
                 self.performMove(cg1, cg2)
-
-            avg_change = average(self.past_changes)
+                avg_change = average(self.past_changes)
 
     def generateMove(self, inloc1=None, inloc2=None):
         # type: (Location, Location) -> None
@@ -422,7 +417,7 @@ class Annealer:
             self.iter_moves = 0
             self.iteration += 1
             self.temperature = self.init_temp/self.iteration
-            print(self.temperature)
+            # print(self.temperature)
 
         # If the cost is negative, accept move
         # Negative values means curr_cost > test_cost
@@ -436,17 +431,11 @@ class Annealer:
         accept_move = random.random() <= acceptance_rate
 
         if accept_move:
-            # print("accepted!")
-            if total_change > 0:
-                print("accepted! " + str(acceptance_rate))
             # Update the queue of past changes, remove oldest item, insert newest
             self.past_changes.pop(0)
             self.past_changes.append(abs(total_change))
         else:
             self.resetTestLocations(cg1, cg2, False)
-            # Randomly choose to accept move if cost_change is > 0
-            # This chance will be higher with higher temperature
-            # print("temperature")
 
         return accept_move
 

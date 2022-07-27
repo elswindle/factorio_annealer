@@ -168,7 +168,7 @@ class Blueprinter:
                                         index = i
                                         break
                                 
-                                cc.set_signal(index, 'ltn-network-id', cell_id)
+                                cc.set_signal(index-1, 'ltn-network-id', cell_id)
 
                         self.factory_blueprint.entities.append(fcg)
                         print("Added the " + name.replace('-', ' ') + " factory cell at (" + str(x) + ", " + str(y) + ")")

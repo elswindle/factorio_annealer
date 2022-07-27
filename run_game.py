@@ -20,8 +20,8 @@ parts = [
     "utility-science-pack", 
     "military-science-pack"
 ]
-fopts = FactoryOptions(dar=0, top=[["labs", 1000]], partitions=parts)
-aopts = AnnealerOptions(function_tolerance=0.1,max_iterations=100000)
+fopts = FactoryOptions(dar=2, top=[["labs", 1000]], partitions=parts)
+aopts = AnnealerOptions(function_tolerance=0.5,max_iterations=10000)
 
 base_factory = Factory(**fopts.factory_args)
 
