@@ -39,6 +39,11 @@ class Factory:
             create the top item.  The size and requirements for these partitions are
             calculated based on the desired rate of the factory's top level items
             defined in "top-items".
+            "partitioned-pins" : Specifies whether the pins will be global or partition
+            specific.  If "use-unique-network" is set, the pins will be limited
+            to supplying the partition only.  Otherwise, the pins will be laid out
+            per partition instead of all together globally.  Not recommended without
+            unique networks.
             "block-template-path" : Custom list of all block templates to be used
             in the factory.  For any partition, all sub-recipes must be defined
             within the given file.
@@ -50,11 +55,16 @@ class Factory:
             to the advanced circuit partition blocks to get the needed resources
             and also assigned to any other partition network that uses them, i.e.
             chemical science packs.
+            "aspect-ratio" : The x:y ratio of the factory.  This will try to size
+            the factory to have aspect-ratio times more/less columns than rows.
+            A value of 2 will cause it to be short and wide, while a value of 1/2
+            will make it tall and skinnier
         """
         # type: (float, **dict) -> None
 
         self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
+        self.max_pins = None
 
         if "depot-adjacency-requirement" in kwargs:
             self.depot_req = kwargs.pop("depot-adjacency-requirement")
@@ -131,6 +141,11 @@ class Factory:
         self.unique_networks = False
         if "use-unique-network" in kwargs:
             self.unique_networks = kwargs.pop("use-unique-network")
+
+        if "aspect-ratio" in kwargs:
+            self.aspect_ratio = kwargs.pop("aspect-ratio")
+        else:
+            self.aspect_ratio = 1
 
         for arg in kwargs:
             print(arg)
@@ -307,6 +322,20 @@ class Factory:
                         item.setPreferredRecipe(
                             self.recipe_list["solid-fuel-from-light-oil"]
                         )
+
+    def buildFactory(self):
+        self.importBlockTemplates("data/factory_block_templates.csv")
+        self.calculateFactoryRequirements()
+        self.calculateFactoryBlockNumbers()
+
+        self.populateFactory()
+        self.calculateFactoryDimensions(self.aspect_ratio, 0)
+        self.getFactoryBlockAmount()
+        self.initializeBlockPlacement()
+        self.calculatePinRequirements()
+        self.placePins()
+        self.populateTestFactory()
+
 
     def loadFactoryRecipeList(self, path):
         # type: (str, bool) -> None

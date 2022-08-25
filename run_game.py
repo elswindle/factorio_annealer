@@ -9,105 +9,34 @@ from blueprinter import Blueprinter
 from factoryoptions import FactoryOptions
 from annealeroptions import AnnealerOptions
 
-# bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
-parts = [
-    "logistic-science-pack", 
-    "space-science-pack", 
-    "automation-science-pack", 
-    "chemical-science-pack", 
-    "production-science-pack", 
-    "utility-science-pack", 
-    "military-science-pack"
-]
-fopts = FactoryOptions(dar=2, top=[["labs", 1000]], partitions=parts)
-aopts = AnnealerOptions(function_tolerance=0.5,max_iterations=10000)
+def main():
+    # bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
-base_factory = Factory(**fopts.factory_args)
+    parts = [
+        "logistic-science-pack", 
+        "space-science-pack", 
+        "automation-science-pack", 
+        "chemical-science-pack", 
+        "production-science-pack", 
+        "utility-science-pack", 
+        "military-science-pack"
+    ]
+    fopts = FactoryOptions(dar=2, top=[["labs", 1000]], partitions=parts)
+    aopts = AnnealerOptions(function_tolerance=0.5,max_iterations=10000)
 
-# base_factory.loadFactoryRecipeList("data/recipe_list.csv")
-base_factory.importBlockTemplates("data/factory_block_templates.csv")
-# base_factory.load1kspsRequirements("data/factory_req_1ksps.csv")
+    base_factory = Factory(**fopts.factory_args)
 
-# part = Partition(base_factory.item_list['labs'])
-# base_factory.partitions[base_factory.item_list['labs']] = part
+    factory_annealer = Annealer(base_factory, **aopts.annealer_args)
+    factory_annealer.anneal()
 
-# part2 = Partition(base_factory.item_list["logistic-science-pack"])
-# base_factory.partitions[base_factory.item_list["logistic-science-pack"]] = part2
-# part2 = Partition(base_factory.item_list['military-science-pack'])
-# base_factory.partitions[base_factory.item_list['military-science-pack']] = part2
-# part2 = Partition(base_factory.item_list['automation-science-pack'])
-# base_factory.partitions[base_factory.item_list['automation-science-pack']] = part2
-# part2 = Partition(base_factory.item_list['utility-science-pack'])
-# base_factory.partitions[base_factory.item_list['utility-science-pack']] = part2
-# part2 = Partition(base_factory.item_list["production-science-pack"])
-# base_factory.partitions[base_factory.item_list["production-science-pack"]] = part2
-# part2 = Partition(base_factory.item_list["chemical-science-pack"])
-# base_factory.partitions[base_factory.item_list["chemical-science-pack"]] = part2
-# part2 = Partition(base_factory.item_list['space-science-pack'])
-# base_factory.partitions[base_factory.item_list['space-science-pack']] = part2
-# part2 = Partition(base_factory.item_list["electronic-circuit"])
-# base_factory.partitions[base_factory.item_list["electronic-circuit"]] = part2
-# part2 = Partition(base_factory.item_list['sulfur'])
-# base_factory.partitions[base_factory.item_list['sulfur']] = part2
+    fd = FactoryDrawer(base_factory)
+ 
+    # bpter.generateFactoryBlueprint(base_factory)
+    fd.drawFactory()
+    plt.show()
 
-base_factory.calculateFactoryRequirements()
-# base_factory.calculateFactoryBlockRequirements()
-base_factory.calculateFactoryBlockNumbers()
+    print("done")
 
-# print("number of blocks " + str(base_factory.getFactoryBlockAmount()))
-
-base_factory.populateFactory()
-base_factory.calculateFactoryDimensions(1.7, 0)
-print(base_factory.dimensions)
-base_factory.getFactoryBlockAmount()
-base_factory.initializeBlockPlacement()
-base_factory.calculatePinRequirements()
-base_factory.placePins()
-base_factory.populateTestFactory()
-
-factory_annealer = Annealer(base_factory, **aopts.annealer_args)
-factory_annealer.initializeRouteGroups()
-factory_annealer.populateRouteGroups()
-
-factory_annealer.anneal()
-
-fd = FactoryDrawer(base_factory)
-# fd.drawFactory()
-# plt.show()
-
-# for _ in range(5000):
-#     if _ % 1000 == 0:
-#         print(_)
-#         base_factory.validateFactoryCellLocations()
-#         # fd.drawFactory()
-#         # plt.show()
-#     g1, g2 = factory_annealer.generateMove()
-#     # fd.drawFactory()
-#     # fd.circleGroup(g1,'b')
-#     # fd.circleGroup(g2)
-#     # factory_annealer.evaluateMove(g1, g2)
-#     # plt.show()
-
-#     if factory_annealer.evaluateMove(g1, g2):
-#         factory_annealer.performMove(g1, g2)
-
-# g1, g2 = factory_annealer.generateMove()
-# factory_annealer.setTestLocations(g1, g2)
-# fd.drawFactory()
-# fd.circleGroup(g1,'b')
-# fd.circleGroup(g2)
-# factory_annealer.evaluateMove(g1, g2, fd)
-# plt.show()
-
-# g1, g2 = factory_annealer.generateMove()
-# factory_annealer.setTestLocations(g1, g2)
-base_factory.addFluidDepots()
-# bpter.generateFactoryBlueprint(base_factory)
-fd.drawFactory()
-# fd.circleGroup(g1,'b')
-# fd.circleGroup(g2)
-# factory_annealer.evaluateMove(g1, g2, fd)
-plt.show()
-
-print("done")
+if __name__ == "__main__":
+    main()

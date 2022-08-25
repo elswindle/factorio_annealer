@@ -2,6 +2,7 @@ class FactoryOptions:
     def __init__(
         self,
         top=[["labs", 1000]],
+        aspect_ratio=1,
         dar=2,
         prod_level=3,
         exceptions=["heavy-oil", "light-oil", "petroleum-gas"],
@@ -16,6 +17,7 @@ class FactoryOptions:
         self.block_template_path = block_template_path
         self.unique_network = use_unique_network
         self.partitions = partitions
+        self.aspect_ratio = aspect_ratio
 
         if self.productivity_level == 0:
             self.productivity_bonus = 0
@@ -34,6 +36,7 @@ class FactoryOptions:
         self.factory_args["block-template-path"] = self.block_template_path
         self.factory_args["use-unique-network"] = self.unique_network
         self.factory_args["partitions"] = self.partitions
+        self.factory_args["aspect-ratio"] = self.aspect_ratio
 
     def addFactoryArg(self, name, value):
         self.factory_args[name] = value

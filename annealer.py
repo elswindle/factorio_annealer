@@ -62,6 +62,9 @@ class Annealer:
         # Keeps track of the moving average of the annealer
         self.past_changes = [1000]*self.moves_per_iter
 
+        self.initializeRouteGroups()
+        self.populateRouteGroups()
+
     def initializeRouteGroups(self):
         for part in self.factory.partitions.values():
             reqs_bd = part.reqs_breakdown
@@ -131,6 +134,9 @@ class Annealer:
             if self.evaluateMove(cg1, cg2):
                 self.performMove(cg1, cg2)
                 avg_change = average(self.past_changes)
+
+        # After finishing the annealing, update some of the depots to handle fluids
+        self.factory.addFluidDepots()
 
     def generateMove(self, inloc1=None, inloc2=None):
         # type: (Location, Location) -> None
