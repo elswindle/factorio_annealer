@@ -9,9 +9,13 @@
 
 ## Factory
   The `Factory` class stores all related data concerning item requirements and physical placement. The factory placement is done using `FactoryBlocks` which consist of `FactoryCells`.  The `FactoryBlock` describes the physical implementation of a recipe which contains one or more `FactoryCell` objects.  The `FactoryCell` contains `FactoryCellIO` objects that specifies which item or fluid, whether it is an input or an output and which train station it is assigned to.  The factory also has pins which are raw resource interfaces with an external train/belt system.  Each solid item pin assumes 2 blue belts of the input come in at a time and each fluid pin assumes 25000/min.  
+  
   The factory generates an item list and recipe list from vanilla game data by parsing the corresponding Lua files from the official `factorio-data` repository.  This is not a robust method, but learning to load all game data into Lua first and then extracting recipes and items from there was not something I wanted to do.  If this were to be implemented, this program could be extended to include mods and their items and recipes.  An important point to note here is that for items that have multiple recipes, each item can specify which is the preferred recipe.  In vanilla Factorio, this isn't a huge deal, but mods tend to have many different recipes that can generate the same item (i.e. wood, oxygen, rocket fuel in Krastorio 2).  In addition to vanilla items and recipes, some custom items and recipes are added to allow for ease of use in dealing with edge cases (top and bottom of recipe tree).  For example, a special `labs` recipe is created to handle the research and takes in all of the science packs as inputs with no outputs.  
+  
   Each relevant recipe was implemented in game and stored as a `FactoryBlockTemplate`.  The templates specify required ingredients, products produced and at what rate along with some physical information regarding the placement of the train stations.  Some templates skip certain intermediate ingredients to avoid transporting too high of a volume of product.  THe most notable example is copper wire.  For electronic circuit production, far too much copper wire would need to be delivered and many blocks struggle with offloading the ingredients (i.e. armor-piercing ammo, electronic circuit, etc.).  
+  
   Item requirement structures are implemented using a `Partition` class.  Partitions are a way to decouple cell dependencies in one tree from another.  Using default factory options, the only partition implemented is the `labs` recipe.  With a single partition, nothing special is implemented.  When additional partitions are added, the item requirement calculations are performed on a per partition basis.  The program can also be configured to implement separate LTN networks per partition.  This will restrict the available cells that can supply another.  For example, if we have a factory that has a electronic circuits and armor piercing ammo partitions, the amount of iron and copper plates are calculated separately.  The iron and copper plate blocks for electronic circuits will only supply electronic circuits and not armor piercing ammo and vice versa.  
+  
   The program implements a simple, non-matrix based, calculator to generate the item requirements given the desired item production.  This works well for all items that only have a single recipe used.  In vanilla Factorio, this breaks down for oil products.  Petroleum gas can be generated via oil processing and light oil cracking.  How much to allocate to each of these recipes must be handled differently.  To handle these recipes, the calculator takes a bottom down approach.  First, the amount of refineries for heavy oil is calculated.  Second, light oil is calculated by first subtracting out excess light oil from heavy oil generation and then calculating the number of refineries are needed to cover the remaining light oil with all extra heavy oil is cracked into light oil.  Finally, petroluem gas production is calculated the same way as light oil.  The astute observer can tell this is not a very robust method to solve this problem.  If ever the amount of heavy oil or light oil is high enough that the excess petroleum gas is greater than is needed, an excess will accumulate.  This would result in an eventual dead lock caused by petroleum gas completely filling up.  A matrix based solver would be able prevent this kind of thing, but alas, I'm too lazy to implement it.  
   
 ## Micro City Blocks
@@ -22,7 +26,9 @@
 
 ## Blueprinter
   As mentioned in the introduction, the ability to export the design into a valid Factorio blueprint was made possible using Factorio Draftsman and the imported MCB blueprint book.  Factorio Draftsman is an extremely powerful tool.  It allows the user to create a blueprint and add entities or modify existing entities within a programming environment.  If you visit the Alt-F4 page about it, you'll see a number of examples of what can be done with this tool including creating map images, ROM for a computer, preloaded turrets, etc.  If you've ever had a Factorio related idea that needs a blueprint created, Factorio Draftsman will fulfill all your needs. 
+  
   After my shameless plug for Factorio Draftsman, back to the program at hand.  After importing the MCB blueprint book, each one is placed inside of a custom `factorio-draftsman` `Group` object.  Doing so allows the entities within a single blueprint to be handled all at once with minimal overhead.  When adding a `Group` to a `Blueprint`, draftsman makes a `deepcopy` of the `Group`, including each entity and any circuit connections and filters.  When adding the same block multiple times, this lets you simply set the position of one block, add it to the blueprint and then set the position for the next block without having worry about the first block's position being modified.  
+  
   `Blueprinter` generates 2 blueprints for the factory.  The first blueprint consists of all factory cells.  Second is the connecting rail network and top level electric grid.  This is done mainly because the algorithm to connect power lines together is very slow in Draftsman.  In addition, a power pole can only accept 5 connections but because of the layout of the grid means many big electric poles will have 6 possible connections.  Using separate blueprints forces the game to take care of power poll connections.  
 
 ## Factory Drawer
@@ -33,22 +39,34 @@
 
 ## Factory Options
   Here are the available options that can be modified.
+  
   "top-items" : Top level item names and production rates for the factory to produce.  These cannot be a dependency of each other or of any of the top level items of the partitions.  Assignment and addition will check ensure this criteria is met. 
+  
   "depot-adjacency-requirement" : Factory layout requirement for the number of LTN depots adjacent to each FactoryCell.  Default is 2, maximum is 6.
+  
   "productivity-bonus" : Productivity bonus from a single module.  Vanilla bonuses are in [0, 0.04, 0.06, 0.1], default is prod-3 (0.1) 
+  
   "calc-exceptions" : List of solids/fluids to be handled differently when calculating the factory requirements.  These will generally be items that can be produced via multiple recipes.  For vanilla Factorio, this includes oil products, i.e. light oil and petroleum.  Default items are heavy oil, light oil and petroluem gas.  If this is modified, the user must modify the `factorycalculator.calculateNormalizedRequirements` function to handle these items.  Additionally, the prerequisites to these items are not calculated.  Currently no functionality supports dealing with prerequisites of calculation exceptions (vanilla only has crude oil which is a resource and has no prerequisite itself).  
+  
   "partitions" : List of all item names as top level partitions.  A partition is defined as a set of factory blocks that produce the resources needed to create the top item.  The size and requirements for these partitions are calculated based on the desired rate of the factory's top level items defined in "top-items".
+  
   "partitioned-pins" : ** NOT YET IMPLEMENTED ** Specifies whether the pins will be global or partition specific.  If "use-unique-network" is set, the pins will be limited to supplying the partition only.  Otherwise, the pins will be laid out per partition instead of all together globally.  Not recommended without unique networks.
+  
   "block-template-path" : Custom list of all block templates to be used in the factory.  For any partition, all sub-recipes must be defined within the given file.  If any block skips an intermediate product (i.e. electronic circuits request copper plates and makes copper wire onsite), that intermediate product MUST be skipped for ALL other recipes.  The block templates do not specify if they skip products at the moment.  During the calculation of factory requirements, the vanilla recipes are modified based on the provided block templates.  Having a block for an intermediate product that is skipped will break this functionality.  
-  "use-unique-network" : Boolean specifying if the LTN train stations should operate using unique network ids.  This means blocks within a partition will only service blocks within the partition unless the item is the top item in a partition.  For example, if advanced circuits have their own partition, those factory blocks will have to be assigned
-  to the advanced circuit partition blocks to get the needed resources and also assigned to any other partition network that uses them, i.e. chemical science packs.
+  
+  "use-unique-network" : Boolean specifying if the LTN train stations should operate using unique network ids.  This means blocks within a partition will only service blocks within the partition unless the item is the top item in a partition.  For example, if advanced circuits have their own partition, those factory blocks will have to be assigned to the advanced circuit partition blocks to get the needed resources and also assigned to any other partition network that uses them, i.e. chemical science packs.
+  
   "aspect-ratio" : The x:y ratio of the factory.  This will try to size the factory to have aspect-ratio times more/less columns than rows. A value of 2 will cause it to be short and wide, while a value of 1/2 will make it tall and skinnier.
 
 ## Annealer Options
   Here are the available annealer options:
+  
   "initial_temperature" : Specifies the initial randomness of the annealing algorithm.  The acceptance probability when a move increases the total cost function of the factory is calculates as exp(-cost_change/temperature).  For large temperatures, the probability is near 1 and will almost always accept bad moves.  The temperature decreases exponentially by the function initial_temperature/iteration.  Therefore, as the algorithm progresses, the probability to accept bad moves decreases and will eventually only accept moves that reduce the cost function.  Default is 1000
+  
   "moves_per_iteration_ratio" : This helps calculate the number of moves to perform per iteration of the algorithm based on the number of factory cells in a given factory.  The iteration will only increment after the number of moves reaches the threshold calculated from factory_cells*moves_per_iteration_ratio.  So for a value of 0.1, a factory of 100 cells will perform 10 moves before incrementing the iteration and reducing the temperature of the algorithm.  A smaller value will result in more moves at higher temperatures.  Default is 0.1.
+  
   "max_iterations" : Gives the algorithm a hard stopping point of iterations if the function tolerance cannot be met.  Default is 10000.
+  
   "function_tolerance" : Defines the accuracy of the annealing algorithm.  If the average of the previous 32 moves is less than the function tolerance, the algorithm will end.  Higher values will result in a less optimal solution while smaller values will result in longer runtime and should produce a more optimal solution.  Default is 0.5.
 
 # Installation
@@ -56,19 +74,19 @@
 
   1. Download this repository
   2. Install prerequisite data and programs.
-    1. In the Factorio Annealer folder, clone into the official Factorio data repository
-    2. Clone into the Factorio Drafstman repository
-    3. From the Factorio Draftsman folder, run `python setup.py install`
-    4. Download the following mods
-      1. Logistics Train Network
-      2. Inventory Sensor
-    5. Copy the mods from the Factorio install location into the install location of Factorio Draftsman under `./draftsman/factorio-mods`.  This should be located with the other installed Python modules: `C:/Users/{user_name}/AppData/Local/Programs/Python/{Python version}/Lib/site-packages/factorio-draftsman-{version}-py{python_version}.egg/draftsman/factorio-mods`
-    6. From the install location (see 2.5), run the draftsman update script
-    7. Install the following Python modules
-      1. lupa
-      2. matplotlib
-      3. pillow
-      4. numpy
+      1. In the Factorio Annealer folder, clone into the official Factorio data repository
+      2. Clone into the Factorio Drafstman repository
+      3. From the Factorio Draftsman folder, run `python setup.py install`
+      4. Download the following mods
+          1. Logistics Train Network
+          2. Inventory Sensor
+      5. Copy the mods from the Factorio install location into the install location of Factorio Draftsman under `./draftsman/factorio-mods`.  This should be located with the other installed Python modules: `C:/Users/{user_name}/AppData/Local/Programs/Python/{Python version}/Lib/site-packages/factorio-draftsman-{version}-py{python_version}.egg/draftsman/factorio-mods`
+      6. From the install location (see 2.v), run the draftsman update script
+      7. Install the following Python modules
+          1. lupa
+          2. matplotlib
+          3. pillow
+          4. numpy
   3. Open `run_game.py` and modify the factory and annealer options
   4. Run `python run_game.py` 
 
