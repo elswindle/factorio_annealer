@@ -88,8 +88,9 @@
           2. matplotlib
           3. pillow
           4. numpy
-  3. Open `run_game.py` and modify the factory and annealer options
-  4. Run `python run_game.py` 
+  3. Add the path to the egg file into the environment variables
+  4. Open `run_game.py` and modify the factory and annealer options
+  5. Run `python run_game.py` 
 
   That should do it, but I'm sure it won't work like it did for me, so just open an issue and I'll fix it.  
   
