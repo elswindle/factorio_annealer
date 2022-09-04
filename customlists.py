@@ -12,14 +12,14 @@ class PartitionDict(dict):
         super(PartitionDict, self).__init__()
         self.factory = parent  # type: Factory
 
-        id = 0
+        id = len(parent.partitions)
         for id, item in enumerate(top_items):
             self[item] = Partition(item, id)
 
     def __setitem__(self, item, partition):
         # type: (Item, Partition) -> None
         if partition.main:
-            self.testDependenceToTop(item)
+            self.testDependenceToTop(item, item)
         else:
             self.testTopDependency(item)
         return super(PartitionDict, self).__setitem__(item, partition)
@@ -55,14 +55,29 @@ class PartitionDict(dict):
 
         return True
 
-    def testDependenceToTop(self, item):
-        # type: (Item) -> bool
+    def testDependenceToTop(self, item, curr_item):
+        # type: (Item, Item) -> bool
         """
-        Same as testTopDependency except backwards.  Instead of checking ingredients,
-        this checks products to a recipe
+        This tests to make sure any new top level items are not a dependency of any other
+        top level items.  Similar to testTopDependency, doing so would create circular
+        item dependencies.  This will basically implement the former function, but
+        start at the current top items and traverse their recipe tree looking for
+        the given item
+
+        :param item: Item to search for in top level recipe tree
+
+        :param curr_item: Current item in the tree search
+
+        :exception AttributeError: if ``item`` is a dependecy of a top item
+
+        :returns: True if completed
         Fix this later
         """
         return True
+
+        # iterate on main partitions
+        # recursively traverse item tree
+        # If curr_item==item, raise error
         for part in self.values():
             if not part.main:
                 raise AttributeError(

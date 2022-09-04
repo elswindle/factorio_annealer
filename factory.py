@@ -62,7 +62,7 @@ class Factory:
         """
         # type: (float, **dict) -> None
 
-        self.pin_reqs = {}  # type: Mapping[Item, int] # Resource, num_pins
+        self.pin_reqs = {}  # type: Mapping[Partition, Mapping[Item, int]] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
         self.max_pins = None
 
@@ -112,9 +112,13 @@ class Factory:
         self.top_items = {}  # type: Mapping[Item, float]
         if "top-items" in kwargs:
             top = kwargs.pop("top-items")
-            for item_data in top:
-                item = self.item_list[item_data[0]]
-                self.top_items[item] = item_data[1]
+        else:
+            print("No top level items provided, defaulting to 1k science/min")
+            top = [["labs", 1000]]
+            
+        for item_data in top:
+            item = self.item_list[item_data[0]]
+            self.top_items[item] = item_data[1]
 
         self.loadRecipesFromGameData()
 
@@ -122,6 +126,8 @@ class Factory:
             self.template_path = kwargs.pop("block-template-path")
             self.importBlockTemplates(self.template_path)
             self.overrideRecipes()
+        else:
+            raise AttributeError("No block template file provided, fix factory options")
 
         if "partitions" in kwargs:
             part_names = kwargs.pop("partitions")
@@ -131,6 +137,8 @@ class Factory:
         parts = []
         for name in part_names:
             parts.append(self.item_list[name])
+
+        self.partitions = {}
         self.partitions = PartitionDict(self, parts)  # type: Mapping[Item, Partition]
         next_id = len(self.partitions)
         for i, item in enumerate(self.top_items.keys()):
@@ -138,14 +146,27 @@ class Factory:
                 item, next_id + i, main=True, rate=self.top_items[item]
             )
 
-        self.unique_networks = False
         if "use-unique-network" in kwargs:
             self.unique_networks = kwargs.pop("use-unique-network")
+        else:
+            self.unique_networks = False
 
         if "aspect-ratio" in kwargs:
             self.aspect_ratio = kwargs.pop("aspect-ratio")
         else:
             self.aspect_ratio = 1
+
+        if "partition-pins" in kwargs:
+            self.partitionPins = kwargs.pop("partition-pins")
+        else:
+            self.partitionPins = False
+        
+        self.global_part = Partition(None, -1)
+
+        if "pin-padding" in kwargs:
+            self.pin_padding = kwargs.pop("pin-padding")+1
+        else:
+            self.pin_padding = PIN_CORNER_PADDING+1
 
         for arg in kwargs:
             print(arg)
@@ -324,18 +345,22 @@ class Factory:
                         )
 
     def buildFactory(self):
+        print("Importing block templates...")
         self.importBlockTemplates("data/factory_block_templates.csv")
+        print("Calculating factory requirements...")
         self.calculateFactoryRequirements()
         self.calculateFactoryBlockNumbers()
 
+        print("Populating factory...")
         self.populateFactory()
         self.calculateFactoryDimensions(self.aspect_ratio, 0)
         self.getFactoryBlockAmount()
         self.initializeBlockPlacement()
+        print("Calculating pin requirements...")
         self.calculatePinRequirements()
         self.placePins()
         self.populateTestFactory()
-
+        print("Factory built!")
 
     def loadFactoryRecipeList(self, path):
         # type: (str, bool) -> None
@@ -751,9 +776,18 @@ class Factory:
                 item.is_resource
                 and self.block_templates.get(item.preferred_recipe) is not None
             ):
-                num_pins = 0
                 # Iterate over partitions and factory top items
                 for part in self.partitions.values():
+                    # Select which partition to assign the number of pins to
+                    if self.partitionPins:
+                        partition = part
+                    else:
+                        partition = self.global_part
+
+                    if self.pin_reqs.get(partition) is None:
+                        self.pin_reqs[partition] = {}
+
+                    num_pins = 0
                     # Get the correct requirements dictionary
                     reqs = part.part_reqs
 
@@ -772,20 +806,24 @@ class Factory:
                                 self.block_num_buffer + (num_belts / belts_per_car)
                             )
 
-                num_8car_trains = ceil(num_pins / 8)
+                    # Check to see if the partition already has pin information about
+                    # the current resource, only applicable w.r.t. the global partition
+                    if self.pin_reqs[partition].get(item) is None:
+                        self.pin_reqs[partition][item] = num_pins
+                    else:
+                        self.pin_reqs[partition][item] += num_pins
 
-                # Store the number of pins and create the factory block
-                self.pin_reqs[item] = num_pins
+        for part in self.pin_reqs.keys():
+            for item in self.pin_reqs[part].keys():
                 template = self.block_templates[item.preferred_recipe]
-
-                for _ in range(num_pins):
-                    new_block = FactoryBlock(template, self.item_list["research"])
+                for _ in range(self.pin_reqs[part][item]):
+                    new_block = FactoryBlock(template, part)
                     self.pin_blocks.append(new_block)
 
     def placePins(self):
         # Start in top left
         ptr_loc = TOP
-        pin_ptr = Location(PIN_CORNER_PADDING, self.dimensions.y + 1)
+        pin_ptr = Location(self.pin_padding, self.dimensions.y + 1)
         for block in self.pin_blocks:
             x = pin_ptr.x
             y = pin_ptr.y
@@ -801,26 +839,26 @@ class Factory:
                 # Update pointer
                 if ptr_loc == TOP:
                     pin_ptr.x += 1
-                    if pin_ptr.x > self.dimensions.x + 1 - PIN_CORNER_PADDING:
-                        pin_ptr.y = self.dimensions.y + 1 - PIN_CORNER_PADDING
+                    if pin_ptr.x > self.dimensions.x + 1 - self.pin_padding:
+                        pin_ptr.y = self.dimensions.y + 1 - self.pin_padding
                         pin_ptr.x = self.dimensions.x + 1
                         ptr_loc = RIGHT
                 elif ptr_loc == RIGHT:
                     pin_ptr.y -= 1
-                    if pin_ptr.y < PIN_CORNER_PADDING:
+                    if pin_ptr.y < self.pin_padding:
                         pin_ptr.y = 0
-                        pin_ptr.x = self.dimensions.x + 1 - PIN_CORNER_PADDING
+                        pin_ptr.x = self.dimensions.x + 1 - self.pin_padding
                         ptr_loc = BOT
                 elif ptr_loc == BOT:
                     pin_ptr.x -= 1
-                    if pin_ptr.x < PIN_CORNER_PADDING:
+                    if pin_ptr.x < self.pin_padding:
                         pin_ptr.x = 0
-                        pin_ptr.y = PIN_CORNER_PADDING
+                        pin_ptr.y = self.pin_padding
                         ptr_loc = LEFT
                 elif ptr_loc == LEFT:
                     pin_ptr.y += 1
-                    if pin_ptr.y > self.dimensions.y + 1 - PIN_CORNER_PADDING:
-                        pin_ptr.x = PIN_CORNER_PADDING
+                    if pin_ptr.y > self.dimensions.y + 1 - self.pin_padding:
+                        pin_ptr.x = self.pin_padding
                         pin_ptr.y = self.dimensions.y + 1
                         ptr_loc = TOP
             else:

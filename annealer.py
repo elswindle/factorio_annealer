@@ -38,10 +38,10 @@ class Annealer:
         else:
             self.init_temp = 1000
 
-        if "moves-per-iteration-ratio" in kwargs:
-            moves_ratio = kwargs.pop("moves-per-iteration-ratio")
+        if "moves-per-iteration" in kwargs:
+            self.moves_per_iter = kwargs.pop("moves-per-iteration")
         else:
-            moves_ratio = 0.1
+            self.moves_per_iter = 50
 
         if "max-iterations" in kwargs:
             self.max_iters = kwargs.pop("max-iterations")
@@ -53,7 +53,6 @@ class Annealer:
         else:
             self.func_tol = 0.5
 
-        self.moves_per_iter = ceil(factory.num_cells*moves_ratio)
         self.iter_moves = 0
         self.iteration = 1
 
@@ -123,6 +122,7 @@ class Annealer:
         return cost
 
     def anneal(self):
+        print("Beginning simulated annealing...")
         avg_change = average(self.past_changes)
 
         # Run the annelaer as long as the past iter_moves evaluations is greater
@@ -135,6 +135,7 @@ class Annealer:
                 self.performMove(cg1, cg2)
                 avg_change = average(self.past_changes)
 
+        print("Annealing complete!")
         # After finishing the annealing, update some of the depots to handle fluids
         self.factory.addFluidDepots()
 
@@ -340,15 +341,18 @@ class Annealer:
 
         return loc1, loc2
 
-    def evaluateMove(self, cg1, cg2, fd=-1):
+    def evaluateMove(self, cg1, cg2, fd=None):
         # type: (list[FactoryCell], list[FactoryCell], FactoryDrawer) -> None
         cost_change = []
 
+        # Iterate on all cells subject to change
         for cell in cg1 + cg2:
+            # Start with 0 for the cost change of the current cell
             cost_change.append(0)
             if not cell.is_depot:
                 ip_change = 0
-                # Iterate on requesters within the cell
+                # Iterate on requesters within the cell and calculate
+                # change in cost function if it were to move
                 for requester in cell.inputs:
                     req_loc = requester.location
                     req_tl = requester.tl
@@ -357,13 +361,14 @@ class Annealer:
                     rg_change = 0
                     # Iterate on route groups of requester
                     for rg in requester.route_groups:
-                        if fd != -1:
+                        if fd is not None:
                             fd.drawRoutes(rg.producers, [requester])
                         # Iterate on producers of the requested item
                         for producer in rg.producers:
                             prod_loc = producer.location
                             prod_pm = producer.placement
                             # Check to see if the producer is also being swapped
+                            # If so, use its test location instead
                             if producer.tl == -1:
                                 prod_tl = prod_loc
                             else:
@@ -388,7 +393,7 @@ class Annealer:
 
                     rg_change = 0
                     for rg in producer.route_groups:
-                        if fd != -1:
+                        if fd is not None:
                             fd.drawRoutes([producer], rg.requesters)
                         for requester in rg.requesters:
                             req_loc = requester.location

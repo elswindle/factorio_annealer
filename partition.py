@@ -171,6 +171,12 @@ class Partition:
         # rg is sub dictionary of annealer's rg
         # rg[item (pro)][recipe (req)] = RouteGroup
         for item in rgs.keys():
+            item_is_top = False
+            for part in factory.partitions.values():
+                if part.top_item == item:
+                    item_is_top = True
+                    break
+
             # Iterate on FactoryCellIOs that request the item
             requester_recipe = None
             for requester in item.is_requester:
@@ -183,37 +189,49 @@ class Partition:
                     rgs[item][requester_recipe].requesters.append(requester)
                     requester.addRouteGroup(rgs[item][requester_recipe])
 
-            for rg in rgs[item].values():
-                for producer in item.is_producer:
-                    found = False
-                    for part in factory.partitions.values():
-                        if part.top_item == item:
-                            found = True
-                    if producer.parent_part == self or found or item.is_resource:
+            # Iterate on FactoryCellIOs that produce the item
+            for producer in item.is_producer:
+                # Only look at producers within the current partition
+                # Also always accept resources if not partitioning pins
+                # !partitionPins & is_resouce
+                resource_accept = not factory.partitionPins and item.is_resource
+                if producer.parent_part == self or item_is_top or resource_accept:
+                    for rg in rgs[item].values():
                         rg.producers.append(producer)
                         producer.addRouteGroup(rg)
 
+            # for rg in rgs[item].values():
+            #     for producer in item.is_producer:
+            #         found = False
+            #         for part in factory.partitions.values():
+            #             if part.top_item == item:
+            #                 found = True
+            #         if producer.parent_part == self or found or item.is_resource:
+            #             rg.producers.append(producer)
+            #             producer.addRouteGroup(rg)
+
+            # This isn't used...
             # Iterate on FactoryCellIOs that produce item
-            for producer in item.is_producer:
-                found = False
-                for part in factory.partitions.values():
-                    if part.top_item == item:
-                        found = True
-                # Only look at producers in the current partition or if a top level partition item
-                # Resources are shared among all partitions
-                if producer.parent_part == self or found:
-                    # Iterate on FactoryCellIOs that request item
-                    for requester in item.is_requester:
-                        # Only look at requesters in the current partition or is resource
-                        if requester.parent_part == self:
-                            # Get the recipe of the requester
-                            requester_recipe = requester.parent_cell.recipe
+            # for producer in item.is_producer:
+            #     found = False
+            #     for part in factory.partitions.values():
+            #         if part.top_item == item:
+            #             found = True
+            #     # Only look at producers in the current partition or if a top level partition item
+            #     # Resources are shared among all partitions
+            #     if producer.parent_part == self or found:
+            #         # Iterate on FactoryCellIOs that request item
+            #         for requester in item.is_requester:
+            #             # Only look at requesters in the current partition or is resource
+            #             if requester.parent_part == self:
+            #                 # Get the recipe of the requester
+            #                 requester_recipe = requester.parent_cell.recipe
 
-                            rg = rgs[item][requester_recipe]
+            #                 rg = rgs[item][requester_recipe]
 
-                            # Add list for FactoryCellIO producer
-                            if rg.routes.get(producer) is None:
-                                rg.routes[producer] = []
+            #                 # Add list for FactoryCellIO producer
+            #                 if rg.routes.get(producer) is None:
+            #                     rg.routes[producer] = []
 
-                            # Add destination FactoryCellIO
-                            rg.routes[producer].append(requester)
+            #                 # Add destination FactoryCellIO
+            #                 rg.routes[producer].append(requester)

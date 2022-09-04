@@ -16,6 +16,7 @@ class Blueprinter:
             bpb_file = open(bpb_path)
             self.bpb_str = bpb_file.readline()
 
+            print("Importing Micro City Blocks blueprints...")
             self.ub_book = BlueprintBook(self.bpb_str)
             self.book = {}  # type: Mapping[str, FactoryCellGroup]
             for i, bp in enumerate(self.ub_book.blueprints, 0):
@@ -60,6 +61,8 @@ class Blueprinter:
                         entities=bp.entities,
                     )
                     self.book[bp_name] = new_fg
+
+            print("Import successful!")
             grid_bp = self.ub_book.blueprints[0]
             self.x_interval = grid_bp.snapping_grid_size["x"]
             self.y_interval = -grid_bp.snapping_grid_size["y"]  # Negative is up
