@@ -50,7 +50,7 @@
   The program provides options for the `Factory` and `Annealer` classes which will modify the behavior of the program and precision of the result.  
 
 ## Factory Options
-  Here are the available options that can be modified.
+  Here are the available options that can be modified.  See [this](./imgs/doc/README.md) for examples of the effect of modifying many of these options.
   
   - "top-items" : Top level item names and production rates for the factory to produce.  These cannot be a dependency of each other or of any of the top level items of the partitions.  Assignment and addition will check ensure this criteria is met. 
   - "depot-adjacency-requirement" : Factory layout requirement for the number of LTN depots adjacent to each FactoryCell.  Default is 2, maximum is 6.  
