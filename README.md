@@ -78,12 +78,12 @@
   2. Install prerequisite data and programs.
       1. In the Factorio Annealer folder, clone into the official Factorio data repository
       2. Clone into the Factorio Drafstman repository
-      3. From the Factorio Draftsman folder, run `python setup.py install`
-      4. Download the following mods
+      3. Copy the `ud.sh` and `up_script.py` from the data folder into the Factorio Draftsman main folder
+      4. Edit the `ud.sh` and `up_script.py` as specified inside each.  
+      5. Download the following mods
           1. [Logistics Train Network](https://mods.factorio.com/mods/Optera/LogisticTrainNetwork)
           2. [Inventory Sensor](https://mods.factorio.com/mod/Inventory%20Sensor)
-      5. Copy the mods from the Factorio install location into the install location of Factorio Draftsman under `./draftsman/factorio-mods`.  This should be located with the other installed Python modules: `C:/Users/{user_name}/AppData/Local/Programs/Python/{Python version}/Lib/site-packages/factorio-draftsman-{version}-py{python_version}.egg/draftsman/factorio-mods`
-      6. From the install location (see 2.v), run the draftsman update script
+      6. Run the `ud.sh` shell script.  This will install Factorio Draftsman to the site-packages folder as an egg file.  It will also copy over mods from the specified location into the installation directory and run the Draftsman update script.  It is important to copy over `mod-list.json` and `mod-settings.dat` as well as the zipped mods as they are in the Factorio directory.  
       7. Install the following Python modules
           1. lupa
           2. matplotlib
@@ -93,7 +93,7 @@
   4. Open `run_game.py` and modify the factory and annealer options
   5. Run `python run_game.py` 
 
-  That should do it, but I'm sure it won't work like it did for me, so just open an issue and I'll fix it.  
+  That should do it, but I'm sure it won't work like it did for me, so just open an issue and I'll help debug the issue.
   
 # Misc. Information
   This section is for other bits of information that are important for the user, but didn't fit anywhere else.
