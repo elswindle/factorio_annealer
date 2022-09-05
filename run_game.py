@@ -39,7 +39,5 @@ def main():
     fd.drawFactory()
     plt.show()
 
-    print("done")
-
 if __name__ == "__main__":
     main()
