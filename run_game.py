@@ -11,7 +11,7 @@ from annealeroptions import AnnealerOptions
 
 
 def main():
-    # bpter = Blueprinter("data/micro_blocks_v1.0.txt")
+    bpter = Blueprinter("data/micro_blocks_v1.0.txt")
 
     parts = [
         "automation-science-pack",
@@ -35,7 +35,7 @@ def main():
     factory_annealer = Annealer(base_factory, **aopts.annealer_args)
     factory_annealer.anneal()
  
-    # bpter.generateFactoryBlueprint(base_factory)
+    bpter.generateFactoryBlueprint(base_factory)
     fd.drawFactory()
     plt.show()
 
