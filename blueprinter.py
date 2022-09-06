@@ -61,6 +61,7 @@ class Blueprinter:
                         entities=bp.entities,
                     )
                     self.book[bp_name] = new_fg
+                    print("Successfully added " + bp_name + " blueprint!")
 
             print("Import successful!")
             grid_bp = self.ub_book.blueprints[0]
