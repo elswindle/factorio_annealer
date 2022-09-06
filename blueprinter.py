@@ -81,7 +81,6 @@ class Blueprinter:
     def generateFactoryBlueprint(self, factory):
         # type: (Factory) -> None
         self.factory_blueprint = Blueprint()
-        self.factory_grid = Blueprint()
 
         # Add factory cells to blueprint
         # Need a way to handle cells not 1x1, ie advanced circuits
@@ -186,7 +185,7 @@ class Blueprinter:
         for x in range(1, factory.dimensions.x + 2):
             for y in range(1, factory.dimensions.y + 2):
                 grid_bp.position = {"x": x * self.x_interval, "y": y * self.y_interval}
-                self.factory_grid.entities.append(grid_bp)
+                self.factory_blueprint.entities.append(grid_bp)
 
         # Add edges to blueprint
         print("Adding top and bottom edges to grid...")
@@ -207,9 +206,9 @@ class Blueprinter:
                 "y": position2["y"] + rel_pos["y"],
             }
             edge_bp.position = cell_pos1
-            self.factory_grid.entities.append(edge_bp)
+            self.factory_blueprint.entities.append(edge_bp)
             edge_bp.position = cell_pos2
-            self.factory_grid.entities.append(edge_bp)
+            self.factory_blueprint.entities.append(edge_bp)
 
         # No need to add corners, these should be added by above
         print("Adding left and right edges to grid...")
@@ -226,66 +225,29 @@ class Blueprinter:
                 "y": position2["y"] + rel_pos["y"],
             }
             edge_bp.position = cell_pos1
-            self.factory_grid.entities.append(edge_bp)
+            self.factory_blueprint.entities.append(edge_bp)
             edge_bp.position = cell_pos2
-            self.factory_grid.entities.append(edge_bp)
+            self.factory_blueprint.entities.append(edge_bp)
 
-        # Remove duplicate power poles
-        print("Removing duplicate power poles...")
-        # for fcg in self.factory_blueprint.entities:
-        #     if isinstance(fcg, FactoryCellGroup):
-        #         fcg.remove_power_connections()
-        # self.factory_blueprint.remove_power_connections()
+        # Remove all power connections
+        print("Removing power connections...")
+        self.factory_blueprint.remove_power_connections()
 
-        # Find all big electric poles
-        # power_poles = self.factory_blueprint.find_entities_filtered(name='big-electric-pole')
-        # duplicates = {}
-        # uniques = {}
-        # # Find duplicates
-        # for pp in power_poles:
-        #     ptup = (pp.global_position['x'], pp.global_position['y'])
-        #     if uniques.get(ptup) is None:
-        #         uniques[ptup] = pp
-        #     else:
-        #         duplicates[ptup] = pp
-
-        # Remove duplicates, requires iterating through all of the groups
-        # within the blueprint
-        # for pp in duplicates.values():
-        #     removed = False
-        #     for fcg in self.factory_blueprint.entities:
-        #         if isinstance(fcg, Group):
-        #             try:
-        #                 fcg.entities.remove(pp)
-        #                 removed = True
-        #                 break
-        #             except:
-        #                 pass
-
-        #     if not removed:
-        #         try:
-        #             self.factory_blueprint.entities.remove(pp)
-        #             removed = True
-        #         except:
-        #             pass
-
-        #     if not removed:
-        #         raise TypeError("Power pole not found...")
-
+        # Regenerate power connections
         print("Generating new power connections...")
-        # self.factory_blueprint.generate_power_connections(False, False)
+        self.factory_blueprint.generate_power_connections(True, False)
         print("Exporting blueprint to file...")
         self.exportFactoryBlueprints()
 
     def testFactoryCellGroup(self):
         pass
 
-    def exportFactoryBlueprints(self, path1="data/factory_blueprint.txt", path2="data/factory_grid.txt"):
+    def exportFactoryBlueprints(self, path1="data/factory_blueprint.txt", path2="data/factory_blueprint.txt"):
         file1 = open(path1, "w")
         file1.write(self.factory_blueprint.to_string())
 
         file2 = open(path2, "w")
-        file2.write(self.factory_grid.to_string())
+        file2.write(self.factory_blueprint.to_string())
 
     def testFactoryBlueprint(self, factory=EMPTY):
         f = open("data/op_str.txt", "w")
