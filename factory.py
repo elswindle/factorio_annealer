@@ -62,7 +62,9 @@ class Factory:
         """
         # type: (float, **dict) -> None
 
-        self.pin_reqs = {}  # type: Mapping[Partition, Mapping[Item, int]] # Resource, num_pins
+        self.pin_reqs = (
+            {}
+        )  # type: Mapping[Partition, Mapping[Item, int]] # Resource, num_pins
         self.pin_blocks = []  # type: list[FactoryBlock]
         self.max_pins = None
 
@@ -115,7 +117,7 @@ class Factory:
         else:
             print("No top level items provided, defaulting to 1k science/min")
             top = [["labs", 1000]]
-            
+
         for item_data in top:
             item = self.item_list[item_data[0]]
             self.top_items[item] = item_data[1]
@@ -160,13 +162,13 @@ class Factory:
             self.partitionPins = kwargs.pop("partition-pins")
         else:
             self.partitionPins = False
-        
+
         self.global_part = Partition(None, -1)
 
         if "pin-padding" in kwargs:
-            self.pin_padding = kwargs.pop("pin-padding")+1
+            self.pin_padding = kwargs.pop("pin-padding") + 1
         else:
-            self.pin_padding = PIN_CORNER_PADDING+1
+            self.pin_padding = PIN_CORNER_PADDING + 1
 
         for arg in kwargs:
             print(arg)
@@ -359,8 +361,11 @@ class Factory:
         print("Calculating pin requirements...")
         self.calculatePinRequirements()
         self.placePins()
+        if self.unique_networks:
+            print("Setting network IDs...")
+            self.setNetworkIDs()
         self.populateTestFactory()
-        print("Factory built!")
+        print("Factory built successfully!")
 
     def loadFactoryRecipeList(self, path):
         # type: (str, bool) -> None
@@ -425,7 +430,7 @@ class Factory:
     def overrideRecipes(self):
         # Go over block templates and modify game data recipes to
         # match ones given by the template
-        # This function requires items to be exclusively produced 
+        # This function requires items to be exclusively produced
         # either locally or in their own template.  It can't have both
         for recipe in self.block_templates:
             template = self.block_templates[recipe]
@@ -618,9 +623,6 @@ class Factory:
         for part in self.partitions.values():
             part.populateFactoryBlocks(self)
 
-        if self.unique_networks:
-            self.setNetworkIDs()
-
     def setNetworkIDs(self):
         for partition in self.partitions.values():
             for item in partition.part_reqs.keys():
@@ -632,12 +634,16 @@ class Factory:
                     # id to the block's ID
                     for block in self.partitions[item].factory_blocks:
                         if block.recipe in item.recipes:
-                            block.network_id += pow(2,partition.id)
+                            block.network_id += pow(2, partition.id)
 
             # For non top level items, assign all factory blocks
             # to the current partition's ID
             for block in partition.factory_blocks:
-                block.network_id += pow(2,partition.id)
+                block.network_id += pow(2, partition.id)
+
+        for pin in self.pin_blocks:
+            if pin.partition != self.global_part:
+                pin.network_id = pow(2, pin.partition.id)
 
     def initializeBlockPlacement(self):
         self.num_cells = self.getFactoryCellAmount()
@@ -884,9 +890,9 @@ class Factory:
                         # Replace one depot with a fluid depot
                         replaced = False
                         for xoff in range(-1, 2):
-                            for yoff in range(-1,2):
+                            for yoff in range(-1, 2):
                                 if xoff != 0 or y != 0:
-                                    neighbor = self.factory[x+xoff][y+yoff]
+                                    neighbor = self.factory[x + xoff][y + yoff]
                                     if neighbor is not EMPTY:
                                         if neighbor.is_depot:
                                             neighbor.is_fluid = True
@@ -903,7 +909,7 @@ class Factory:
                 if cell is not EMPTY:
                     if cell.is_depot:
                         if cell.is_fluid:
-                            nf +=1
+                            nf += 1
                         else:
                             ns += 1
 

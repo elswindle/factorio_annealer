@@ -32,7 +32,7 @@ class Annealer:
         self.route_groups = (
             {}
         )  # type: Mapping[Item, Mapping[Item, Mapping[Recipe, RouteGroup]]]
-        
+
         if "initial-temperature" in kwargs:
             self.init_temp = kwargs.pop("initial-temperature")
         else:
@@ -56,10 +56,10 @@ class Annealer:
         self.iter_moves = 0
         self.iteration = 1
 
-        self.temperature = self.init_temp/self.iteration
+        self.temperature = self.init_temp / self.iteration
 
         # Keeps track of the moving average of the annealer
-        self.past_changes = [1000]*self.moves_per_iter
+        self.past_changes = [1000] * self.moves_per_iter
 
         self.initializeRouteGroups()
         self.populateRouteGroups()
@@ -427,17 +427,17 @@ class Annealer:
         if self.iter_moves >= self.moves_per_iter:
             self.iter_moves = 0
             self.iteration += 1
-            self.temperature = self.init_temp/self.iteration
+            self.temperature = self.init_temp / self.iteration
             # print(self.temperature)
 
         # If the cost is negative, accept move
         # Negative values means curr_cost > test_cost
         accept_move = False
         if total_change <= 0:
-            acceptance_rate = 1     # 100% acceptance
+            acceptance_rate = 1  # 100% acceptance
         else:
             # Calculate the propability to accept this move
-            acceptance_rate = exp(-total_change/self.temperature)
+            acceptance_rate = exp(-total_change / self.temperature)
 
         accept_move = random.random() <= acceptance_rate
 

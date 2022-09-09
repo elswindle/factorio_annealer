@@ -40,6 +40,9 @@ class FactoryCellGroup(Group):
         if "direction" in kwargs:
             self.direction = kwargs["direction"]
 
+    def __repr__(self):
+        return "Cell item: " + self.name
+
     def updateNeighbours(self):
         # Iterate on entities
         entity: Entity

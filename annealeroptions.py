@@ -1,5 +1,3 @@
-
-
 class AnnealerOptions:
     def __init__(
         self,

@@ -7,6 +7,7 @@ from draftsman.classes.blueprint import Blueprint
 from draftsman.classes.blueprintbook import BlueprintBook
 from draftsman.classes.group import Group
 from draftsman.prototypes.constant_combinator import ConstantCombinator
+from draftsman.classes.association import Association
 
 
 class Blueprinter:
@@ -15,6 +16,7 @@ class Blueprinter:
         if bpb_path is not None:
             bpb_file = open(bpb_path)
             self.bpb_str = bpb_file.readline()
+            self.schedules = {}
 
             print("Importing Micro City Blocks blueprints...")
             self.ub_book = BlueprintBook(self.bpb_str)
@@ -49,6 +51,8 @@ class Blueprinter:
                                     bp_name = "fluid-depot"
                                 else:
                                     bp_name = "solid-depot"
+
+                                self.schedules[bp_name] = bp.schedules[0]
                     else:
                         bp_name = label
 
@@ -82,6 +86,8 @@ class Blueprinter:
     def generateFactoryBlueprint(self, factory):
         # type: (Factory) -> None
         self.factory_blueprint = Blueprint()
+        for schedule in self.schedules.values():
+            schedule["locomotives"] = []
 
         # Add factory cells to blueprint
         # Need a way to handle cells not 1x1, ie advanced circuits
@@ -156,28 +162,63 @@ class Blueprinter:
                         }
                         fcg.position = cell_pos
 
-                        if not cell.is_depot:
-                            # Find constant combinators and add ltn-network-id
-                            ccs = fcg.find_entities_filtered(name="constant-combinator")
-                            cc : ConstantCombinator
-                            for cc in ccs:
-                                signals = cc.signals
-                                # Find open index
-                                idxs = []
-                                for signal in signals:
-                                    idxs.append(signal['index'])
-                                index = 1
-                                for i in range(1,cc.item_slot_count+1):
-                                    if i not in idxs:
-                                        index = i
-                                        break
-                                
-                                cc.set_signal(index-1, 'ltn-network-id', cell_id)
-
                         self.factory_blueprint.entities.append(fcg)
-                        print("Added the " + name.replace('-', ' ') + " factory cell at (" + str(x) + ", " + str(y) + ")")
+                        added_fcg = self.factory_blueprint.entities[
+                            len(self.factory_blueprint.entities) - 1
+                        ]
+
+                        # Constant combinator to include the LTN network
+                        if factory.unique_networks:
+                            if not cell.is_depot:
+                                # Find constant combinators and add ltn-network-id
+                                ccs = added_fcg.find_entities_filtered(
+                                    name="constant-combinator"
+                                )
+                                cc: ConstantCombinator
+                                for cc in ccs:
+                                    signals = cc.signals
+                                    # Find open index
+                                    idxs = []
+                                    for signal in signals:
+                                        idxs.append(signal["index"])
+                                    index = 1
+                                    for i in range(1, cc.item_slot_count + 1):
+                                        if i not in idxs:
+                                            index = i
+                                            break
+
+                                    cc.set_signal(index - 1, "ltn-network-id", cell_id)
+
+                        # Add locomotives to the schedules
+                        if cell.is_depot:
+                            locomotives = added_fcg.find_entities_filtered(
+                                name="locomotive"
+                            )
+                            if cell.is_fluid:
+                                key = "fluid-depot"
+                            else:
+                                key = "solid-depot"
+
+                            for locomotive in locomotives:
+                                self.schedules[key]["locomotives"].append(
+                                    Association(locomotive)
+                                )
+
+                        print(
+                            "Added the "
+                            + name.replace("-", " ")
+                            + " factory cell at ("
+                            + str(x)
+                            + ", "
+                            + str(y)
+                            + ")"
+                        )
                 else:
                     skip_cells -= 1
+
+        # Add schedules to the blueprint
+        for schedule in self.schedules.values():
+            self.factory_blueprint.schedules.append(schedule)
 
         print("Adding rail grid...")
         grid_bp = self.book["rail-grid"]
@@ -243,12 +284,11 @@ class Blueprinter:
     def testFactoryCellGroup(self):
         pass
 
-    def exportFactoryBlueprints(self, path1="data/factory_blueprint.txt", path2="data/factory_blueprint.txt"):
+    def exportFactoryBlueprints(
+        self, path1="data/factory_blueprint.txt", path2="data/factory_blueprint.txt"
+    ):
         file1 = open(path1, "w")
         file1.write(self.factory_blueprint.to_string())
-
-        file2 = open(path2, "w")
-        file2.write(self.factory_blueprint.to_string())
 
     def testFactoryBlueprint(self, factory=EMPTY):
         f = open("data/op_str.txt", "w")
