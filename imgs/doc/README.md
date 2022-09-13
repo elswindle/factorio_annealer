@@ -14,6 +14,13 @@
   <img src="./pb_50k_ms_2.5k_after.png" width="45%" /> 
 </p>
 
+## Different depot adjacency settings
+  Optimized layouts of with adjacency of 0 (left) and 5 (right).  Notice how things are very spread out and all cells have at least 5 depots adjacent to them on the right and there are none on the left.  Interesting to note that all the edges are occupied since the depot requirement is halved for those positions and much easier to be inserted into.  
+<p align="middle">
+  <img src="./no_dar.png" width="45%" />
+  <img src="./dar_5.png" width="45%" /> 
+</p>
+
 ## Lower productivity bonus
   Compare productivity module 3s (left) to productivity module 1s (right)
 <p align="middle">
