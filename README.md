@@ -86,7 +86,7 @@
   1. Download this repository
   2. Install prerequisite data and programs.
       1. In the Factorio Annealer folder, clone into the official Factorio data repository
-      2. Clone into the Factorio Drafstman repository
+      2. In a different location, clone into the Factorio Draftsman repository (current working version is 1.0.2)
       3. Copy the `ud.sh` and `up_script.py` from the data folder into the Factorio Draftsman main folder
       4. Edit the `ud.sh` and `up_script.py` as specified inside each.  
       5. Download the following mods
