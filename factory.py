@@ -913,9 +913,6 @@ class Factory:
                         else:
                             ns += 1
 
-        print(nf)
-        print(ns)
-
     def populateTestFactory(self):
         for x in range(self.dimensions.x + 2):
             for y in range(self.dimensions.y + 2):

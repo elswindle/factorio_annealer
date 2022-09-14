@@ -62,8 +62,6 @@ class FactoryCell:
     def setLocation(self, block_loc):
         # type: (Location) -> None
         self.location = block_loc + self.offset
-        if self.location.x > 35 and self.recipe == EMPTY:
-            print("help the cell")
         if not self.is_depot:
             for ip in self.inputs:
                 ip.location = self.location
