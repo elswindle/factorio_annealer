@@ -2,6 +2,7 @@
   This section will cover some of the effects of different factory and annealer options described in the main README.  
 
 ## Before and after with default settings
+  Notice the general grouping of items with their ingredients, i.e. electronic circuits are sandwiched between iron and copper plates and low density structures are very close to copper plates despite also needing steel plates and plastic bars.
 <p align="middle">
   <img src="./base_b4.png" width="45%" />
   <img src="./base_after.png" width="45%" /> 
